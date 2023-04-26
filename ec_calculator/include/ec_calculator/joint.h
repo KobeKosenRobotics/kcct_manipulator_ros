@@ -28,7 +28,7 @@ namespace ec_calculator
     {
         private:
             // Family
-            int _joint_number = 0;
+            int _joint_index = 0;
             std::string _joint_name;
             Joint* _parent_joint = nullptr;
             std::vector<Joint*> _children_joint{nullptr};
@@ -41,6 +41,11 @@ namespace ec_calculator
 
             double _theta, _cos_theta, _sin_theta, _v_theta;
 
+            // Matrix
+            Eigen::Matrix<double, 3, 3> _exp_w_hat_theta;
+            Eigen::Matrix<double, 4, 4> _exp_xi_hat_theta;
+            Eigen::Matrix<double, 6, 1> _xi_dagger;
+
             int _minimum_joint;
 
         public:
@@ -48,16 +53,17 @@ namespace ec_calculator
             Joint();
 
             // Family
-            void setJoint(const int &joint_);
+            void setJoint(const int &joint_index_);
             void setJointProperty();
                 Eigen::Matrix<double, 3, 1> getQ();
-                Eigen::Matrix<double, 3, 1> getR();
-                Eigen::Matrix<double, 6, 1> getGsjZero();
+                Eigen::Matrix<double, 6, 1> getXi();
+                Eigen::Matrix<double, 4, 4> getGsjZero();
             void setParent(Joint *parent_joint_);
             void setChildren(Joint *children_joint_);
+            void printJoint();
 
             // Theta
-            void updateTheta(const double $theta_);
+            void updateTheta(const double &theta_);
 
             // Matrix
             Eigen::Matrix<double, 4, 4> getExpXiHatTheta();
@@ -68,7 +74,7 @@ namespace ec_calculator
             Eigen::Matrix<double, 4, 4> getChildrenExpXiHatTheta(const int  &minimum_joint_);
                 Eigen::Matrix<double, 4, 4> getChildrenExpXiHatThetaRecursion();
 
-            Eigen::Matrix<double, 6, 1> getXiDagger(const int &chain, const int &joint_);
+            Eigen::Matrix<double, 6, 1> getXiDagger(const int &chain_, const int &joint_);
     };
 }
 

@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 
     while(nh.ok())
     {
-        manip.print();
+        // manip.print();
         tfPublisher.publish();
         ros::spinOnce();
         loop_rate.sleep();

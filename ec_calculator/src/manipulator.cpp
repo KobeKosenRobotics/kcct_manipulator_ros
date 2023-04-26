@@ -4,6 +4,6 @@ namespace ec_calculator
 {
     void Manipulator::print()
     {
-        _joint.print();
+        // _joint.print();
     }
 }

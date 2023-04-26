@@ -1,4 +1,5 @@
 #include "ec_calculator/joint.h"
+#include "ec_calculator/eigenUtility.h"
 
 namespace ec_calculator
 {
@@ -8,17 +9,16 @@ namespace ec_calculator
     }
 
     // Family
-    void Joint::setJoint(const int  &joint_)
+    void Joint::setJoint(const int  &joint_index_)
     {
-        _joint = joint_;
+        _joint_index = joint_index_;
     }
 
     void Joint::setJointProperty()
     {
         _q = getQ();
-        _v = tree_property.getV(_joint);
-        _w = tree_property.getW(_joint);
-        _r = getR();
+        // _v = tree_property.getV(_joint_index);
+        // _w = tree_property.getW(_joint_index);
 
         if(_v.norm() == 0)
         {
@@ -32,30 +32,15 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 3, 1> Joint::getQ()
     {
-        if(_parent_joint == nullptr)
-        {
-            return tree_property.getLink(_joint);
-        }
-        return _parent_joint->_q+tree_property.getLink(_joint);
+        // if(_parent_joint == nullptr)
+        // {
+        //     return tree_property.getLink(_joint_index);
+        // }
+        // return _parent_joint->_q+tree_property.getLink(_joint_index);
 
         // if Property::_joint_position is defined in world coordinate
         // return tree_property.getQ(_joint);
-    }
-
-    Eigen::Matrix<double, 3, 1> Joint::getR()
-    {
-        if(_parent_joint == nullptr)
-        {
-            return tree_property.getLinkCenterOfGravity(_joint);
-        }
-        if(_children_joint[0] == nullptr)
-        {
-            return Eigen::Matrix<double, 3, 1>::Zero();
-        }
-        return _parent_joint->_q+tree_property.getLinkCenterOfGravity(_joint);
-
-        // if Property::_center_of_gravity is defined in world coordinate
-        // return tree_property.getR(_joint);
+        return _q;
     }
 
     Eigen::Matrix<double, 6, 1> Joint::getXi()
@@ -68,7 +53,7 @@ namespace ec_calculator
     Eigen::Matrix<double, 4, 4> Joint::getGsjZero()
     {
         _gsj_zero <<
-        tree_base.getIdentity3(), _q,
+        EigenUtility.getIdentity3(), _q,
         0.0, 0.0, 0.0, 1.0;
 
         return _gsj_zero;
@@ -87,15 +72,15 @@ namespace ec_calculator
 
     void Joint::printJoint()
     {
-        std::cout << "joint: " << _joint << std::endl;
-        std::cout << "parent: " << _parent_joint->_joint << std::endl;
+        std::cout << "joint: " << _joint_index << std::endl;
+        std::cout << "parent: " << _parent_joint->_joint_index << std::endl;
         for(int i = 0; i < _children_number; i++)
         {
             if(i == 0)
             {
                 std::cout << "children: ";
             }
-            std::cout << _children_joint[i]->_joint << " ";
+            std::cout << _children_joint[i]->_joint_index << " ";
             if(i == _children_number-1)
             {
                 std::cout << std::endl;
@@ -118,9 +103,9 @@ namespace ec_calculator
         updateTheta(_theta);
         getExpWHatTheta();
 
-        _exp_xi_hat_theta <<
-        _exp_w_hat_theta, ((tree_base.getIdentity3() - _exp_w_hat_theta) * (_w.cross(_v))) + (_w*_w.transpose()) * _v*_theta,
-        0.0, 0.0, 0.0, 1.0;
+        // _exp_xi_hat_theta <<
+        // _exp_w_hat_theta, ((tree_base.getIdentity3() - _exp_w_hat_theta) * (_w.cross(_v))) + (_w*_w.transpose()) * _v*_theta,
+        // 0.0, 0.0, 0.0, 1.0;
 
         return _exp_xi_hat_theta;
     }
@@ -154,7 +139,7 @@ namespace ec_calculator
             std::cout << std::endl;
             return getExpXiHatTheta();
         }
-        if(_joint >= JOINT_NUMBER)
+        if(_joint_index >= JOINT_NUMBER)
         {
             return _parent_joint->getGsjThetaRecursion();
         }
@@ -164,7 +149,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getChildrenExpXiHatTheta(const int  &minimum_joint_)
     {
-        if(_joint < JOINT_NUMBER) std::cout << "ERROR: _joint < JOINT_NUMBER" << std::endl;
+        if(_joint_index < JOINT_NUMBER) std::cout << "ERROR: _joint < JOINT_NUMBER" << std::endl;
 
         _minimum_joint = minimum_joint_;
         _parent_joint->_minimum_joint = _minimum_joint;
@@ -174,14 +159,14 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getChildrenExpXiHatThetaRecursion()
     {
-        if(_joint == _minimum_joint)
+        if(_joint_index == _minimum_joint)
         {
             return getExpXiHatTheta();
         }
 
         _parent_joint->_minimum_joint = _minimum_joint;
 
-        if(_joint >= JOINT_NUMBER)
+        if(_joint_index >= JOINT_NUMBER)
         {
             return _parent_joint->getChildrenExpXiHatThetaRecursion();
         }

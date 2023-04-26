@@ -159,7 +159,8 @@ target_link_libraries(eigenUtility_example ${catkin_LIBRARIES})
 
 set(HEADERS include/ec_calculator/joint.h)
 set(HEADERS include/ec_calculator/manipulator.h)
-add_executable(ec_calculator_node src/joint src/manipulator src/nodes/ec_calculator_node)
+set(HEADERS include/ec_calculator/manipulator_tf_publisher.h)
+add_executable(ec_calculator_node src/joint src/manipulator src/manipulator_tf_publisher src/nodes/ec_calculator_node)
 target_link_libraries(ec_calculator_node ${catkin_LIBRARIES} "/usr/include/eigen3")
 
 #############

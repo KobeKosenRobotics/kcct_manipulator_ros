@@ -153,6 +153,10 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+set(HEADERS include/ec_calculator/eigenUtility.h)
+add_executable(eigenUtility_example src/examples/eigenUtility_example)
+target_link_libraries(eigenUtility_example ${catkin_LIBRARIES})
+
 set(HEADERS include/ec_calculator/joint.h)
 set(HEADERS include/ec_calculator/manipulator.h)
 add_executable(ec_calculator_node src/joint src/manipulator src/nodes/ec_calculator_node)

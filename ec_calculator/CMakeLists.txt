@@ -153,6 +153,11 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+set(HEADERS include/ec_calculator/joint.h)
+set(HEADERS include/ec_calculator/manipulator.h)
+add_executable(ec_calculator_node src/joint src/manipulator src/nodes/ec_calculator_node)
+target_link_libraries(ec_calculator_node ${catkin_LIBRARIES} "/usr/include/eigen3")
+
 #############
 ## Install ##
 #############

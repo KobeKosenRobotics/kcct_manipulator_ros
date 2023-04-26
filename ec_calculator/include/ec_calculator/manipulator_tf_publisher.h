@@ -2,6 +2,8 @@
 
 #include "ec_calculator/manipulator.h"
 
+#include <tf/transform_broadcaster.h>
+
 namespace ec_calculator
 {
     class ManipulatorTFPublisher

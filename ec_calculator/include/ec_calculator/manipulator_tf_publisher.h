@@ -1,4 +1,4 @@
-#ifndef MANIPULATOR_TF_PUBLISHER_H
+#ifndef EC_CALCULATOR_MANIPULATOR_TF_PUBLISHER_H
 
 #include "ec_calculator/manipulator.h"
 
@@ -16,5 +16,5 @@ namespace ec_calculator
     };
 }
 
-#define MANIPULATOR_TF_PUBLISHER_H
+#define EC_CALCULATOR_MANIPULATOR_TF_PUBLISHER_H
 #endif

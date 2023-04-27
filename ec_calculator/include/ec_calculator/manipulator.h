@@ -1,4 +1,4 @@
-#ifndef MANIPULATOR_H
+#ifndef EC_CALCULATOR_MANIPULATOR_H
 
 #include "joint.h"
 
@@ -27,5 +27,5 @@ namespace ec_calculator
     };
 }
 
-#define MANIPULATOR_H
+#define EC_CALCULATOR_MANIPULATOR_H
 #endif

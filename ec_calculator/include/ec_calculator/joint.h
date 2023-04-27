@@ -1,4 +1,4 @@
-#ifndef JOINT_H
+#ifndef EC_CALCULATOR_JOINT_H
 
 #include <iostream>
 #include <string>
@@ -91,5 +91,5 @@ namespace ec_calculator
     };
 }
 
-#define JOINT_H
+#define EC_CALCULATOR_JOINT_H
 #endif

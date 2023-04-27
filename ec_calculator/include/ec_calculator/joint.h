@@ -55,6 +55,7 @@ namespace ec_calculator
             // Properties
             int getIndex();
             std::string getName();
+            int getNumOfParentGenerations();
 
             // Debug
             std::string getChildrenList();

@@ -36,7 +36,7 @@ namespace ec_calculator
     {
         return _index;
     }
-    
+
     std::string Joint::getName()
     {
         return _name;
@@ -48,19 +48,25 @@ namespace ec_calculator
         return getChildrenList(0);
     }
 
+    int Joint::getNumOfParentGenerations()
+    {
+        if(_index <= 0) return 0;
+        return _parent->getNumOfParentGenerations()+1;
+    }
+
     std::string Joint::getChildrenList(const int tab)
     {
         std::string tree = std::to_string(_index);
-        if(_children.size() == 0) return tree;
+        if(_children.size() == 0) return tree + "\n\n";
         tree += " --->\t";
-        tree += _children[0]->getChildrenList(tab);
-        if(_children.size() == 1) tree += "\n";
+        tree += _children[0]->getChildrenList(getNumOfParentGenerations());
         for(int child = 1; child < _children.size(); child++)
         {
             for(int t = 0; t <= tab; t++)
             {
                 tree += "\t";
             }
+            tree += "'---->\t";
             tree += _children[child]->getChildrenList(tab);
         }
 

@@ -1,16 +1,5 @@
 #ifndef JOINT_H
 
-#include <ros/ros.h>
-
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <geometry_msgs/TransformStamped.h>
-
-#include <std_msgs/Bool.h>
-#include <std_msgs/Int16.h>
-#include <geometry_msgs/Pose.h>
-#include <std_msgs/Float32MultiArray.h>
-
 #include <iostream>
 #include <string>
 #include <fstream>

@@ -16,13 +16,14 @@ namespace ec_calculator
     class Joint
     {
         private:
-            // Family
-            int _joint_index = 0;
-            std::string _joint_name;
-            Joint* _parent_joint = nullptr;
-            std::vector<Joint*> _children_joint{nullptr};
-            int _children_number = 0;
+            int _index = 0;
+            std::string _name = "";
 
+            // Family
+            Joint* _parent = nullptr;
+            std::vector<Joint*> _children { nullptr };
+
+            /*
             // Parameter
             Eigen::Matrix<double, 3, 1> _q, _v, _w;
             Eigen::Matrix<double, 6, 1> _xi;
@@ -36,8 +37,30 @@ namespace ec_calculator
             Eigen::Matrix<double, 6, 1> _xi_dagger;
 
             int _minimum_joint;
+            */
 
         public:
+
+            // Constructor
+            Joint();
+
+            // Initialize
+            void init(const int index, const std::string name);
+
+            // Chain Management Functions
+            void setParent(Joint &parent);
+            bool addChild(Joint &child);
+            void clearChildren();
+
+            // Properties
+            int getIndex();
+            std::string getName();
+
+            // Debug
+            std::string getChildrenList();
+            std::string getChildrenList(const int tab);
+
+            /*
             // Constructor
             Joint();
 
@@ -64,6 +87,7 @@ namespace ec_calculator
                 Eigen::Matrix<double, 4, 4> getChildrenExpXiHatThetaRecursion();
 
             Eigen::Matrix<double, 6, 1> getXiDagger(const int &chain_, const int &joint_);
+            */
     };
 }
 

@@ -2,15 +2,28 @@
 
 #include "joint.h"
 
+#ifndef JOINT_NUM
+#define JOINT_NUM 10
+#endif
+
+#ifndef CHAIN_NUM
+#define CHAIN_NUM 3
+#endif
+
 namespace ec_calculator
 {
     class Manipulator
     {
         private:
-            Joint _joint;
+            Joint _joints[JOINT_NUM];
 
         public:
-            void print();
+            void init();
+            bool setChainMatrix(Eigen::Matrix<bool, CHAIN_NUM, JOINT_NUM> chain_mat);
+            
+            Joint getJoint(int index);
+
+            void printTree();
     };
 }
 

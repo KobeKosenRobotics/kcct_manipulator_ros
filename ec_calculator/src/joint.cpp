@@ -5,6 +5,71 @@ namespace ec_calculator
 {
     Joint::Joint()
     {
+
+    }
+
+    void Joint::init(const int index, const std::string name)
+    {
+        _index = index;
+        _name = name;
+        clearChildren();
+    }
+
+    void Joint::setParent(Joint &parent)
+    {
+        _parent = &parent;
+    }
+
+    bool Joint::addChild(Joint &child)
+    {
+        if(std::find(_children.begin(), _children.end(), &child) != _children.end()) return false;
+        _children.push_back(&child);
+        return true;
+    }
+
+    void Joint::clearChildren()
+    {
+        _children.clear();
+    }
+
+    int Joint::getIndex()
+    {
+        return _index;
+    }
+    
+    std::string Joint::getName()
+    {
+        return _name;
+    }
+
+    std::string Joint::getChildrenList()
+    {
+        std::cout << "\nTree:" << std::endl;
+        return getChildrenList(0);
+    }
+
+    std::string Joint::getChildrenList(const int tab)
+    {
+        std::string tree = std::to_string(_index);
+        if(_children.size() == 0) return tree;
+        tree += " --->\t";
+        tree += _children[0]->getChildrenList(tab);
+        if(_children.size() == 1) tree += "\n";
+        for(int child = 1; child < _children.size(); child++)
+        {
+            for(int t = 0; t <= tab; t++)
+            {
+                tree += "\t";
+            }
+            tree += _children[child]->getChildrenList(tab);
+        }
+
+        return tree;
+    }
+
+    /*
+    Joint::Joint()
+    {
         updateTheta(_theta);
     }
 
@@ -173,4 +238,5 @@ namespace ec_calculator
 
         return _parent_joint->getChildrenExpXiHatThetaRecursion()*getExpXiHatTheta();
     }
+    */
 }

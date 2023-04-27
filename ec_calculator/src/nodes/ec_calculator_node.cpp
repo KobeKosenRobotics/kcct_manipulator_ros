@@ -1,3 +1,11 @@
+#ifndef JOINT_NUM
+#define JOINT_NUM 10
+#endif
+
+#ifndef CHAIN_NUM
+#define CHAIN_NUM 3
+#endif
+
 #include "ec_calculator/manipulator.h"
 #include "ec_calculator/manipulator_tf_publisher.h"
 
@@ -12,6 +20,18 @@ int main(int argc, char **argv)
 
     Manipulator manip;
     ManipulatorTFPublisher tfPublisher(manip);
+
+    manip.init();
+
+    Eigen::Matrix<bool, CHAIN_NUM, JOINT_NUM> chain_matrix;
+    chain_matrix <<
+    // 1  2  3  4  5  6  7  8  9 10
+    1, 1, 1, 0, 0, 1, 0, 0, 1, 0,
+    1, 1, 0, 1, 0, 0, 1, 0, 0, 1,
+    1, 1, 0, 0, 1, 0, 0, 1, 0, 0;
+    manip.setChainMatrix(chain_matrix);
+
+    manip.printTree();
 
     while(nh.ok())
     {

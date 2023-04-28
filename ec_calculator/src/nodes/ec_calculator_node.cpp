@@ -6,6 +6,7 @@
 #define CHAIN_NUM 3
 #endif
 
+#include "ec_calculator/model.h"
 #include "ec_calculator/manipulator.h"
 #include "ec_calculator/manipulator_tf_publisher.h"
 
@@ -20,6 +21,7 @@ int main(int argc, char **argv)
 
     Manipulator manip;
     ManipulatorTFPublisher tfPublisher(manip);
+    Model model;
 
     manip.init();
 
@@ -35,7 +37,7 @@ int main(int argc, char **argv)
 
     while(nh.ok())
     {
-        // manip.print();
+        std::cout << model.getJointNum() << std::endl;
         tfPublisher.publish();
         ros::spinOnce();
         loop_rate.sleep();

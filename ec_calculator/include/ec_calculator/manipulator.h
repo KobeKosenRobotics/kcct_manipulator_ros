@@ -1,5 +1,6 @@
 #ifndef EC_CALCULATOR_MANIPULATOR_H
 
+#include "model.h"
 #include "joint.h"
 
 #ifndef JOINT_NUM

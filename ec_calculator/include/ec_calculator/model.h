@@ -12,15 +12,16 @@ namespace ec_calculator
     class Model
     {
         private:
-            int _joint_num = 10;
             int _chain_num = 3;
-            Eigen::Matrix<bool, -1, -1> _chain_matrix;
+            int _joint_num = 10;
+
+            Eigen::Matrix<bool, -1, -1> _chain_mat;
             // Eigen::Matrix<double, -1, -1> _joint_position, _translation_axis, _rotation_axis;
 
         public:
             Model();
 
-            void changeModel(const int &joint_num_, const int &chain_num_, const Eigen::Matrix<bool, -1, -1> chain_mat_);    // TODO: Add _joint_position, etc. to the argument
+            void changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> chain_mat_);    // TODO: Add _joint_position, etc. to the argument
 
             int getJointNum();
             int getChainNum();

@@ -19,10 +19,12 @@ namespace ec_calculator
 
         public:
             Model();
-            // const int JOINT_NUM = 10;
-            // const int CHAIN_NUM = 3;
+
+            void changeModel(const int &joint_num_, const int &chain_num_, const Eigen::Matrix<bool, -1, -1> chain_mat_);    // TODO: Add _joint_position, etc. to the argument
+
             int getJointNum();
             int getChainNum();
+
             Eigen::Matrix<bool, -1, -1> getChainMat();
     };
 }

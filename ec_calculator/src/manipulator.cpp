@@ -39,6 +39,7 @@ namespace ec_calculator
                 parent = child;
             }
         }
+        return true;
     }
 
     Joint Manipulator::getJoint(int index)

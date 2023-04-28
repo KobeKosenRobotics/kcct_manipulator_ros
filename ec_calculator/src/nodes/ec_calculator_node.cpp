@@ -16,7 +16,19 @@ int main(int argc, char **argv)
     Model model;
 
     manip.init(&model);
+    manip.printTree();
 
+    Eigen::Matrix<bool, 4, 7> chain;
+    chain <<
+    // 1  2  3  4  5  6  7  8  9 10
+    1, 1, 1, 0, 0, 0, 0,
+    1, 1, 0, 1, 0, 0, 0,
+    1, 0, 0, 0, 1, 1, 0,
+    1, 0, 0, 0, 1, 0, 1;
+
+    model.changeModel(7, 4, chain);
+
+    manip.init(&model);
     manip.printTree();
 
     while(nh.ok())

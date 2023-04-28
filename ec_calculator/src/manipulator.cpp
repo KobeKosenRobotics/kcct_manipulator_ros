@@ -2,21 +2,29 @@
 
 namespace ec_calculator
 {
-    void Manipulator::init()
+    void Manipulator::init(Model* model_)
     {
-        for(int index = 0; index < JOINT_NUM; index++)
+        _model = model_;
+
+        _JOINT_NUM = _model->getJointNum();
+        _CHAIN_NUM = _model->getChainNum();
+        _joints.resize(_JOINT_NUM);
+
+        for(int index = 0; index < _JOINT_NUM; index++)
         {
             _joints[index].init(index, "Joint" + std::to_string(index));
         }
+
+        setChainMatrix(_model->getChainMat());
     }
 
-    bool Manipulator::setChainMatrix(Eigen::Matrix<bool, CHAIN_NUM, JOINT_NUM> chain_mat)
+    bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat)
     {
         std::cout << "\nSetChainMatrix:" << std::endl;
-        for(int chain = 0; chain < CHAIN_NUM; chain++)
+        for(int chain = 0; chain < _CHAIN_NUM; chain++)
         {
             int parent = -1;
-            for(int child = 0; child < JOINT_NUM; child++)
+            for(int child = 0; child < _JOINT_NUM; child++)
             {
                 if(!chain_mat(chain, child)) continue;
                 if(parent != -1)

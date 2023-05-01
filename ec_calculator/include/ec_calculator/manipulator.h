@@ -1,5 +1,6 @@
-#ifndef MANIPULATOR_H
+#ifndef EC_CALCULATOR_MANIPULATOR_H
 
+#include "model.h"
 #include "joint.h"
 
 namespace ec_calculator
@@ -7,12 +8,19 @@ namespace ec_calculator
     class Manipulator
     {
         private:
-            Joint _joint;
+            Model* _model;
+            std::vector<Joint> _joints;
+            int _JOINT_NUM, _CHAIN_NUM;
 
         public:
-            void print();
+            void init(Model* model_);
+            bool setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix);
+
+            Joint getJoint(int index);
+
+            void printTree();
     };
 }
 
-#define MANIPULATOR_H
+#define EC_CALCULATOR_MANIPULATOR_H
 #endif

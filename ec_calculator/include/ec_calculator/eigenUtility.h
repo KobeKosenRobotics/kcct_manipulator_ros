@@ -1,5 +1,5 @@
-#ifndef EIGEN_UTILITY_H
-#define EIGEN_UTILITY_H
+#ifndef EC_CALCULATOR_EIGEN_UTILITY_H
+#define EC_CALCULATOR_EIGEN_UTILITY_H
 
 #include <string>
 

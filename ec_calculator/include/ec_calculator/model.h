@@ -1,4 +1,4 @@
-#ifndef MODEL_H
+#ifndef EC_CALCULATOR_MODEL_H
 
 #include <iostream>
 
@@ -30,5 +30,5 @@ namespace ec_calculator
     };
 }
 
-#define MODEL_H
+#define EC_CALCULATOR_MODEL_H
 #endif

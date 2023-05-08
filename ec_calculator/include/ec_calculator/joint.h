@@ -23,24 +23,25 @@ namespace ec_calculator
             Joint* _parent = nullptr;
             std::vector<Joint*> _children { nullptr };
 
-            /*
             // Parameter
-            Eigen::Matrix<double, 3, 1> _q, _v, _w;
-            Eigen::Matrix<double, 6, 1> _xi;
-            Eigen::Matrix<double, 4, 4> _gsj_zero;
+            Eigen::Matrix<double, 3, 1> _q;         // joint position
+            Eigen::Matrix<double, 3, 1> _v;         // translation axis
+            Eigen::Matrix<double, 3, 1> _w;         // rotation axis
+            Eigen::Matrix<double, 6, 1> _xi;        // twist
+            Eigen::Matrix<double, 4, 4> _gsj_zero;  // initial homogeneous transformation matrix
 
+            // save temporarily
             double _theta, _cos_theta, _sin_theta, _v_theta;
 
             // Matrix
-            Eigen::Matrix<double, 3, 3> _exp_w_hat_theta;
-            Eigen::Matrix<double, 4, 4> _exp_xi_hat_theta;
-            Eigen::Matrix<double, 6, 1> _xi_dagger;
+            Eigen::Matrix<double, 3, 3> _exp_w_hat_theta;   // rotation matrix
+            Eigen::Matrix<double, 4, 4> _exp_xi_hat_theta;  // homogeneous transformation matrix
+            Eigen::Matrix<double, 6, 1> _xi_dagger;         // a column of Jacobian body matrix
 
+            // save temporarily
             int _minimum_joint;
-            */
 
         public:
-
             // Constructor
             Joint();
 
@@ -56,6 +57,14 @@ namespace ec_calculator
             int getIndex();
             std::string getName();
             int getNumOfParentGenerations();
+
+            // Set Parameters
+            void setParameters();
+            //     void setQ(const Eigen::Matrix<double, 3, 1> link_);
+            //     void setV(const Eigen::Matrix<double, 3, 1> translation_axis_);
+            //     void setW(const Eigen::Matrix<double, 3, 1> rotation_axis_);
+            //     void setXi();
+            //     void setGsjZero();
 
             // Debug
             std::string getChildrenList();

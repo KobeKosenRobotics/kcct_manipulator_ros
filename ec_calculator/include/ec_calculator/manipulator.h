@@ -15,6 +15,7 @@ namespace ec_calculator
         public:
             void init(Model* model_);
             bool setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix);
+            void setJointParameters();
 
             Joint getJoint(int index);
 

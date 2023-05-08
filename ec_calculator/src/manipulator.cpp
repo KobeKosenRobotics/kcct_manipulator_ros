@@ -16,6 +16,8 @@ namespace ec_calculator
         }
 
         setChainMatrix(_model->getChainMat());
+
+        setJointParameters();
     }
 
     bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat)
@@ -40,6 +42,14 @@ namespace ec_calculator
             }
         }
         return true;
+    }
+
+    void Manipulator::setJointParameters()
+    {
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            _joints[joint].setParameters();
+        }
     }
 
     Joint Manipulator::getJoint(int index)

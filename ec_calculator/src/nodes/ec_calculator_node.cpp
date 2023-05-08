@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     1, 0, 0, 0, 1, 1, 0,
     1, 0, 0, 0, 1, 0, 1;
 
-    model.changeModel(4, 7, chain);
+    // model.changeModel(4, 7, chain);
 
     manip.init(&model);
     manip.printTree();

@@ -54,6 +54,11 @@ namespace ec_calculator
         return _parent->getNumOfParentGenerations()+1;
     }
 
+    void Joint::setParameters()
+    {
+        // setQ(*model_.getLink(_index));
+    }
+
     std::string Joint::getChildrenList(const int tab)
     {
         std::string tree = std::to_string(_index);

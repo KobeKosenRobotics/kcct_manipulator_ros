@@ -48,7 +48,7 @@ namespace ec_calculator
     {
         for(int joint = 0; joint < _JOINT_NUM; joint++)
         {
-            _joints[joint].setParameters();
+            _joints[joint].setParameters(_model);
         }
     }
 

@@ -10,6 +10,18 @@ namespace ec_calculator
         1, 1, 1, 0, 0, 1, 0, 0, 1, 0,
         1, 1, 1, 1, 0, 0, 1, 0, 0, 1,
         1, 1, 0, 0, 1, 0, 0, 1, 0, 0;
+
+        _joint_position_link.resize(3, _joint_num);
+        _joint_position_link <<
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 2, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+
+        _tool_position_link.resize(3, _joint_num);
+        _tool_position_link <<
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
     }
 
     void Model::changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_, const Eigen::Matrix<double, 3, -1> &link_, const Eigen::Matrix<double, 3, -1> &translation_axis_, const Eigen::Matrix<double, 3, -1> &rotation_axis_)
@@ -43,9 +55,19 @@ namespace ec_calculator
         return _chain_mat;
     }
 
-    Eigen::Matrix<double, 3, 1> Model::getLink(const int &joint_)
+    Eigen::Matrix<double, 3, 1> Model::getJointPositionLink(const int &joint_)
     {
-        return _link.col(joint_);
+        return _joint_position_link.col(joint_);
+    }
+
+    Eigen::Matrix<double, 3, 1> Model::getToolPositionLink(const int &joint_)
+    {
+        return _tool_position_link.col(joint_);
+    }
+
+    Eigen::Matrix<double, 3, 1> Model::getCenterOfGravityLink(const int &joint_)
+    {
+        return _center_of_gravity_link.col(joint_);
     }
 
     Eigen::Matrix<double, 3, 1> Model::getTranslationAxis(const int &joint_)

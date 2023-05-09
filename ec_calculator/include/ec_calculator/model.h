@@ -16,7 +16,9 @@ namespace ec_calculator
             int _joint_num = 10;
 
             Eigen::Matrix<bool, -1, -1> _chain_mat;
-            Eigen::Matrix<double, 3, -1> _link;
+            Eigen::Matrix<double, 3, -1> _joint_position_link;
+            Eigen::Matrix<double, 3, -1> _tool_position_link;
+            Eigen::Matrix<double, 3, -1> _center_of_gravity_link;
             Eigen::Matrix<double, 3, -1> _translation_axis;
             Eigen::Matrix<double, 3, -1> _rotation_axis;
 
@@ -29,7 +31,9 @@ namespace ec_calculator
             int getChainNum();
 
             Eigen::Matrix<bool, -1, -1> getChainMat();
-            Eigen::Matrix<double, 3, 1> getLink(const int &joint_);
+            Eigen::Matrix<double, 3, 1> getJointPositionLink(const int &joint_);
+            Eigen::Matrix<double, 3, 1> getToolPositionLink(const int &joint_);
+            Eigen::Matrix<double, 3, 1> getCenterOfGravityLink(const int &joint_);
             Eigen::Matrix<double, 3, 1> getTranslationAxis(const int &joint_);
             Eigen::Matrix<double, 3, 1> getRotationAxis(const int &joint_);
     };

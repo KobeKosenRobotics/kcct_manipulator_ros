@@ -54,9 +54,22 @@ namespace ec_calculator
         return _parent->getNumOfParentGenerations()+1;
     }
 
-    void Joint::setParameters()
+    void Joint::setParameters(Model *model_)
     {
-        // setQ(*model_.getLink(_index));
+        setQ(model_->getJointPositionLink(_index));
+    }
+
+    void Joint::setQ(const Eigen::Matrix<double, 3, 1> link_)
+    {
+        if(_parent == nullptr)
+        {
+            _q = link_;
+        }
+        else
+        {
+            _q = _parent->_q + link_;
+        }
+        std::cout << _q << std::endl;
     }
 
     std::string Joint::getChildrenList(const int tab)

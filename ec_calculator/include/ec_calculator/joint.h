@@ -1,5 +1,7 @@
 #ifndef EC_CALCULATOR_JOINT_H
 
+#include "model.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -59,8 +61,8 @@ namespace ec_calculator
             int getNumOfParentGenerations();
 
             // Set Parameters
-            void setParameters();
-            //     void setQ(const Eigen::Matrix<double, 3, 1> link_);
+            void setParameters(Model *model_);
+                void setQ(const Eigen::Matrix<double, 3, 1> link_);
             //     void setV(const Eigen::Matrix<double, 3, 1> translation_axis_);
             //     void setW(const Eigen::Matrix<double, 3, 1> rotation_axis_);
             //     void setXi();

@@ -30,7 +30,7 @@ namespace ec_calculator
             Eigen::Matrix<double, 3, 1> _v;         // translation axis
             Eigen::Matrix<double, 3, 1> _w;         // rotation axis
             Eigen::Matrix<double, 6, 1> _xi;        // twist
-            Eigen::Matrix<double, 4, 4> _gsj_zero;  // initial homogeneous transformation matrix
+            Eigen::Matrix<double, 4, 4> _gst_zero;  // initial homogeneous transformation matrix
 
             // save temporarily
             double _theta, _cos_theta, _sin_theta, _v_theta;
@@ -62,11 +62,11 @@ namespace ec_calculator
 
             // Set Parameters
             void setParameters(Model *model_);
-                void setQ(const Eigen::Matrix<double, 3, 1> link_);
-            //     void setV(const Eigen::Matrix<double, 3, 1> translation_axis_);
-            //     void setW(const Eigen::Matrix<double, 3, 1> rotation_axis_);
-            //     void setXi();
-            //     void setGsjZero();
+                void setQ(const Eigen::Matrix<double, 3, 1> &joint_position_link_);
+                void setV(const Eigen::Matrix<double, 3, 1> &translation_axis_);
+                void setW(const Eigen::Matrix<double, 3, 1> &rotation_axis_);
+                void setXi();
+                void setGstZero(const Eigen::Matrix<double, 3, 1> &tool_position_link);
 
             // Debug
             std::string getChildrenList();

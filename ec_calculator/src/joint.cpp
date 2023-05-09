@@ -57,19 +57,50 @@ namespace ec_calculator
     void Joint::setParameters(Model *model_)
     {
         setQ(model_->getJointPositionLink(_index));
+        setW(model_->getRotationAxis(_index));
+        setV(model_->getTranslationAxis(_index));   // "setV()" must be executed after "setW()"
+        setGstZero(model_->getToolPositionLink(_index));
     }
 
-    void Joint::setQ(const Eigen::Matrix<double, 3, 1> link_)
+    void Joint::setQ(const Eigen::Matrix<double, 3, 1> &joint_position_link_)
     {
         if(_parent == nullptr)
         {
-            _q = link_;
+            _q = joint_position_link_;
         }
         else
         {
-            _q = _parent->_q + link_;
+            _q = _parent->_q + joint_position_link_;
         }
-        std::cout << _q << std::endl;
+    }
+
+    void Joint::setV(const Eigen::Matrix<double, 3, 1> &translation_axis_)
+    {
+        if(translation_axis_.norm() == 0)
+        {
+            _v = -_w.cross(_q);
+        }
+        else
+        {
+            _v = translation_axis_;
+        }
+    }
+
+    void Joint::setW(const Eigen::Matrix<double, 3, 1> &rotation_axis_)
+    {
+        _w = rotation_axis_;
+    }
+
+    void Joint::setXi()
+    {
+        _xi << -_w.cross(_q), _w;
+    }
+
+    void Joint::setGstZero(const Eigen::Matrix<double, 3, 1> &tool_position_link_)
+    {
+        _gst_zero <<
+        EigenUtility.getIdentity3(), _q + tool_position_link_,
+        0, 0, 0, 1;
     }
 
     std::string Joint::getChildrenList(const int tab)

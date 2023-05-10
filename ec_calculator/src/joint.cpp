@@ -3,11 +3,13 @@
 
 namespace ec_calculator
 {
+    // Constructor
     Joint::Joint()
     {
-
+        updateTheta(_theta);
     }
 
+    // Initialize
     void Joint::init(const int index, const std::string name)
     {
         _index = index;
@@ -15,6 +17,7 @@ namespace ec_calculator
         clearChildren();
     }
 
+    // Chain Management Functions
     void Joint::setParent(Joint &parent)
     {
         _parent = &parent;
@@ -32,6 +35,7 @@ namespace ec_calculator
         _children.clear();
     }
 
+    // Properties
     int Joint::getIndex()
     {
         return _index;
@@ -54,6 +58,7 @@ namespace ec_calculator
         return _parent->getNumOfParentGenerations()+1;
     }
 
+    // Parameters Setters
     void Joint::setParameters(Model *model_)
     {
         setQ(model_->getJointPositionLink(_index));
@@ -100,115 +105,10 @@ namespace ec_calculator
     {
         _gst_zero <<
         EigenUtility.getIdentity3(), _q + tool_position_link_,
-        0, 0, 0, 1;
-    }
-
-    std::string Joint::getChildrenList(const int tab)
-    {
-        std::string tree = std::to_string(_index);
-        if(_children.size() == 0) return tree + "\n\n";
-        tree += " --->\t";
-        tree += _children[0]->getChildrenList(getNumOfParentGenerations());
-        for(int child = 1; child < _children.size(); child++)
-        {
-            for(int t = 0; t <= tab; t++)
-            {
-                tree += "\t";
-            }
-            tree += "'---->\t";
-            tree += _children[child]->getChildrenList(tab);
-        }
-
-        return tree;
-    }
-
-    /*
-    Joint::Joint()
-    {
-        updateTheta(_theta);
-    }
-
-    // Family
-    void Joint::setJoint(const int  &joint_index_)
-    {
-        _joint_index = joint_index_;
-    }
-
-    void Joint::setJointProperty()
-    {
-        _q = getQ();
-        // _v = tree_property.getV(_joint_index);
-        // _w = tree_property.getW(_joint_index);
-
-        if(_v.norm() == 0)
-        {
-            _v = -_w.cross(_q);
-        }
-
-        getXi();
-
-        getGsjZero();
-    }
-
-    Eigen::Matrix<double, 3, 1> Joint::getQ()
-    {
-        // if(_parent_joint == nullptr)
-        // {
-        //     return tree_property.getLink(_joint_index);
-        // }
-        // return _parent_joint->_q+tree_property.getLink(_joint_index);
-
-        // if Property::_joint_position is defined in world coordinate
-        // return tree_property.getQ(_joint);
-        return _q;
-    }
-
-    Eigen::Matrix<double, 6, 1> Joint::getXi()
-    {
-        _xi << -_w.cross(_q), _w;
-
-        return _xi;
-    }
-
-    Eigen::Matrix<double, 4, 4> Joint::getGsjZero()
-    {
-        _gsj_zero <<
-        EigenUtility.getIdentity3(), _q,
         0.0, 0.0, 0.0, 1.0;
-
-        return _gsj_zero;
     }
 
-    void Joint::setParent(Joint *parent_joint_)
-    {
-        _parent_joint = parent_joint_;
-    }
-
-    void Joint::setChildren(Joint *children_joint_)
-    {
-        _children_joint[_children_number] = children_joint_;
-        _children_number++;
-    }
-
-    void Joint::printJoint()
-    {
-        std::cout << "joint: " << _joint_index << std::endl;
-        std::cout << "parent: " << _parent_joint->_joint_index << std::endl;
-        for(int i = 0; i < _children_number; i++)
-        {
-            if(i == 0)
-            {
-                std::cout << "children: ";
-            }
-            std::cout << _children_joint[i]->_joint_index << " ";
-            if(i == _children_number-1)
-            {
-                std::cout << std::endl;
-            }
-        }
-    }
-
-    // Parameter
+    // Forward Kinematics
     void Joint::updateTheta(const double &theta_)
     {
         _theta = theta_;
@@ -217,15 +117,13 @@ namespace ec_calculator
         _v_theta = 1 - _cos_theta;
     }
 
-    // Parameter
     Eigen::Matrix<double, 4, 4> Joint::getExpXiHatTheta()
     {
-        updateTheta(_theta);
         getExpWHatTheta();
 
-        // _exp_xi_hat_theta <<
-        // _exp_w_hat_theta, ((tree_base.getIdentity3() - _exp_w_hat_theta) * (_w.cross(_v))) + (_w*_w.transpose()) * _v*_theta,
-        // 0.0, 0.0, 0.0, 1.0;
+        _exp_xi_hat_theta <<
+        _exp_w_hat_theta, ((EigenUtility.getIdentity3() - _exp_w_hat_theta) * _w.cross(_v)) + _w*_w.transpose() * _v * _theta;
+        0.0, 0.0, 0.0, 1.0;
 
         return _exp_xi_hat_theta;
     }
@@ -247,51 +145,76 @@ namespace ec_calculator
         return _exp_w_hat_theta;
     }
 
-    Eigen::Matrix<double, 4, 4> Joint::getGsjTheta()
+    Eigen::Matrix<double, 4, 4> Joint::getGstTheta()
     {
-        return getGsjThetaRecursion()*_gsj_zero;
+        return getGstThetaRecursion()*_gst_zero;
     }
 
-    Eigen::Matrix<double, 4, 4> Joint::getGsjThetaRecursion()
+    Eigen::Matrix<double, 4, 4> Joint::getGstThetaRecursion()
     {
-        if(_parent_joint == nullptr)
-        {
-            std::cout << std::endl;
-            return getExpXiHatTheta();
-        }
-        if(_joint_index >= JOINT_NUMBER)
-        {
-            return _parent_joint->getGsjThetaRecursion();
-        }
-
-        return _parent_joint->getGsjThetaRecursion()*getExpXiHatTheta();
-    }
-
-    Eigen::Matrix<double, 4, 4> Joint::getChildrenExpXiHatTheta(const int  &minimum_joint_)
-    {
-        if(_joint_index < JOINT_NUMBER) std::cout << "ERROR: _joint < JOINT_NUMBER" << std::endl;
-
-        _minimum_joint = minimum_joint_;
-        _parent_joint->_minimum_joint = _minimum_joint;
-
-        return getChildrenExpXiHatThetaRecursion()*_gsj_zero;
-    }
-
-    Eigen::Matrix<double, 4, 4> Joint::getChildrenExpXiHatThetaRecursion()
-    {
-        if(_joint_index == _minimum_joint)
+        if(_parent == nullptr)
         {
             return getExpXiHatTheta();
         }
 
-        _parent_joint->_minimum_joint = _minimum_joint;
+        return _parent->getGstThetaRecursion()*getExpXiHatTheta();
+    }
 
-        if(_joint_index >= JOINT_NUMBER)
+    // Inverse Kinematics
+    Eigen::Matrix<double, 6, 1> Joint::getXiDagger(const int &minimum_index_)
+    {
+        if(!isParent(minimum_index_)) return Eigen::Matrix<double, 6, 1>::Zero();
+
+        return EigenUtility.adjointInverse(getParentGstTheta(minimum_index_))*getXi(minimum_index_);
+    }
+
+    bool Joint::isParent(const int &parent_index_)
+    {
+        if(_index == parent_index_) return true;
+        if(_parent == nullptr) return false;
+        return _parent->isParent(parent_index_);
+    }
+
+    Eigen::Matrix<double, 6, 1> Joint::getXi(const int &parent_index_)
+    {
+        if(_index == parent_index_) return _xi;
+        return _parent->getXi(parent_index_);
+    }
+
+    Eigen::Matrix<double, 4, 4> Joint::getParentGstTheta(const int &minimum_index_)
+    {
+        _minimum_index = minimum_index_;
+        _parent->_minimum_index = _minimum_index;
+
+        return getParentGstThetaRecursion()*_gst_zero;
+    }
+
+    Eigen::Matrix<double, 4, 4> Joint::getParentGstThetaRecursion()
+    {
+        if(_index == _minimum_index) return getExpXiHatTheta();
+
+        _parent->_minimum_index = _minimum_index;
+
+        return _parent->getParentGstThetaRecursion()*getExpXiHatTheta();
+    }
+
+    // Debug
+    std::string Joint::getChildrenList(const int tab)
+    {
+        std::string tree = std::to_string(_index);
+        if(_children.size() == 0) return tree + "\n\n";
+        tree += " --->\t";
+        tree += _children[0]->getChildrenList(getNumOfParentGenerations());
+        for(int child = 1; child < _children.size(); child++)
         {
-            return _parent_joint->getChildrenExpXiHatThetaRecursion();
+            for(int t = 0; t <= tab; t++)
+            {
+                tree += "\t";
+            }
+            tree += "'---->\t";
+            tree += _children[child]->getChildrenList(tab);
         }
 
-        return _parent_joint->getChildrenExpXiHatThetaRecursion()*getExpXiHatTheta();
+        return tree;
     }
-    */
 }

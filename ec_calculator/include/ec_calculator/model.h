@@ -26,7 +26,14 @@ namespace ec_calculator
             Model();
 
             // void changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_, const Eigen::Matrix<double, 3, -1> &link_, const Eigen::Matrix<double, 3, -1> &translation_axis_, const Eigen::Matrix<double, 3, -1> &rotation_axis_);    // TODO: Add _joint_position, etc. to the argument
-            void changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_);
+            //     void changeChainNum(const int &chain_num_);
+            //     void changeJointNum(const int &joint_num_);
+            //     void changeChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat_);
+            //     void changeJointPositionLink(const Eigen::Matrix<double, 3, -1> &joint_position_link_);
+            //     void changeToolPositionLink(const Eigen::Matrix<double, 3, -1> &tool_position_link_);
+            //     void changeCenterOfGravityLink(const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_);
+            //     void changeTranslationAxis(const Eigen::Matrix<double, 3, -1> &translation_axis_);
+            //     void changeRotationAxis(const Eigen::Matrix<double, 3, -1> &rotation_axis_);
 
             int getJointNum();
             int getChainNum();

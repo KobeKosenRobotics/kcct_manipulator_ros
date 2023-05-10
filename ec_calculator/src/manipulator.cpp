@@ -1,7 +1,9 @@
 #include "ec_calculator/manipulator.h"
+#include "ec_calculator/eigenUtility.h"
 
 namespace ec_calculator
 {
+    // Initialize
     void Manipulator::init(Model* model_)
     {
         _model = model_;
@@ -52,13 +54,28 @@ namespace ec_calculator
         }
     }
 
-    Joint Manipulator::getJoint(int index)
+    // Joint Manipulator::getJoint(int index)
+    // {
+    //     return _joints[index];
+    // }
+
+    // Forward Kinematics
+    Eigen::Matrix<double, 6, 1> Manipulator::getPose(const int &joint_index_)
     {
-        return _joints[index];
+        return EigenUtility.getPose(_joints[joint_index_].getGstTheta());
     }
 
+    // Debug
     void Manipulator::printTree()
     {
         std::cout << _joints[0].getChildrenList() << std::endl;
+    }
+
+    void Manipulator::print()
+    {
+        for(int joint_index = 0; joint_index < _JOINT_NUM; joint_index++)
+        {
+            std::cout << "joint" << joint_index << ":\t" << getPose(joint_index).transpose() << std::endl << std::endl;
+        }
     }
 }

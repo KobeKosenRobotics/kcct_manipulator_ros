@@ -122,7 +122,7 @@ namespace ec_calculator
         getExpWHatTheta();
 
         _exp_xi_hat_theta <<
-        _exp_w_hat_theta, ((EigenUtility.getIdentity3() - _exp_w_hat_theta) * _w.cross(_v)) + _w*_w.transpose() * _v * _theta;
+        _exp_w_hat_theta, ((EigenUtility.getIdentity3() - _exp_w_hat_theta) * (_w.cross(_v))) + (_w*_w.transpose()) * _v * _theta,
         0.0, 0.0, 0.0, 1.0;
 
         return _exp_xi_hat_theta;

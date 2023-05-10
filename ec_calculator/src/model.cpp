@@ -13,15 +13,15 @@ namespace ec_calculator
 
         _joint_position_link.resize(3, _joint_num);
         _joint_position_link <<
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         0, 0, 0, 1, 2, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         _tool_position_link.resize(3, _joint_num);
         _tool_position_link <<
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         _translation_axis.resize(3, _joint_num);
         _translation_axis <<
@@ -37,21 +37,21 @@ namespace ec_calculator
     }
 
     // void Model::changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_, const Eigen::Matrix<double, 3, -1> &link_, const Eigen::Matrix<double, 3, -1> &translation_axis_, const Eigen::Matrix<double, 3, -1> &rotation_axis_)
-    void Model::changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_)
-    {
-        if(chain_num_ == chain_mat_.rows() && joint_num_ == chain_mat_.cols())
-        {
-            _chain_num = chain_num_;
-            _joint_num = joint_num_;
+    // void Model::changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_)
+    // {
+    //     if(chain_num_ == chain_mat_.rows() && joint_num_ == chain_mat_.cols())
+    //     {
+    //         _chain_num = chain_num_;
+    //         _joint_num = joint_num_;
 
-            _chain_mat.resize(_chain_num, _joint_num);
-            _chain_mat = chain_mat_;
-        }
-        else
-        {
-            std::cout << "Matrix Size do not match Chain Number or Joint Number." << std::endl;
-        }
-    }
+    //         _chain_mat.resize(_chain_num, _joint_num);
+    //         _chain_mat = chain_mat_;
+    //     }
+    //     else
+    //     {
+    //         std::cout << "Matrix Size do not match Chain Number or Joint Number." << std::endl;
+    //     }
+    // }
 
     int Model::getJointNum()
     {

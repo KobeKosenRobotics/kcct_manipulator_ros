@@ -12,15 +12,15 @@ namespace ec_calculator
             Model* _model;
             int _JOINT_NUM, _CHAIN_NUM;
             std::vector<Joint> _joints;
-            std::vector<int> _end_joints;   // "_end_joints" has no children.
+            std::vector<int> _tip_index;   // joints[_tip_index[]] have no children.
 
         public:
             // Initialize
             void init(Model* model_);
             bool setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix);
             void setJointParameters();
-
-            // Joint getJoint(int index);
+                void setTipIndex(const int &tip_index_);
+                void clearTipIndex();
 
             // Forward Kinematics
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);

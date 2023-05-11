@@ -52,6 +52,12 @@ namespace ec_calculator
         return _parent->getNumOfParentGenerations()+1;
     }
 
+    bool Joint::isTipJoint()
+    {
+        if(_children.size() == 0) return true;
+        return false;
+    }
+
     // Parameters Setters
     void Joint::setParameters(Model *model_)
     {

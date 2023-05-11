@@ -48,16 +48,25 @@ namespace ec_calculator
 
     void Manipulator::setJointParameters()
     {
+        clearTipIndex();
+
         for(int joint = 0; joint < _JOINT_NUM; joint++)
         {
             _joints[joint].setParameters(_model);
+
+            if(_joints[joint].isTipJoint()) setTipIndex(joint);
         }
     }
 
-    // Joint Manipulator::getJoint(int index)
-    // {
-    //     return _joints[index];
-    // }
+    void Manipulator::setTipIndex(const int &tip_index_)
+    {
+        _tip_index.push_back(tip_index_);
+    }
+
+    void Manipulator::clearTipIndex()
+    {
+        _tip_index.clear();
+    }
 
     // Forward Kinematics
     Eigen::Matrix<double, 6, 1> Manipulator::getPose(const int &joint_index_)
@@ -73,9 +82,9 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        for(int joint_index = 0; joint_index < _JOINT_NUM; joint_index++)
+        for(int i = 0; i < _tip_index.size(); i++)
         {
-            std::cout << "joint" << joint_index << ":\t" << getPose(joint_index).transpose() << std::endl << std::endl;
+            std::cout << "joint" << _tip_index[i] << ":\t" << getPose(_tip_index[i]).transpose() << std::endl << std::endl;
         }
     }
 }

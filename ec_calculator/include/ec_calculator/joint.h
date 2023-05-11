@@ -59,6 +59,7 @@ namespace ec_calculator
             int getIndex();
             std::string getName();
             int getNumOfParentGenerations();
+            bool isTipJoint();
 
             // Parameter Setters
             void setParameters(Model *model_);

@@ -46,12 +46,6 @@ namespace ec_calculator
         return _name;
     }
 
-    std::string Joint::getChildrenList()
-    {
-        std::cout << "\nTree:" << std::endl;
-        return getChildrenList(0);
-    }
-
     int Joint::getNumOfParentGenerations()
     {
         if(_index <= 0) return 0;
@@ -199,12 +193,23 @@ namespace ec_calculator
     }
 
     // Debug
+    std::string Joint::getChildrenList()
+    {
+        std::cout << "\nTree:" << std::endl;
+        return getChildrenList(getNumOfParentGenerations());
+    }
+
     std::string Joint::getChildrenList(const int tab)
     {
-        std::string tree = std::to_string(_index);
-        if(_children.size() == 0) return tree + "\n\n";
+        std::string tree;
+        if(_parent == nullptr) tree += " --->\t";
+        tree += std::to_string(_index);
         tree += " --->\t";
-        tree += _children[0]->getChildrenList(getNumOfParentGenerations());
+
+        if(_children.size() == 0) return tree + "\n\n";
+
+        tree += _children[0]->getChildrenList(getNumOfParentGenerations()+1);
+
         for(int child = 1; child < _children.size(); child++)
         {
             for(int t = 0; t <= tab; t++)
@@ -212,7 +217,7 @@ namespace ec_calculator
                 tree += "\t";
             }
             tree += "'---->\t";
-            tree += _children[child]->getChildrenList(tab);
+            tree += _children[child]->getChildrenList(getNumOfParentGenerations()+1);
         }
 
         return tree;

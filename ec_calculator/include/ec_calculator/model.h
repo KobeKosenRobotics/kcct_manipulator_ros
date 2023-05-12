@@ -12,9 +12,10 @@ namespace ec_calculator
     class Model
     {
         private:
-            int _chain_num = 3;
-            int _joint_num = 10;
+            int _chain_num;
+            int _joint_num;
 
+            // Matrix
             Eigen::Matrix<bool, -1, -1> _chain_mat;
             Eigen::Matrix<double, 3, -1> _joint_position_link;
             Eigen::Matrix<double, 3, -1> _tool_position_link;
@@ -22,12 +23,24 @@ namespace ec_calculator
             Eigen::Matrix<double, 3, -1> _translation_axis;
             Eigen::Matrix<double, 3, -1> _rotation_axis;
 
+            // Gain
+            Eigen::Matrix<double, -1, -1> _angle_2_angular_velocity_gain;
+            double _ec_gain;
+
         public:
             // Constructor
             Model();
 
             // Change Model
-            void changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_, const Eigen::Matrix<double, 3, -1> &joint_position_link_, const Eigen::Matrix<double, 3, -1> &tool_position_link_, const Eigen::Matrix<double, 3, -1> &translation_axis_, const Eigen::Matrix<double, 3, -1> &rotation_axis_);
+            void changeModel(const int &chain_num_,
+                            const int &joint_num_,
+                            const Eigen::Matrix<bool, -1, -1> &chain_mat_,
+                            const Eigen::Matrix<double, 3, -1> &joint_position_link_,
+                            const Eigen::Matrix<double, 3, -1> &tool_position_link_,
+                            const Eigen::Matrix<double, 3, -1> &translation_axis_,
+                            const Eigen::Matrix<double, 3, -1> &rotation_axis_,
+                            const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_,
+                            const double &ec_gain_);
                 void changeChainNum(const int &chain_num_);
                 void changeJointNum(const int &joint_num_);
                 void changeChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat_);
@@ -36,6 +49,8 @@ namespace ec_calculator
                 void changeCenterOfGravityLink(const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_);
                 void changeTranslationAxis(const Eigen::Matrix<double, 3, -1> &translation_axis_);
                 void changeRotationAxis(const Eigen::Matrix<double, 3, -1> &rotation_axis_);
+                void changeAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_);
+                void changeECGain(const double &ec_gain_);
 
             // Parameter Getters
             int getJointNum();
@@ -46,6 +61,8 @@ namespace ec_calculator
             Eigen::Matrix<double, 3, 1> getCenterOfGravityLink(const int &joint_);
             Eigen::Matrix<double, 3, 1> getTranslationAxis(const int &joint_);
             Eigen::Matrix<double, 3, 1> getRotationAxis(const int &joint_);
+            Eigen::Matrix<double, -1, -1> getAngle2AngularVelocityGain();
+            double getECGain();
     };
 }
 

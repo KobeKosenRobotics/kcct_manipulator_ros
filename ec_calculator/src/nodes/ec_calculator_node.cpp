@@ -43,8 +43,12 @@ int main(int argc, char **argv)
     0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0,
     1, 1, 1, 1, 1, 1, 1;
+    Eigen::Matrix<double, 7, 7> a2a_ga;
+    a2a_ga.setIdentity();
+    a2a_ga *= 2;
+    double ec_ga = 2.0;
 
-    model.changeModel(cha, joi, cha_ma, joi_po, tol_po, tra, rot);
+    model.changeModel(cha, joi, cha_ma, joi_po, tol_po, tra, rot, a2a_ga, ec_ga);
 
     manip.init(&model);
     manip.printTree();

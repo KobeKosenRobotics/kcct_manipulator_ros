@@ -5,6 +5,9 @@ namespace ec_calculator
     // Constructor
     Model::Model()
     {
+        _chain_num = 3;
+        _joint_num = 10;
+
         _chain_mat.resize(_chain_num, _joint_num);
         _chain_mat <<
         // 1  2  3  4  5  6  7  8  9 10
@@ -35,11 +38,25 @@ namespace ec_calculator
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+
+        _angle_2_angular_velocity_gain.resize(_joint_num, _joint_num);
+        _angle_2_angular_velocity_gain.setIdentity(_joint_num, _joint_num);
+
+        _ec_gain = 1.0;
     }
 
     // Change Model
-    void Model::changeModel(const int &chain_num_, const int &joint_num_, const Eigen::Matrix<bool, -1, -1> &chain_mat_, const Eigen::Matrix<double, 3, -1> &joint_position_link_, const Eigen::Matrix<double, 3, -1> &tool_position_link_, const Eigen::Matrix<double, 3, -1> &translation_axis_, const Eigen::Matrix<double, 3, -1> &rotation_axis_)
+    void Model::changeModel(const int &chain_num_,
+                            const int &joint_num_,
+                            const Eigen::Matrix<bool, -1, -1> &chain_mat_,
+                            const Eigen::Matrix<double, 3, -1> &joint_position_link_,
+                            const Eigen::Matrix<double, 3, -1> &tool_position_link_,
+                            const Eigen::Matrix<double, 3, -1> &translation_axis_,
+                            const Eigen::Matrix<double, 3, -1> &rotation_axis_,
+                            const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_,
+                            const double &ec_gain_)
     {
+        // TODO: If any of the parameters cannot be changed, emergency stop change true.
         changeChainNum(chain_num_);
         changeJointNum(joint_num_);
         changeChainMatrix(chain_mat_);
@@ -47,6 +64,8 @@ namespace ec_calculator
         changeToolPositionLink(tool_position_link_);
         changeTranslationAxis(translation_axis_);
         changeRotationAxis(rotation_axis_);
+        changeAngle2AngularVelocityGain(angle_2_angular_velocity_gain_);
+        changeECGain(ec_gain_);
     }
 
     void Model::changeChainNum(const int &chain_num_)
@@ -137,6 +156,24 @@ namespace ec_calculator
         }
     }
 
+    void Model::changeAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_)
+    {
+        if(angle_2_angular_velocity_gain_.rows() == _joint_num && angle_2_angular_velocity_gain_.cols() == _joint_num)
+        {
+            _angle_2_angular_velocity_gain.resize(_joint_num, _joint_num);
+            _angle_2_angular_velocity_gain = angle_2_angular_velocity_gain_;
+        }
+        else
+        {
+            std::cout << "Matrix(angle_2_angular_velocity_gain_) Size do not match Joint Number." << std::endl;
+        }
+    }
+
+    void Model::changeECGain(const double &ec_gain_)
+    {
+        _ec_gain = ec_gain_;
+    }
+
     // Parameter Getters
     int Model::getJointNum()
     {
@@ -176,5 +213,15 @@ namespace ec_calculator
     Eigen::Matrix<double, 3, 1> Model::getRotationAxis(const int &joint_)
     {
         return _rotation_axis.col(joint_);
+    }
+
+    Eigen::Matrix<double, -1, -1> Model::getAngle2AngularVelocityGain()
+    {
+        return _angle_2_angular_velocity_gain;
+    }
+
+    double Model::getECGain()
+    {
+        return _ec_gain;
     }
 }

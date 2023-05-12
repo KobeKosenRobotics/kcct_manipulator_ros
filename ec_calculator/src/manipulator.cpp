@@ -11,6 +11,8 @@ namespace ec_calculator
         _JOINT_NUM = _model->getJointNum();
         _CHAIN_NUM = _model->getChainNum();
         _joints.resize(_JOINT_NUM);
+        _angle.resize(_JOINT_NUM, 1);
+        _target_angular_velocity.resize(_JOINT_NUM, 1);
 
         for(int index = 0; index < _JOINT_NUM; index++)
         {
@@ -86,6 +88,13 @@ namespace ec_calculator
     Eigen::Matrix<double, 6, 1> Manipulator::getPose(const int &joint_index_)
     {
         return EigenUtility.getPose(_joints[joint_index_].getGstTheta());
+    }
+
+    // Angle to Angular Velocity
+    Eigen::Matrix<double, -1, -1> Manipulator::getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
+    {
+        _target_angular_velocity = _angle_2_angular_velocity_gain * (target_angle_ - _angle);
+        return _target_angular_velocity;
     }
 
     // Debug

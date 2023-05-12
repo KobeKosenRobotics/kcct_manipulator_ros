@@ -16,6 +16,10 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, -1> _angle_2_angular_velocity_gain;
             double _ec_gain;
 
+            // Parameters
+            Eigen::Matrix<double, -1, 1> _angle;
+            Eigen::Matrix<double, -1, 1> _target_angular_velocity;
+
         public:
             // Initialize
             void init(Model* model_);
@@ -30,7 +34,7 @@ namespace ec_calculator
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);
 
             // Angle to Angular Velocity
-            Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &angle_);
+            Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
 
             // Inverse Kinematics
             Eigen::Matrix<double, -1, 1> getAngularVelocityByEC(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> target_velocity_);

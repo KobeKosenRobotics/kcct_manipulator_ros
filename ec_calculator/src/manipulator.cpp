@@ -91,7 +91,7 @@ namespace ec_calculator
     }
 
     // Angle to Angular Velocity
-    Eigen::Matrix<double, -1, -1> Manipulator::getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
+    Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
     {
         _target_angular_velocity = _angle_2_angular_velocity_gain * (target_angle_ - _angle);
         return _target_angular_velocity;

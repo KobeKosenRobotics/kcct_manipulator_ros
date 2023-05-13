@@ -12,6 +12,7 @@ namespace ec_calculator
         _CHAIN_NUM = _model->getChainNum();
         _joints.resize(_JOINT_NUM);
         _angle.resize(_JOINT_NUM, 1);
+        _angular_velocity.resize(_JOINT_NUM, 1);
         _target_angular_velocity.resize(_JOINT_NUM, 1);
 
         for(int index = 0; index < _JOINT_NUM; index++)
@@ -84,10 +85,25 @@ namespace ec_calculator
         _ec_gain = ec_gain_;
     }
 
+    // Parameter Setters
+    void Manipulator::updateAngle(const Eigen::Matrix<double, -1, 1> &angle_)
+    {
+        _angle = angle_;
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            _joints[joint].updateTheta(_angle(joint, 0));
+        }
+    }
+
     // Forward Kinematics
     Eigen::Matrix<double, 6, 1> Manipulator::getPose(const int &joint_index_)
     {
         return EigenUtility.getPose(_joints[joint_index_].getGstTheta());
+    }
+
+    Eigen::Matrix<double, -1, 1> Manipulator::getAngle()
+    {
+        return _angle;
     }
 
     // Angle to Angular Velocity
@@ -95,6 +111,28 @@ namespace ec_calculator
     {
         _target_angular_velocity = _angle_2_angular_velocity_gain * (target_angle_ - _angle);
         return _target_angular_velocity;
+    }
+
+    // Angular Velocity to Angle (for Visualization)
+    Eigen::Matrix<double, -1, 1> Manipulator::angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_)
+    {
+        _angular_velocity = angular_velocity_;
+
+        if(_is_first_time_measurement)
+        {
+            _is_first_time_measurement = false;
+            _angle.setZero();
+            _start_time = std::chrono::system_clock::now();
+        }
+
+        _end_time = std::chrono::system_clock::now();
+        _during_time = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(_end_time-_start_time).count();
+        _angle += (_during_time * _angular_velocity);
+        _start_time = _end_time;
+
+        updateAngle(_angle);
+
+        return _angle;
     }
 
     // Debug

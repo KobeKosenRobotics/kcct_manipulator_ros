@@ -2,6 +2,7 @@
 
 #include "model.h"
 #include "joint.h"
+#include <chrono>
 
 namespace ec_calculator
 {
@@ -18,7 +19,14 @@ namespace ec_calculator
 
             // Parameters
             Eigen::Matrix<double, -1, 1> _angle;
+            // Eigen::Matrix<double, -1, 1> _target_angle;
+            Eigen::Matrix<double, -1, 1> _angular_velocity;
             Eigen::Matrix<double, -1, 1> _target_angular_velocity;
+
+            // Time
+            std::chrono::system_clock::time_point _start_time, _end_time;
+            double _during_time;
+            bool _is_first_time_measurement = true; // TODO: Whether to reset when changing models
 
         public:
             // Initialize
@@ -31,13 +39,18 @@ namespace ec_calculator
                 void setECGain(const double &ec_gain_);
 
             // Forward Kinematics
+            void updateAngle(const Eigen::Matrix<double, -1, 1> &angle_);
+            Eigen::Matrix<double, -1, 1> getAngle();
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);
 
-            // Angle to Angular Velocity
+            // Angle Command
             Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
 
             // Inverse Kinematics
             Eigen::Matrix<double, -1, 1> getAngularVelocityByEC(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> target_velocity_);
+
+            // Angular Velocity to Angle (for Visualization)
+            Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
 
             // Debug
             void printTree();

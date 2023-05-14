@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "EcCalculator");
     ros::NodeHandle nh;
-    double rate = 20.0;
+    double rate = 100.0;
     ros::Rate loop_rate(rate);
 
     Manipulator manip;
@@ -23,14 +23,14 @@ int main(int argc, char **argv)
     Eigen::Matrix<bool, 4, 7> cha_ma;
     cha_ma <<
     // 1  2  3  4  5  6  7  8  9 10
-    1, 1, 1, 0, 0, 0, 0,
-    1, 1, 0, 1, 0, 0, 0,
-    1, 0, 0, 0, 1, 1, 0,
-    1, 0, 0, 0, 1, 0, 1;
+    1, 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 1, 0, 0,
+    1, 0, 0, 0, 0, 1, 0,
+    1, 0, 0, 0, 0, 0, 1;
     Eigen::Matrix<double, 3, 7> joi_po;
     joi_po <<
     1, 1, 1, 1, 1, 1, 1,
-    0, 0, 0, 1, 2, 0, 1,
+    0, 0, 0, 0, 1, 2, 3,
     0, 0, 0, 0, 0, 0, 0;
     Eigen::Matrix<double, 3, 7> tol_po;
     tol_po <<
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     manip.print();
 
     Eigen::Matrix<double, 7, 1> ta_an;
-    ta_an.setConstant(3);
+    ta_an.setConstant(0.5);
 
     while(nh.ok())
     {
@@ -63,7 +63,9 @@ int main(int argc, char **argv)
 
         manip.angularVelocity2Angle(manip.getAngularVelocityByAngle(ta_an));    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
 
-        std::cout << manip.getAngle().transpose() << std::endl << std::endl;
+        // manip.print();
+        tfPublisher.publish("manipulator_base_link", "pose0", manip.getPose(3));
+        // std::cout << manip.getPose(3).transpose() << std::endl <<std::endl;
 
         ros::spinOnce();
         loop_rate.sleep();

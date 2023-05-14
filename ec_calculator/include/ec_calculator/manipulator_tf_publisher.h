@@ -3,6 +3,7 @@
 #include "ec_calculator/manipulator.h"
 
 #include <tf/transform_broadcaster.h>
+#include <iostream>
 
 namespace ec_calculator
 {
@@ -11,6 +12,7 @@ namespace ec_calculator
         public:
             ManipulatorTFPublisher(Manipulator& manipulator);
             void publish();
+            void publish(const std::string &base_name_, const std::string &point_name_, const Eigen::Matrix<double, 6, 1> &pose_);
         private:
             Manipulator *_manipulator;
     };

@@ -38,6 +38,15 @@ namespace ec_calculator
                 void setAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_);
                 void setECGain(const double &ec_gain_);
 
+            // Properties
+            int getChainNum();
+            int getJointNum();
+            std::string getJointName(const int &joint_index_);
+            std::string getJointParentName(const int &joint_index_);
+
+            // Visualize
+            double getVisualData(const int &joint_index_, const int &data_index_);
+
             // Forward Kinematics
             void updateAngle(const Eigen::Matrix<double, -1, 1> &angle_);
             Eigen::Matrix<double, -1, 1> getAngle();

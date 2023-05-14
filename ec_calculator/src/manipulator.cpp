@@ -85,7 +85,46 @@ namespace ec_calculator
         _ec_gain = ec_gain_;
     }
 
-    // Parameter Setters
+    // Properties
+    int Manipulator::getChainNum()
+    {
+        return _CHAIN_NUM;
+    }
+
+    int Manipulator::getJointNum()
+    {
+        return _JOINT_NUM;
+    }
+
+    std::string Manipulator::getJointName(const int &joint_index_)
+    {
+        if(joint_index_ < 0 || (_JOINT_NUM + _CHAIN_NUM) <= joint_index_) return "getJointName(): Exception Handling";
+
+        if(_JOINT_NUM <= joint_index_) return "Tool" + std::to_string(joint_index_ - _JOINT_NUM);
+
+        return _joints[joint_index_].getName();
+    }
+
+    std::string Manipulator::getJointParentName(const int &joint_index_)
+    {
+        if(joint_index_ < 0 || (_JOINT_NUM + _CHAIN_NUM) <= joint_index_) return "getJointParentName(): Exception Handling";
+
+        if(_JOINT_NUM <= joint_index_) return _joints[_tip_index[joint_index_ - _JOINT_NUM]].getName();
+
+        return _joints[joint_index_].getParentName();
+    }
+
+    // Visualize
+    double Manipulator::getVisualData(const int &joint_index_, const int &data_index_)
+    {
+        if(joint_index_ < 0 || (_JOINT_NUM + _CHAIN_NUM) <= joint_index_) return 0.0;
+
+        if(_JOINT_NUM <= joint_index_) return _joints[_tip_index[joint_index_ - _JOINT_NUM]].getToolVisualData(data_index_);
+
+        return _joints[joint_index_].getVisualData(data_index_);
+    }
+
+    // Forward Kinematics
     void Manipulator::updateAngle(const Eigen::Matrix<double, -1, 1> &angle_)
     {
         _angle = angle_;
@@ -95,7 +134,6 @@ namespace ec_calculator
         }
     }
 
-    // Forward Kinematics
     Eigen::Matrix<double, 6, 1> Manipulator::getPose(const int &joint_index_)
     {
         return EigenUtility.getPose(_joints[joint_index_].getGstTheta());
@@ -147,5 +185,6 @@ namespace ec_calculator
         {
             std::cout << "joint" << _tip_index[i] << ":\t" << getPose(_tip_index[i]).transpose() << std::endl;
         }
+        std::cout << std::endl;
     }
 }

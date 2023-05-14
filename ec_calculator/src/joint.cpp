@@ -46,6 +46,12 @@ namespace ec_calculator
         return _name;
     }
 
+    std::string Joint::getParentName()
+    {
+        if(_parent == nullptr) return "manipulator_base_link";
+        return _parent->getName();
+    }
+
     int Joint::getNumOfParentGenerations()
     {
         if(_index <= 0) return 0;
@@ -69,6 +75,8 @@ namespace ec_calculator
 
     void Joint::setQ(const Eigen::Matrix<double, 3, 1> &joint_position_link_)
     {
+        _lp = joint_position_link_;
+
         if(_parent == nullptr)
         {
             _q = joint_position_link_;
@@ -103,9 +111,56 @@ namespace ec_calculator
 
     void Joint::setGstZero(const Eigen::Matrix<double, 3, 1> &tool_position_link_)
     {
+        _lc = tool_position_link_;
+
         _gst_zero <<
-        EigenUtility.getIdentity3(), _q + tool_position_link_,
+        EigenUtility.getIdentity3(), _q + _lc,
         0.0, 0.0, 0.0, 1.0;
+    }
+
+    // Visualize
+    double Joint::getVisualData(const int &index_)
+    {
+        setVisualData();
+        return _visual_data(index_, 0);
+    }
+
+    void Joint::setVisualData()
+    {
+        _visual_data.block(3, 0, 3, 1) = _theta * _w;
+
+        if(_parent == nullptr)
+        {
+            _visual_data.block(0, 0, 3, 1) = _lp;
+            return;
+        }
+
+        if(_parent->_w.norm() == 0)
+        {
+            _visual_data.block(0, 0, 3, 1) = _parent->_theta *_parent-> _v;
+            return;
+        }
+
+        _visual_data.block(0, 0, 3, 1) = _lp;
+        return;
+    }
+
+    Eigen::Matrix<double, 6, 1> Joint::getVisualData()
+    {
+        setVisualData();
+        return _visual_data;
+    }
+
+    double Joint::getToolVisualData(const int &index_)
+    {
+        if(index_ < 0 || 2 < index_) return 0.0;
+
+        if(_w.norm() == 0)
+        {
+            return _theta * _v(index_, 0);
+        }
+
+        return _lc(index_, 0);
     }
 
     // Forward Kinematics
@@ -147,7 +202,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getGstTheta()
     {
-        return getGstThetaRecursion()*_gst_zero;
+        return _parent->getGstThetaRecursion()*_gst_zero;
     }
 
     Eigen::Matrix<double, 4, 4> Joint::getGstThetaRecursion()

@@ -10,12 +10,12 @@ namespace ec_calculator
 
         _JOINT_NUM = _model->getJointNum();
         _CHAIN_NUM = _model->getChainNum();
-        _joints.resize(_JOINT_NUM);
+        _joints.resize(_JOINT_NUM+_CHAIN_NUM);
         _angle.resize(_JOINT_NUM, 1);
         _angular_velocity.resize(_JOINT_NUM, 1);
         _target_angular_velocity.resize(_JOINT_NUM, 1);
 
-        for(int index = 0; index < _JOINT_NUM; index++)
+        for(int index = 0; index < (_JOINT_NUM + _CHAIN_NUM); index++)
         {
             _joints[index].init(index, "Joint" + std::to_string(index));
         }
@@ -50,18 +50,31 @@ namespace ec_calculator
                 parent = child;
             }
         }
+
+        int tool_ = _JOINT_NUM;
+        clearTipIndex();
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            if(_joints[joint].isTipJoint())
+            {
+                _joints[tool_].setParent(_joints[joint]);
+                if(_joints[joint].addChild(_joints[tool_]))
+                {
+                    /* Debug */
+                    std::cout << _joints[tool_].getName() << " is set as child of " << _joints[joint].getName() << std::endl;
+                    setTipIndex(tool_);
+                    tool_++;
+                }
+            }
+        }
         return true;
     }
 
     void Manipulator::setJointParameters()
     {
-        clearTipIndex();
-
         for(int joint = 0; joint < _JOINT_NUM; joint++)
         {
             _joints[joint].setParameters(_model);
-
-            if(_joints[joint].isTipJoint()) setTipIndex(joint);
         }
     }
 

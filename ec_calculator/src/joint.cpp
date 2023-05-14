@@ -12,6 +12,7 @@ namespace ec_calculator
     // Initialize
     void Joint::init(const int index, const std::string name)
     {
+        updateTheta(0.0);
         _index = index;
         _name = name;
         clearChildren();
@@ -70,7 +71,8 @@ namespace ec_calculator
         setQ(model_->getJointPositionLink(_index));
         setW(model_->getRotationAxis(_index));
         setV(model_->getTranslationAxis(_index));   // "setV()" must be executed after "setW()"
-        setGstZero(model_->getToolPositionLink(_index));
+        setXi();
+        setGstZero();
     }
 
     void Joint::setQ(const Eigen::Matrix<double, 3, 1> &joint_position_link_)
@@ -109,12 +111,10 @@ namespace ec_calculator
         _xi << -_w.cross(_q), _w;
     }
 
-    void Joint::setGstZero(const Eigen::Matrix<double, 3, 1> &tool_position_link_)
+    void Joint::setGstZero()
     {
-        _lc = tool_position_link_;
-
         _gst_zero <<
-        EigenUtility.getIdentity3(), _q + _lc,
+        EigenUtility.getIdentity3(), _q,
         0.0, 0.0, 0.0, 1.0;
     }
 
@@ -149,18 +149,6 @@ namespace ec_calculator
     {
         setVisualData();
         return _visual_data;
-    }
-
-    double Joint::getToolVisualData(const int &index_)
-    {
-        if(index_ < 0 || 2 < index_) return 0.0;
-
-        if(_w.norm() == 0)
-        {
-            return _theta * _v(index_, 0);
-        }
-
-        return _lc(index_, 0);
     }
 
     // Forward Kinematics
@@ -202,7 +190,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getGstTheta()
     {
-        return _parent->getGstThetaRecursion()*_gst_zero;
+        return getGstThetaRecursion()*_gst_zero;
     }
 
     Eigen::Matrix<double, 4, 4> Joint::getGstThetaRecursion()

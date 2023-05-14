@@ -15,17 +15,11 @@ namespace ec_calculator
         1, 1, 1, 1, 0, 0, 1, 0, 0, 1,
         1, 1, 0, 0, 1, 0, 0, 1, 0, 0;
 
-        _joint_position_link.resize(3, _joint_num);
+        _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        0, 0, 0, 1, 2, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
-
-        _tool_position_link.resize(3, _joint_num);
-        _tool_position_link <<
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         _translation_axis.resize(3, _joint_num);
         _translation_axis <<
@@ -50,7 +44,6 @@ namespace ec_calculator
                             const int &joint_num_,
                             const Eigen::Matrix<bool, -1, -1> &chain_mat_,
                             const Eigen::Matrix<double, 3, -1> &joint_position_link_,
-                            const Eigen::Matrix<double, 3, -1> &tool_position_link_,
                             const Eigen::Matrix<double, 3, -1> &translation_axis_,
                             const Eigen::Matrix<double, 3, -1> &rotation_axis_,
                             const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_,
@@ -61,7 +54,6 @@ namespace ec_calculator
         changeJointNum(joint_num_);
         changeChainMatrix(chain_mat_);
         changeJointPositionLink(joint_position_link_);
-        changeToolPositionLink(tool_position_link_);
         changeTranslationAxis(translation_axis_);
         changeRotationAxis(rotation_axis_);
         changeAngle2AngularVelocityGain(angle_2_angular_velocity_gain_);
@@ -93,27 +85,14 @@ namespace ec_calculator
 
     void Model::changeJointPositionLink(const Eigen::Matrix<double, 3, -1> &joint_position_link_)
     {
-        if(joint_position_link_.cols() == _joint_num)
+        if(joint_position_link_.cols() == (_joint_num + _chain_num))
         {
-            _joint_position_link.resize(3, _joint_num);
+            _joint_position_link.resize(3, (_joint_num + _chain_num));
             _joint_position_link = joint_position_link_;
         }
         else
         {
-            std::cout << "Matrix(joint_position_link_) Size do not match Joint Number." << std::endl;
-        }
-    }
-
-    void Model::changeToolPositionLink(const Eigen::Matrix<double, 3, -1> &tool_position_link_)
-    {
-        if(tool_position_link_.cols() == _joint_num)
-        {
-            _tool_position_link.resize(3, _joint_num);
-            _tool_position_link = tool_position_link_;
-        }
-        else
-        {
-            std::cout << "Matrix(tool_position_link_) Size do not match Joint Number." << std::endl;
+            std::cout << "Matrix(joint_position_link_) Size do not match Chain Number or Joint Number." << std::endl;
         }
     }
 
@@ -192,26 +171,25 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 3, 1> Model::getJointPositionLink(const int &joint_)
     {
+        if(joint_ < 0 || (_joint_num + _chain_num) <= joint_) return Eigen::Matrix<double, 3, 1>::Zero();
         return _joint_position_link.col(joint_);
-    }
-
-    Eigen::Matrix<double, 3, 1> Model::getToolPositionLink(const int &joint_)
-    {
-        return _tool_position_link.col(joint_);
     }
 
     Eigen::Matrix<double, 3, 1> Model::getCenterOfGravityLink(const int &joint_)
     {
+        if(joint_ < 0 || _joint_num <= joint_) return Eigen::Matrix<double, 3, 1>::Zero();
         return _center_of_gravity_link.col(joint_);
     }
 
     Eigen::Matrix<double, 3, 1> Model::getTranslationAxis(const int &joint_)
     {
+        if(joint_ < 0 || _joint_num <= joint_) return Eigen::Matrix<double, 3, 1>::Zero();
         return _translation_axis.col(joint_);
     }
 
     Eigen::Matrix<double, 3, 1> Model::getRotationAxis(const int &joint_)
     {
+        if(joint_ < 0 || _joint_num <= joint_) return Eigen::Matrix<double, 3, 1>::Zero();
         return _rotation_axis.col(joint_);
     }
 

@@ -10,14 +10,19 @@ namespace ec_calculator
 
         _JOINT_NUM = _model->getJointNum();
         _CHAIN_NUM = _model->getChainNum();
+        _joints.clear();
         _joints.resize(_JOINT_NUM+_CHAIN_NUM);
         _angle.resize(_JOINT_NUM, 1);
         _angular_velocity.resize(_JOINT_NUM, 1);
         _target_angular_velocity.resize(_JOINT_NUM, 1);
 
-        for(int index = 0; index < (_JOINT_NUM + _CHAIN_NUM); index++)
+        for(int index = 0; index < _JOINT_NUM; index++)
         {
             _joints[index].init(index, "Joint" + std::to_string(index));
+        }
+        for(int index = _JOINT_NUM; index < (_JOINT_NUM + _CHAIN_NUM); index++)
+        {
+            _joints[index].init(index, "Tool" + std::to_string(index-_JOINT_NUM));
         }
 
         setChainMatrix(_model->getChainMat());
@@ -72,7 +77,7 @@ namespace ec_calculator
 
     void Manipulator::setJointParameters()
     {
-        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        for(int joint = 0; joint < (_JOINT_NUM + _CHAIN_NUM); joint++)
         {
             _joints[joint].setParameters(_model);
         }
@@ -113,16 +118,12 @@ namespace ec_calculator
     {
         if(joint_index_ < 0 || (_JOINT_NUM + _CHAIN_NUM) <= joint_index_) return "getJointName(): Exception Handling";
 
-        if(_JOINT_NUM <= joint_index_) return "Tool" + std::to_string(joint_index_ - _JOINT_NUM);
-
         return _joints[joint_index_].getName();
     }
 
     std::string Manipulator::getJointParentName(const int &joint_index_)
     {
         if(joint_index_ < 0 || (_JOINT_NUM + _CHAIN_NUM) <= joint_index_) return "getJointParentName(): Exception Handling";
-
-        if(_JOINT_NUM <= joint_index_) return _joints[_tip_index[joint_index_ - _JOINT_NUM]].getName();
 
         return _joints[joint_index_].getParentName();
     }
@@ -131,8 +132,6 @@ namespace ec_calculator
     double Manipulator::getVisualData(const int &joint_index_, const int &data_index_)
     {
         if(joint_index_ < 0 || (_JOINT_NUM + _CHAIN_NUM) <= joint_index_) return 0.0;
-
-        if(_JOINT_NUM <= joint_index_) return _joints[_tip_index[joint_index_ - _JOINT_NUM]].getToolVisualData(data_index_);
 
         return _joints[joint_index_].getVisualData(data_index_);
     }
@@ -194,10 +193,13 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        for(int i = 0; i < _tip_index.size(); i++)
-        {
-            std::cout << "joint" << _tip_index[i] << ":\t" << getPose(_tip_index[i]).transpose() << std::endl;
-        }
-        std::cout << std::endl;
+        // for(int i = 0; i < _tip_index.size(); i++)
+        // {
+        //     std::cout << "joint" << _tip_index[i] << ":   " << getPose(_tip_index[i]).transpose() << std::endl;
+        // }
+        // std::cout << std::endl;
+
+        // std::cout << _model->getJointPositionLink(7) << std::endl << std::endl;
+        // std::cout << _joints[7].getGstTheta() << std::endl << std::endl;
     }
 }

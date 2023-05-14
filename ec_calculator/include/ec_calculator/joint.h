@@ -30,7 +30,6 @@ namespace ec_calculator
             Eigen::Matrix<double, 3, 1> _v;         // translation axis
             Eigen::Matrix<double, 3, 1> _w;         // rotation axis
             Eigen::Matrix<double, 3, 1> _lp;        // joint position link (parent)
-            Eigen::Matrix<double, 3, 1> _lc;        // tool position link (child)
             Eigen::Matrix<double, 6, 1> _xi;        // twist
             Eigen::Matrix<double, 4, 4> _gst_zero;  // initial homogeneous transformation matrix
 
@@ -73,13 +72,12 @@ namespace ec_calculator
                 void setV(const Eigen::Matrix<double, 3, 1> &translation_axis_);
                 void setW(const Eigen::Matrix<double, 3, 1> &rotation_axis_);
                 void setXi();
-                void setGstZero(const Eigen::Matrix<double, 3, 1> &tool_position_link);
+                void setGstZero();
 
             // Visualize
             double getVisualData(const int &index_);
                 void setVisualData();
                 Eigen::Matrix<double, 6, 1> getVisualData();
-            double getToolVisualData(const int &index_);
 
             // Forward Kinematics
             void updateTheta(const double &theta_);

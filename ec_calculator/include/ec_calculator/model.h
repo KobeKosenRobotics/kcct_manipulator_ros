@@ -18,7 +18,6 @@ namespace ec_calculator
             // Matrix
             Eigen::Matrix<bool, -1, -1> _chain_mat;
             Eigen::Matrix<double, 3, -1> _joint_position_link;
-            Eigen::Matrix<double, 3, -1> _tool_position_link;
             Eigen::Matrix<double, 3, -1> _center_of_gravity_link;
             Eigen::Matrix<double, 3, -1> _translation_axis;
             Eigen::Matrix<double, 3, -1> _rotation_axis;
@@ -36,7 +35,6 @@ namespace ec_calculator
                             const int &joint_num_,
                             const Eigen::Matrix<bool, -1, -1> &chain_mat_,
                             const Eigen::Matrix<double, 3, -1> &joint_position_link_,
-                            const Eigen::Matrix<double, 3, -1> &tool_position_link_,
                             const Eigen::Matrix<double, 3, -1> &translation_axis_,
                             const Eigen::Matrix<double, 3, -1> &rotation_axis_,
                             const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_,
@@ -45,7 +43,6 @@ namespace ec_calculator
                 void changeJointNum(const int &joint_num_);
                 void changeChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat_);
                 void changeJointPositionLink(const Eigen::Matrix<double, 3, -1> &joint_position_link_);
-                void changeToolPositionLink(const Eigen::Matrix<double, 3, -1> &tool_position_link_);
                 void changeCenterOfGravityLink(const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_);
                 void changeTranslationAxis(const Eigen::Matrix<double, 3, -1> &translation_axis_);
                 void changeRotationAxis(const Eigen::Matrix<double, 3, -1> &rotation_axis_);
@@ -57,7 +54,6 @@ namespace ec_calculator
             int getChainNum();
             Eigen::Matrix<bool, -1, -1> getChainMat();
             Eigen::Matrix<double, 3, 1> getJointPositionLink(const int &joint_);
-            Eigen::Matrix<double, 3, 1> getToolPositionLink(const int &joint_);
             Eigen::Matrix<double, 3, 1> getCenterOfGravityLink(const int &joint_);
             Eigen::Matrix<double, 3, 1> getTranslationAxis(const int &joint_);
             Eigen::Matrix<double, 3, 1> getRotationAxis(const int &joint_);

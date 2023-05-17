@@ -68,11 +68,22 @@ namespace ec_calculator
     // Parameters Setters
     void Joint::setParameters(Model *model_)
     {
+        clearParameters();
         setQ(model_->getJointPositionLink(_index));
         setW(model_->getRotationAxis(_index));
         setV(model_->getTranslationAxis(_index));   // "setV()" must be executed after "setW()"
         setXi();
         setGstZero();
+    }
+
+    void Joint::clearParameters()
+    {
+        _q.setZero();
+        _v.setZero();
+        _w.setZero();
+        _lp.setZero();
+        _xi.setZero();
+        _gst_zero.setZero();
     }
 
     void Joint::setQ(const Eigen::Matrix<double, 3, 1> &joint_position_link_)
@@ -162,6 +173,15 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getExpXiHatTheta()
     {
+        if(_w.norm() == 0)
+        {
+            _exp_xi_hat_theta <<
+            EigenUtility.getIdentity3(), _theta*_v,
+            0.0, 0.0, 0.0, 1.0;
+
+            return _exp_xi_hat_theta;
+        }
+
         getExpWHatTheta();
 
         _exp_xi_hat_theta <<
@@ -173,6 +193,8 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 3, 3> Joint::getExpWHatTheta()
     {
+        if(_w.norm() == 0) return EigenUtility.getIdentity3();
+
         _exp_w_hat_theta(0,0) = pow(_w(0,0),2)*_v_theta + _cos_theta;
         _exp_w_hat_theta(0,1) = _w(0,0)*_w(1,0)*_v_theta - _w(2,0)*_sin_theta;
         _exp_w_hat_theta(0,2) = _w(0,0)*_w(2,0)*_v_theta + _w(1,0)*_sin_theta;
@@ -190,7 +212,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getGstTheta()
     {
-        return getGstThetaRecursion()*_gst_zero;
+        return _parent->getGstThetaRecursion()*_gst_zero;
     }
 
     Eigen::Matrix<double, 4, 4> Joint::getGstThetaRecursion()

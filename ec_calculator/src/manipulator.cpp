@@ -32,6 +32,8 @@ namespace ec_calculator
         setAngle2AngularVelocityGain(_model->getAngle2AngularVelocityGain());
 
         setECGain(_model->getECGain());
+
+        _is_first_time_measurement = true;
     }
 
     bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat)
@@ -198,8 +200,5 @@ namespace ec_calculator
         //     std::cout << "joint" << _tip_index[i] << ":   " << getPose(_tip_index[i]).transpose() << std::endl;
         // }
         // std::cout << std::endl;
-
-        // std::cout << _model->getJointPositionLink(7) << std::endl << std::endl;
-        // std::cout << _joints[7].getGstTheta() << std::endl << std::endl;
     }
 }

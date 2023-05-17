@@ -68,6 +68,7 @@ namespace ec_calculator
 
             // Parameter Setters
             void setParameters(Model *model_);
+                void clearParameters();
                 void setQ(const Eigen::Matrix<double, 3, 1> &joint_position_link_);
                 void setV(const Eigen::Matrix<double, 3, 1> &translation_axis_);
                 void setW(const Eigen::Matrix<double, 3, 1> &rotation_axis_);

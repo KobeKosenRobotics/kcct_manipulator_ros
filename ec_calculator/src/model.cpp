@@ -17,13 +17,13 @@ namespace ec_calculator
 
         _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
         0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         _translation_axis.resize(3, _joint_num);
         _translation_axis <<
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
@@ -31,7 +31,7 @@ namespace ec_calculator
         _rotation_axis <<
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+        1, 1, 1, 1, 1, 1, 0, 1, 1, 1;
 
         _angle_2_angular_velocity_gain.resize(_joint_num, _joint_num);
         _angle_2_angular_velocity_gain.setIdentity(_joint_num, _joint_num);

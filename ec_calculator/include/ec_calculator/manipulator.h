@@ -2,6 +2,7 @@
 
 #include "model.h"
 #include "joint.h"
+
 #include <chrono>
 
 namespace ec_calculator

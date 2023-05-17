@@ -2,8 +2,9 @@
 
 #include "ec_calculator/manipulator.h"
 
-#include <tf/transform_broadcaster.h>
 #include <iostream>
+
+#include <tf/transform_broadcaster.h>
 
 namespace ec_calculator
 {

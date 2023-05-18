@@ -54,7 +54,5 @@ namespace ec_calculator
         transform_stamped.transform.rotation.w = q.w();
 
         br.sendTransform(transform_stamped);
-
-        std::cout << pose_.transpose() << std::endl << std::endl;
     }
 }

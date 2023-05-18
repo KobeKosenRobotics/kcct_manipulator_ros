@@ -12,9 +12,12 @@ namespace ec_calculator
         _CHAIN_NUM = _model->getChainNum();
         _joints.clear();
         _joints.resize(_JOINT_NUM+_CHAIN_NUM);
+
         _angle.resize(_JOINT_NUM, 1);
+        _target_angle.resize(_JOINT_NUM, 1);
         _angular_velocity.resize(_JOINT_NUM, 1);
         _target_angular_velocity.resize(_JOINT_NUM, 1);
+        clearParameters();
 
         for(int index = 0; index < _JOINT_NUM; index++)
         {
@@ -34,6 +37,15 @@ namespace ec_calculator
         setECGain(_model->getECGain());
 
         _is_first_time_measurement = true;
+    }
+
+    void Manipulator::clearParameters()
+    {
+        _angle.setZero();
+        _target_angle.setZero();
+        _angular_velocity.setZero();
+        _target_angular_velocity.setZero();
+        _target_pose.setZero();
     }
 
     bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat)
@@ -158,10 +170,16 @@ namespace ec_calculator
         return _angle;
     }
 
-    // Angle to Angular Velocity
+    // Angle Command
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
     {
         _target_angular_velocity = _angle_2_angular_velocity_gain * (target_angle_ - _angle);
+        return _target_angular_velocity;
+    }
+
+    Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle()
+    {
+        _target_angular_velocity = _angle_2_angular_velocity_gain * (_target_angle - _angle);
         return _target_angular_velocity;
     }
 
@@ -187,6 +205,53 @@ namespace ec_calculator
         return _angle;
     }
 
+    // Subscriber
+    void Manipulator::setECEnable(const bool &ec_enable_)
+    {
+        _ec_enable = ec_enable_;
+    }
+
+    void Manipulator::setEmergencyStop(const bool &emergency_stop_)
+    {
+        _emergency_stop = emergency_stop_;
+    }
+
+    void Manipulator::setMotorEnable(const bool &motor_enable_)
+    {
+        _motor_enable = motor_enable_;
+    }
+
+    void Manipulator::setTargetAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
+    {
+        int size_ = target_angle_.rows();
+        if(size_ > _JOINT_NUM) size_ = _JOINT_NUM;
+
+        for(int joint = 0; joint < size_; joint++)
+        {
+            _target_angle(joint, 0) = target_angle_(joint, 0);
+        }
+    }
+
+    void Manipulator::setTargetPose(const Eigen::Matrix<double, -1, 1> &target_pose_)
+    {
+        // 8 = 2 + 6 = 1:start_joint + 1:end_joint + 3:position + 3:orientation
+        int size_ = target_pose_.rows() - 2;
+        if(size_ < 0) return;
+        if(size_ > 6) size_ = 6;
+
+        _start_joint = (int)(target_pose_(0, 0) + 0.5);
+        _end_joint = (int)(target_pose_(1, 0) + 0.5);
+
+        for(int joint = 0; joint < size_; joint++)
+        {
+            _target_pose(joint, 0) = target_pose_(joint+2, 0);
+        }
+        for(int joint = size_; joint < 6; joint++)
+        {
+            _target_angle(joint, 0) = 0.0;
+        }
+    }
+
     // Debug
     void Manipulator::printTree()
     {
@@ -200,5 +265,10 @@ namespace ec_calculator
         //     std::cout << "joint" << _tip_index[i] << ":   " << getPose(_tip_index[i]).transpose() << std::endl;
         // }
         // std::cout << std::endl;
+
+        std::cout << _ec_enable << "  " << _emergency_stop << "  " << _motor_enable << std::endl
+        << _target_angle.transpose() << std::endl
+        << _start_joint << "  " << _end_joint << std::endl
+        <<  _target_pose.transpose() << std::endl << std::endl;
     }
 }

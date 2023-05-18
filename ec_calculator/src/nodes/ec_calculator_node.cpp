@@ -2,22 +2,104 @@
 #include "ec_calculator/manipulator.h"
 #include "ec_calculator/manipulator_tf_publisher.h"
 
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32MultiArray.h>
+
 using namespace ec_calculator;
+
+
+Manipulator manip;
+ManipulatorTFPublisher tfPublisher(manip);
+Model model;
+
+// Function
+std_msgs::Float32MultiArray matrix2Array(const Eigen::Matrix<double, -1, 1> &matrix_)
+{
+    std_msgs::Float32MultiArray array_;
+    int size_ = matrix_.rows();
+    array_.data.resize(size_);
+
+    for(int index = 0; index < size_; index++)
+    {
+        array_.data[index] = matrix_(index, 0);
+    }
+
+    return array_;
+}
+
+Eigen::Matrix<double, -1, 1> array2Matrix(std_msgs::Float32MultiArray::ConstPtr &array_)
+{
+    Eigen::Matrix<double, -1, 1> matrix_;
+    int size_ = array_->data.size();
+    matrix_.resize(size_, 1);
+
+    for(int index = 0; index < size_; index++)
+    {
+        matrix_(index, 0) = array_->data[index];
+    }
+
+    return matrix_;
+};
+
+// Publisher
+std_msgs::Float32MultiArray angular_velocity;
+
+// Subscriber
+std_msgs::Bool ec_enable;
+std_msgs::Bool emergency_stop;
+std_msgs::Bool motor_enable;
+std_msgs::Float32MultiArray target_angle;
+std_msgs::Float32MultiArray target_pose;    // 2: start_joint, end_joint, 6: 3position, 3orientation
+
+void ec_enable_cb(std_msgs::Bool::ConstPtr msg)
+{
+    manip.setECEnable(msg->data);
+};
+
+void emergency_stop_cb(std_msgs::Bool::ConstPtr msg)
+{
+    manip.setEmergencyStop(msg->data);
+};
+
+void motor_enable_cb(std_msgs::Bool::ConstPtr msg)
+{
+    manip.setMotorEnable(msg->data);
+};
+
+void target_angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
+{
+    manip.setTargetAngle(array2Matrix(msg));
+};
+
+void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
+{
+    manip.setTargetPose(array2Matrix(msg));
+};
+
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "EcCalculator");
+    ros::init(argc, argv, "ECCalculator");
     ros::NodeHandle nh;
     double rate = 10.0;
     ros::Rate loop_rate(rate);
 
-    Manipulator manip;
-    ManipulatorTFPublisher tfPublisher(manip);
-    Model model;
+    // Publisher
+    ros::Publisher angular_velocity_pub = nh.advertise<std_msgs::Float32MultiArray>("angular_velocity", 100);
+
+    // Subscriber
+    ros::Subscriber ec_enable_sub = nh.subscribe<std_msgs::Bool>("ec_enable", 10, ec_enable_cb);
+    ros::Subscriber emergency_stop_sub = nh.subscribe<std_msgs::Bool>("emergency_stop", 100, emergency_stop_cb);
+    ros::Subscriber motor_enable_sub = nh.subscribe<std_msgs::Bool>("motor_enable", 10, motor_enable_cb);
+    ros::Subscriber target_angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_angle", 10, target_angle_cb);
+    ros::Subscriber target_pose_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_pose", 10, target_pose_cb);
+    target_pose.data.resize(2+6);   // 2: start_joint, end_joint, 6: 3position, 3orientation
 
     manip.init(&model);
     manip.printTree();
     manip.print();
+    angular_velocity.data.resize(manip.getJointNum());
+    target_angle.data.resize(manip.getJointNum());
 
     int cha = 4, joi = 7;
     Eigen::Matrix<bool, 4, 7> cha_ma;
@@ -36,9 +118,9 @@ int main(int argc, char **argv)
     tra.setZero();
     Eigen::Matrix<double, 3, 7> rot;
     rot <<
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1, 1, 1;
+    0, 0, 0, 1, 0, 0, 0,
+    0, 1, 0, 0, 0, 1, 0,
+    1, 0, 1, 0, 1, 0, 1;
     Eigen::Matrix<double, 7, 7> a2a_ga;
     a2a_ga.setIdentity();
     a2a_ga *= 2.0;
@@ -49,20 +131,23 @@ int main(int argc, char **argv)
     manip.init(&model);
     manip.printTree();
     manip.print();
-
-    Eigen::Matrix<double, 7, 1> ta_an;
-    ta_an.setConstant(0.1);
+    angular_velocity.data.resize(manip.getJointNum());
+    target_angle.data.resize(manip.getJointNum());
 
     while(nh.ok())
     {
         tfPublisher.publish();
 
-        manip.angularVelocity2Angle(manip.getAngularVelocityByAngle(ta_an));    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
+        manip.angularVelocity2Angle(manip.getAngularVelocityByAngle());    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
 
         for(int i = 0; i < manip.getChainNum(); i++)
         {
             tfPublisher.publish("manipulator_base_link", ("pose"+std::to_string(i)), manip.getPose(manip.getJointNum()+i));
         }
+
+        angular_velocity_pub.publish(matrix2Array(manip.getAngularVelocityByAngle()));
+
+        manip.print();
 
         ros::spinOnce();
         loop_rate.sleep();

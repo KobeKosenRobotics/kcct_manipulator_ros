@@ -6,7 +6,7 @@ namespace ec_calculator
     // Constructor
     Joint::Joint()
     {
-        updateTheta(_theta);
+        updateTheta(0.0);
     }
 
     // Initialize

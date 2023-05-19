@@ -1,45 +1,16 @@
 #include "ec_calculator/model.h"
 #include "ec_calculator/manipulator.h"
 #include "ec_calculator/manipulator_tf_publisher.h"
+#include "ec_calculator/eigenUtility.h"
 
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32MultiArray.h>
 
 using namespace ec_calculator;
 
-
 Manipulator manip;
 ManipulatorTFPublisher tfPublisher(manip);
 Model model;
-
-// Function
-std_msgs::Float32MultiArray matrix2Array(const Eigen::Matrix<double, -1, 1> &matrix_)
-{
-    std_msgs::Float32MultiArray array_;
-    int size_ = matrix_.rows();
-    array_.data.resize(size_);
-
-    for(int index = 0; index < size_; index++)
-    {
-        array_.data[index] = matrix_(index, 0);
-    }
-
-    return array_;
-}
-
-Eigen::Matrix<double, -1, 1> array2Matrix(std_msgs::Float32MultiArray::ConstPtr &array_)
-{
-    Eigen::Matrix<double, -1, 1> matrix_;
-    int size_ = array_->data.size();
-    matrix_.resize(size_, 1);
-
-    for(int index = 0; index < size_; index++)
-    {
-        matrix_(index, 0) = array_->data[index];
-    }
-
-    return matrix_;
-};
 
 // Publisher
 std_msgs::Float32MultiArray angular_velocity;
@@ -54,28 +25,27 @@ std_msgs::Float32MultiArray target_pose;    // 2: start_joint, end_joint, 6: 3po
 void ec_enable_cb(std_msgs::Bool::ConstPtr msg)
 {
     manip.setECEnable(msg->data);
-};
+}
 
 void emergency_stop_cb(std_msgs::Bool::ConstPtr msg)
 {
     manip.setEmergencyStop(msg->data);
-};
+}
 
 void motor_enable_cb(std_msgs::Bool::ConstPtr msg)
 {
     manip.setMotorEnable(msg->data);
-};
+}
 
 void target_angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
-    manip.setTargetAngle(array2Matrix(msg));
-};
+    manip.setTargetAngle(EigenUtility.array2Matrix(msg->data));
+}
 
 void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
-    manip.setTargetPose(array2Matrix(msg));
-};
-
+    manip.setTargetPose(EigenUtility.array2Matrix(msg->data));
+}
 
 int main(int argc, char **argv)
 {
@@ -145,7 +115,8 @@ int main(int argc, char **argv)
             tfPublisher.publish("manipulator_base_link", ("pose"+std::to_string(i)), manip.getPose(manip.getJointNum()+i));
         }
 
-        angular_velocity_pub.publish(matrix2Array(manip.getAngularVelocityByAngle()));
+        angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocityByAngle());
+        angular_velocity_pub.publish(angular_velocity);
 
         manip.print();
 

@@ -110,11 +110,6 @@ int main(int argc, char **argv)
 
         manip.angularVelocity2Angle(manip.getAngularVelocityByAngle());    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
 
-        for(int i = 0; i < manip.getChainNum(); i++)
-        {
-            tfPublisher.publish("manipulator_base_link", ("pose"+std::to_string(i)), manip.getPose(manip.getJointNum()+i));
-        }
-
         angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocityByAngle());
         angular_velocity_pub.publish(angular_velocity);
 

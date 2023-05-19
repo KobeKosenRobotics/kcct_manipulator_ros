@@ -32,6 +32,11 @@ namespace ec_calculator
 
             br.sendTransform(transform_stamped);
         }
+
+        for(int tip = 0; tip < _manipulator->getChainNum(); tip++)
+        {
+            publish(_manipulator->getJointParentName(0), ("pose" + std::to_string(tip)), _manipulator->getPose(_manipulator->getJointNum()+tip));
+        }
     }
 
     void ManipulatorTFPublisher::publish(const std::string &base_name_, const std::string &point_name_, const Eigen::Matrix<double, 6, 1> &pose_)

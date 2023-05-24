@@ -42,6 +42,14 @@ namespace ec_calculator
                 return identity_;
             }
 
+            Eigen::Matrix<double, -1, -1> getIdentity(const int &dimensions)
+            {
+                Eigen::Matrix<double, -1, -1> identity_;
+                identity_.resize(dimensions, dimensions);
+                identity_.setIdentity();
+                return identity_;
+            }
+
             Eigen::Matrix<double, 3, 3> hat(const Eigen::Matrix<double, 3, 1> &vec)
             {
                 Eigen::Matrix<double, 3, 3> hat_vec_;
@@ -111,11 +119,11 @@ namespace ec_calculator
 
                 pose_.block(0,0,3,1) = homogeneous_trans_mat.block(0,3,3,1);
 
+                pose_(4,0) = -asin(homogeneous_trans_mat(2,0));
+
                 pose_(3,0) = +acos(homogeneous_trans_mat(0,0)/cos(pose_(4,0)));
                 if(homogeneous_trans_mat(1,0)/cos(pose_(4,0)) < 0) pose_(3,0) *= (-1);
-                
-                pose_(4,0) = -asin(homogeneous_trans_mat(2,0));
-            
+
                 pose_(5,0) = acos(homogeneous_trans_mat(2,2)/cos(pose_(4,0)));
                 if(homogeneous_trans_mat(2,1)/cos(pose_(4,0)) < 0) pose_(5,0) *=(-1);
 

@@ -45,7 +45,6 @@ namespace ec_calculator
         _target_angle.setZero();
         _angular_velocity.setZero();
         _target_angular_velocity.setZero();
-        _target_pose.setZero();
     }
 
     bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat)
@@ -170,6 +169,19 @@ namespace ec_calculator
         return _angle;
     }
 
+    // AC or IK
+    Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocity()
+    {
+        if(_ec_enable)
+        {
+            return getAngularVelocityByEC();
+        }
+        else
+        {
+            return getAngularVelocityByAngle();
+        }
+    }
+
     // Angle Command
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
     {
@@ -181,6 +193,86 @@ namespace ec_calculator
     {
         _target_angular_velocity = _angle_2_angular_velocity_gain * (_target_angle - _angle);
         return _target_angular_velocity;
+    }
+
+    // // Inverse Kinematics
+    // void Manipulator::setJointPose(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_pose_)
+    // {
+    //     _start_joint_index[_ik_index] = start_joint_index_;
+    //     _end_joint_index[_ik_index] = end_joint_index_;
+    //     _target_pose[_ik_index] = target_pose_;
+    //     _ik_index++;
+    // }
+
+    void Manipulator::setJointVelocity(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_velocity_)
+    {
+        // _start_joint_index[_ik_index] = start_joint_index_;
+        // _end_joint_index[_ik_index] = end_joint_index_;
+        // _target_velocity[_ik_index] = target_velocity_;
+        // _start_joint_index.push_back(start_joint_index_);
+        // _end_joint_index.push_back(end_joint_index_);
+        // _target_velocity.resize(1);
+        // _target_velocity[0] = target_velocity_;
+        _start_joint_index = start_joint_index_;
+        _end_joint_index = end_joint_index_;
+        _target_velocity = target_velocity_;
+        _ik_index++;
+    }
+
+    void Manipulator::clearJointVelocity()
+    {
+        // _start_joint_index.clear();
+        // _end_joint_index.clear();
+        // _target_velocity.clear();
+        _ik_index = 0;
+    }
+
+    Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByEC()
+    {
+        _target_angular_velocity = _ec_gain * EigenUtility.getPseudoInverseMatrix(getJacobian()) * (_target_velocity-getPose(_end_joint_index));
+
+        // std::cout << _joints[_end_joint_index].getXiDagger(_start_joint_index) << std::endl;
+        // std::cout << getJacobianBlock(0) << std::endl;
+        // std::cout << getJacobian() << std::endl;
+        return _target_angular_velocity;
+    }
+
+    Eigen::Matrix<double, -1, -1> Manipulator::getJacobian()
+    {
+        _jacobian.resize(6*_ik_index, _JOINT_NUM);
+
+        for(int ik_index = 0; ik_index < _ik_index; ik_index++)
+        {
+            _jacobian.block(6*ik_index, 0, 6, _JOINT_NUM) = getJacobianBlock(ik_index);
+        }
+
+        return _jacobian;
+    }
+
+    Eigen::Matrix<double, 6, -1> Manipulator::getJacobianBlock(const int &ik_index_)
+    {
+        // _jacobian_block[ik_index_].resize(6, _JOINT_NUM);
+        _jacobian_block.resize(6, _JOINT_NUM);
+        // _jacobian_block[ik_index_].setZero();
+        _jacobian_block.setZero();
+
+        // for(int ik_index = _start_joint_index[ik_index_]; ik_index < _end_joint_index[ik_index_]; ik_index++)
+        // {
+        //     _jacobian_block[ik_index_].block(0, ik_index, 6, 1) = _joints[_end_joint_index[ik_index_]].getXiDagger(ik_index);
+        // }
+
+        // _jacobian_block[ik_index_] = EigenUtility.getTransformationMatrix(_joints[_end_joint_index[ik_index_]].getGstTheta()) * _jacobian_block[ik_index_];
+
+        // return _jacobian_block[ik_index_];
+        for(int ik_index = _start_joint_index; ik_index < _end_joint_index; ik_index++)
+        {
+            // _jacobian_block.block(0, ik_index, 6, 1) = _joints[_end_joint_index].getXiDagger(ik_index);
+            _jacobian_block(0, ik_index) = 10*ik_index + _end_joint_index;
+        }
+
+        // _jacobian_block = EigenUtility.getTransformationMatrix(_joints[_end_joint_index].getGstTheta()) * _jacobian_block;
+
+        return _jacobian_block;
     }
 
     // Angular Velocity to Angle (for Visualization)
@@ -234,21 +326,29 @@ namespace ec_calculator
 
     void Manipulator::setTargetPose(const Eigen::Matrix<double, -1, 1> &target_pose_)
     {
-        // 8 = 2 + 6 = 1:start_joint + 1:end_joint + 3:position + 3:orientation
-        int size_ = target_pose_.rows() - 2;
-        if(size_ < 0) return;
-        if(size_ > 6) size_ = 6;
+        // // 8 = 2 + 6 = 1:start_joint + 1:end_joint + 3:position + 3:orientation
+        // int size_ = target_pose_.rows() - 2;
+        // if(size_ < 0) return;
+        // if(size_ > 6) size_ = 6;
 
-        _start_joint = (int)(target_pose_(0, 0) + 0.5);
-        _end_joint = (int)(target_pose_(1, 0) + 0.5);
+        // _start_joint_index = (int)(target_pose_(0, 0) + 0.5);
+        // _end_joint_index = (int)(target_pose_(1, 0) + 0.5);
 
-        for(int joint = 0; joint < size_; joint++)
+        // for(int joint = 0; joint < size_; joint++)
+        // {
+        //     _target_pose(joint, 0) = target_pose_(joint+2, 0);
+        // }
+        // for(int joint = size_; joint < 6; joint++)
+        // {
+        //     _target_angle(joint, 0) = 0.0;
+        // }
+    }
+
+    void Manipulator::setTargetVelocity(const Eigen::Matrix<double, -1, 1> &target_velocity_)
+    {
+        if(target_velocity_.rows() == 8)
         {
-            _target_pose(joint, 0) = target_pose_(joint+2, 0);
-        }
-        for(int joint = size_; joint < 6; joint++)
-        {
-            _target_angle(joint, 0) = 0.0;
+            setJointVelocity((int)(target_velocity_(0, 0)+0.5), (int)(target_velocity_(1, 0)+0.5), target_velocity_.block(2, 0, 6, 1));
         }
     }
 
@@ -266,9 +366,11 @@ namespace ec_calculator
         // }
         // std::cout << std::endl;
 
-        std::cout << _ec_enable << "  " << _emergency_stop << "  " << _motor_enable << std::endl
-        << _target_angle.transpose() << std::endl
-        << _start_joint << "  " << _end_joint << std::endl
-        <<  _target_pose.transpose() << std::endl << std::endl;
+        // std::cout << _ec_enable << "  " << _emergency_stop << "  " << _motor_enable << std::endl
+        // << _target_angle.transpose() << std::endl
+        // << _start_joint_index << "  " << _end_joint_index << std::endl
+        // <<  _target_pose.transpose() << std::endl << std::endl;
+
+        std::cout << getJacobianBlock(_ik_index) << std::endl << std::endl;
     }
 }

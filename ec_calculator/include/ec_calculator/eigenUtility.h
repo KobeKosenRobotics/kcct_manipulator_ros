@@ -186,6 +186,16 @@ namespace ec_calculator
                 return adjoint_inv_mat_;
             }
 
+            Eigen::Matrix<double, 6, 6> getTransformationMatrix(const Eigen::Matrix<double, 4, 4> &homogeneous_trans_mat)
+            {
+                Eigen::Matrix<double, 6, 6> transformation_mat_;
+                transformation_mat_ <<
+                    homogeneous_trans_mat.block(0, 0, 3, 3).transpose(), Eigen::Matrix<double, 3, 3>::Zero(),
+                    Eigen::Matrix<double, 3, 3>::Zero(), getTransformationEuler(getPose(homogeneous_trans_mat).block(3, 0, 3, 1));
+
+                return transformation_mat_;
+            }
+
             Eigen::Matrix<double, 3, 3> getTransformationEuler(const Eigen::Matrix<double, 3, 1> &euler)
             {
                 Eigen::Matrix<double, 3, 3> trans_euler_;

@@ -260,15 +260,13 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        // for(int i = 0; i < _tip_index.size(); i++)
-        // {
-        //     std::cout << "joint" << _tip_index[i] << ":   " << getPose(_tip_index[i]).transpose() << std::endl;
-        // }
-        // std::cout << std::endl;
-
-        std::cout << _ec_enable << "  " << _emergency_stop << "  " << _motor_enable << std::endl
-        << _target_angle.transpose() << std::endl
-        << _start_joint << "  " << _end_joint << std::endl
-        <<  _target_pose.transpose() << std::endl << std::endl;
+        std::cout << "\n\nrqt の topic publisher で以下の情報を送信してください.\ntarget angle のみ rviz に反映されます.\n\n";
+        std::cout << "ec enable: " << _ec_enable << std::endl;
+        std::cout << "emergency stop: " << _emergency_stop << std::endl;
+        std::cout << "motor enable: " << _motor_enable << std::endl;
+        std::cout << "target angle: " << _target_angle.transpose() << std::endl;
+        std::cout << "start joint: " << _start_joint << std::endl;
+        std::cout << "end joint: " << _end_joint << std::endl;
+        std::cout << "target pose" <<  _target_pose.transpose() << std::endl << std::endl;
     }
 }

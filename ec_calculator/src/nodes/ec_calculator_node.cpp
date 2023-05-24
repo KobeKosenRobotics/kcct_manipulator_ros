@@ -49,7 +49,7 @@ void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "ECCalculator");
+    ros::init(argc, argv, "ec_calculator");
     ros::NodeHandle nh;
     double rate = 10.0;
     ros::Rate loop_rate(rate);
@@ -81,15 +81,18 @@ int main(int argc, char **argv)
     1, 0, 0, 0, 0, 0, 1;
     Eigen::Matrix<double, 3, 11> joi_po;
     joi_po <<
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
     0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
     Eigen::Matrix<double, 3, 7> tra;
-    tra.setZero();
+    tra <<
+    0, 1, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0;
     Eigen::Matrix<double, 3, 7> rot;
     rot <<
-    0, 0, 0, 1, 0, 0, 0,
-    0, 1, 0, 0, 0, 1, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1, 0, 1, 0,
     1, 0, 1, 0, 1, 0, 1;
     Eigen::Matrix<double, 7, 7> a2a_ga;
     a2a_ga.setIdentity();

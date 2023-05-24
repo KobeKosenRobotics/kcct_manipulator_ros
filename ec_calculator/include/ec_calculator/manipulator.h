@@ -20,9 +20,14 @@ namespace ec_calculator
 
             // Parameters
             Eigen::Matrix<double, -1, 1> _angle;
-            // Eigen::Matrix<double, -1, 1> _target_angle;
+            Eigen::Matrix<double, -1, 1> _target_angle;
             Eigen::Matrix<double, -1, 1> _angular_velocity;
             Eigen::Matrix<double, -1, 1> _target_angular_velocity;
+            int _start_joint = 0, _end_joint = 0;
+            Eigen::Matrix<double, 6, 1> _target_pose;
+            bool _ec_enable = false;
+            bool _emergency_stop = false;
+            bool _motor_enable = false;
 
             // Time
             std::chrono::system_clock::time_point _start_time, _end_time;
@@ -32,6 +37,7 @@ namespace ec_calculator
         public:
             // Initialize
             void init(Model* model_);
+                void clearParameters();
                 bool setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix);
                 void setJointParameters();
                     void setTipIndex(const int &tip_index_);
@@ -55,12 +61,22 @@ namespace ec_calculator
 
             // Angle Command
             Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
+            Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle();
 
             // Inverse Kinematics
-            Eigen::Matrix<double, -1, 1> getAngularVelocityByEC(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> target_velocity_);
+            void setJointPosition(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> target_velocity_);
+            void setJointVelocity(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> target_velocity_);
+            Eigen::Matrix<double, -1, 1> getAngularVelocityByEC();
 
             // Angular Velocity to Angle (for Visualization)
             Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
+
+            // Subscriber
+            void setECEnable(const bool &ec_enable_);
+            void setEmergencyStop(const bool &emergency_stop_);
+            void setMotorEnable(const bool &motor_enable_);
+            void setTargetAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
+            void setTargetPose(const Eigen::Matrix<double, -1, 1> &target_pose_);    // 2: start_joint, end_joint, 6: 3position, 3orientation
 
             // Debug
             void printTree();

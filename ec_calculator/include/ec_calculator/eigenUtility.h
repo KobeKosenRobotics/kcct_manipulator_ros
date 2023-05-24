@@ -2,6 +2,7 @@
 #define EC_CALCULATOR_EIGEN_UTILITY_H
 
 #include <string>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/LU>
@@ -194,6 +195,34 @@ namespace ec_calculator
                     +cos(euler(2,0))*cos(euler(1,0)),   -sin(euler(2,0)),   +0.0;
 
                 return trans_euler_;
+            }
+
+            Eigen::Matrix<double, -1, 1> array2Matrix(const std::vector<float> &array_)
+            {
+                Eigen::Matrix<double, -1, 1> matrix_;
+                int size_ = array_.size();
+                matrix_.resize(size_, 1);
+
+                for(int index = 0; index < size_; index++)
+                {
+                    matrix_(index, 0) = array_[index];
+                }
+
+                return matrix_;
+            }
+
+            std::vector<float> matrix2Array(const Eigen::Matrix<double, -1, 1> &matrix_)
+            {
+                std::vector<float> array_;
+                int size_ = matrix_.rows();
+                array_.resize(size_);
+
+                for(int index = 0; index < size_; index++)
+                {
+                    array_[index] = matrix_(index, 0);
+                }
+
+                return array_;
             }
     };
 }

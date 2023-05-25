@@ -2,6 +2,7 @@
 
 #include "model.h"
 #include "joint.h"
+#include "interpolation.h"
 
 #include <chrono>
 
@@ -32,17 +33,16 @@ namespace ec_calculator
             // std::vector<int> _start_joint_index;
             int _start_joint_index = 0;
             // std::vector<int> _end_joint_index;
-            int _end_joint_index = _JOINT_NUM;
+            int _end_joint_index = 1;
             // std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
-            // std::vector<Eigen::Matrix<double, 6, 1>> _target_velocity;
-            Eigen::Matrix<double, 6, 1> _target_velocity;
-            // int _ik_index = 0;
+            Eigen::Matrix<double, 6, 1> _target_pose;
             int _ik_index = 0;
             Eigen::Matrix<double, -1, -1> _jacobian;
                 // std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
                 Eigen::Matrix<double, 6, -1> _jacobian_block;
 
             // Time
+            Interpolation _interpolation;
             std::chrono::system_clock::time_point _start_time, _end_time;
             double _during_time;
             bool _is_first_time_measurement = true; // TODO: Whether to reset when changing models
@@ -80,9 +80,8 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle();
 
             // // Inverse Kinematics
-            // void setJointPose(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_pose_);
-            void setJointVelocity(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_velocity_);
-                void clearJointVelocity();
+            void setJointPose(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_pose_);
+                void clearJointPose();
             Eigen::Matrix<double, -1, 1> getAngularVelocityByEC();
                 Eigen::Matrix<double, -1, -1> getJacobian();
                     Eigen::Matrix<double, 6, -1> getJacobianBlock(const int &ik_index_);
@@ -101,6 +100,8 @@ namespace ec_calculator
             // Debug
             void printTree();
             void print();
+            Eigen::Matrix<double, 6, 1> getTargetPose();
+            Eigen::Matrix<double, 6, 1> getMidPose();
     };
 }
 

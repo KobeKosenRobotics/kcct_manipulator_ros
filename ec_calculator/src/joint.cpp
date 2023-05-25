@@ -119,8 +119,7 @@ namespace ec_calculator
 
     void Joint::setXi()
     {
-        _xi << -_w.cross(_q), _w;
-        // TODO: translation axis ver.
+        _xi << _v, _w;
     }
 
     void Joint::setGstZero()

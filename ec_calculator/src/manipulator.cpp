@@ -19,6 +19,12 @@ namespace ec_calculator
         _target_angular_velocity.resize(_JOINT_NUM, 1);
         clearParameters();
 
+        _interpolation.resize(1);
+        _start_joint_index.resize(1);
+        _end_joint_index.resize(1);
+        _target_pose.resize(1);
+        _jacobian_block.resize(1);
+
         for(int index = 0; index < _JOINT_NUM; index++)
         {
             _joints[index].init(index, "Joint" + std::to_string(index));
@@ -141,6 +147,11 @@ namespace ec_calculator
         return _joints[joint_index_].getParentName();
     }
 
+    int Manipulator::getInverseKinematicsNum()
+    {
+        return _ik_index;
+    }
+
     // Visualize
     double Manipulator::getVisualData(const int &joint_index_, const int &data_index_)
     {
@@ -198,16 +209,12 @@ namespace ec_calculator
     // Inverse Kinematics
     void Manipulator::setJointPose(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_pose_)
     {
-        // _start_joint_index[_ik_index] = start_joint_index_;
-        // _end_joint_index[_ik_index] = end_joint_index_;
-        // _target_pose[_ik_index] = target_pose_;
-        // _ik_index++;
-        _start_joint_index = start_joint_index_;
-        _end_joint_index = end_joint_index_;
-        if(_target_pose != target_pose_)
+        _start_joint_index[_ik_index] = start_joint_index_;
+        _end_joint_index[_ik_index] = end_joint_index_;
+        if(_target_pose[_ik_index] != target_pose_)
         {
-            _target_pose = target_pose_;
-            _interpolation.setPoint(getPose(_end_joint_index), _target_pose);
+            _target_pose[_ik_index] = target_pose_;
+            _interpolation[_ik_index].setPoint(getPose(_end_joint_index[_ik_index]), _target_pose[_ik_index]);
         }
         _ik_index++;
     }
@@ -219,7 +226,12 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByEC()
     {
-        _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(getJacobian()) * (_interpolation.getCosInterpolation()-getPose(_end_joint_index));
+        _error_all.resize(6*_ik_index, 1);
+        for(int ik_index = 0; ik_index < _ik_index; ik_index++)
+        {
+            _error_all.block(6*ik_index, 0, 6, 1) = _interpolation[ik_index].getCosInterpolation() - getPose(_end_joint_index[ik_index]);
+        }
+        _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(getJacobian()) * _error_all;
         return _target_angular_velocity;
     }
 
@@ -237,27 +249,17 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 6, -1> Manipulator::getJacobianBlock(const int &ik_index_)
     {
-        // _jacobian_block[ik_index_].resize(6, _JOINT_NUM);
-        _jacobian_block.resize(6, _JOINT_NUM);
-        // _jacobian_block[ik_index_].setZero();
-        _jacobian_block.setZero();
+        _jacobian_block[ik_index_].resize(6, _JOINT_NUM);
+        _jacobian_block[ik_index_].setZero();
 
-        // for(int ik_index = _start_joint_index[ik_index_]; ik_index < _end_joint_index[ik_index_]; ik_index++)
-        // {
-        //     _jacobian_block[ik_index_].block(0, ik_index, 6, 1) = _joints[_end_joint_index[ik_index_]].getXiDagger(ik_index);
-        // }
-
-        // _jacobian_block[ik_index_] = EigenUtility.getTransformationMatrix(_joints[_end_joint_index[ik_index_]].getGstTheta()) * _jacobian_block[ik_index_];
-
-        // return _jacobian_block[ik_index_];
-        for(int ik_index = _start_joint_index; ik_index < _end_joint_index; ik_index++)
+        for(int ik_index = _start_joint_index[ik_index_]; ik_index < _end_joint_index[ik_index_]; ik_index++)
         {
-            _jacobian_block.block(0, ik_index, 6, 1) = _joints[_end_joint_index].getXiDagger(ik_index);
+            _jacobian_block[ik_index_].block(0, ik_index, 6, 1) = _joints[_end_joint_index[ik_index_]].getXiDagger(ik_index);
         }
 
-        _jacobian_block = EigenUtility.getTransformationMatrix(_joints[_end_joint_index].getGstTheta()) * _jacobian_block;
+        _jacobian_block[ik_index_] = EigenUtility.getTransformationMatrix(_joints[_end_joint_index[ik_index_]].getGstTheta()) * _jacobian_block[ik_index_];
 
-        return _jacobian_block;
+        return _jacobian_block[ik_index_];
     }
 
     // Angular Velocity to Angle (for Visualization)
@@ -288,7 +290,10 @@ namespace ec_calculator
         if(_ec_enable != ec_enable_)
         {
             _ec_enable = ec_enable_;
-            _interpolation.setPoint(getPose(_end_joint_index), _target_pose);
+            for(int ik_index = 0; ik_index < _ik_index; ik_index++)
+            {
+                _interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+            }
         }
     }
 
@@ -315,25 +320,17 @@ namespace ec_calculator
 
     void Manipulator::setTargetPose(const Eigen::Matrix<double, -1, 1> &target_pose_)
     {
-        // // 8 = 2 + 6 = 1:start_joint + 1:end_joint + 3:position + 3:orientation
-        // int size_ = target_pose_.rows() - 2;
-        // if(size_ < 0) return;
-        // if(size_ > 6) size_ = 6;
-
-        // _start_joint_index = (int)(target_pose_(0, 0) + 0.5);
-        // _end_joint_index = (int)(target_pose_(1, 0) + 0.5);
-
-        // for(int joint = 0; joint < size_; joint++)
-        // {
-        //     _target_pose(joint, 0) = target_pose_(joint+2, 0);
-        // }
-        // for(int joint = size_; joint < 6; joint++)
-        // {
-        //     _target_angle(joint, 0) = 0.0;
-        // }
-        if(target_pose_.rows() == 8)
+        // 8 = 2 + 6 = 1:start_joint + 1:end_joint + 3:position + 3:orientation
+        int ik_index_num_ = target_pose_.rows()/8;
+            _interpolation.resize(ik_index_num_);
+            _start_joint_index.resize(ik_index_num_);
+            _end_joint_index.resize(ik_index_num_);
+            _target_pose.resize(ik_index_num_);
+            _jacobian_block.resize(ik_index_num_);
+        clearJointPose();
+        for(int ik_index = 0; ik_index < ik_index_num_; ik_index++)
         {
-            setJointPose((int)(target_pose_(0, 0)+0.5), (int)(target_pose_(1, 0)+0.5), target_pose_.block(2, 0, 6, 1));
+            setJointPose((int)(target_pose_(8*ik_index, 0)+0.5), (int)(target_pose_(8*ik_index+1, 0)+0.5), target_pose_.block(8*ik_index+2, 0, 6, 1));
         }
     }
 
@@ -345,17 +342,21 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        std::cout << getPose(_end_joint_index) << std::endl << std::endl;
+        for(int i = 0; i < _ik_index; i++)
+        {
+            std::cout << _start_joint_index[i] << " to " << _end_joint_index[i] << std::endl;
+            std::cout << getPose(_end_joint_index[i]) << std::endl << std::endl;
+        }
     }
 
-    Eigen::Matrix<double, 6, 1> Manipulator::getTargetPose()
+    Eigen::Matrix<double, 6, 1> Manipulator::getTargetPose(const int &ik_index_)
     {
-        return _target_pose;
+        return _target_pose[ik_index_];
     }
 
-    Eigen::Matrix<double, 6, 1> Manipulator::getMidPose()
+    Eigen::Matrix<double, 6, 1> Manipulator::getMidPose(const int &ik_index_)
     {
-        if(_ec_enable) return _interpolation.getCosInterpolation();
+        if(_ec_enable) return _interpolation[ik_index_].getCosInterpolation();
 
         return Eigen::Matrix<double, 6, 1>::Zero();
     }

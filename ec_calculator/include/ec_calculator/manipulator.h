@@ -29,20 +29,17 @@ namespace ec_calculator
             bool _emergency_stop = false;
             bool _motor_enable = false;
 
-            // // Inverse Kinematics
-            // std::vector<int> _start_joint_index;
-            int _start_joint_index = 0;
-            // std::vector<int> _end_joint_index;
-            int _end_joint_index = 1;
-            // std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
-            Eigen::Matrix<double, 6, 1> _target_pose;
+            // Inverse Kinematics
             int _ik_index = 0;
+            std::vector<Interpolation> _interpolation;
+            std::vector<int> _start_joint_index;
+            std::vector<int> _end_joint_index;
+            Eigen::Matrix<double, -1, 1> _error_all;
+            std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
             Eigen::Matrix<double, -1, -1> _jacobian;
-                // std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
-                Eigen::Matrix<double, 6, -1> _jacobian_block;
+                std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
 
             // Time
-            Interpolation _interpolation;
             std::chrono::system_clock::time_point _start_time, _end_time;
             double _during_time;
             bool _is_first_time_measurement = true; // TODO: Whether to reset when changing models
@@ -63,6 +60,7 @@ namespace ec_calculator
             int getJointNum();
             std::string getJointName(const int &joint_index_);
             std::string getJointParentName(const int &joint_index_);
+            int getInverseKinematicsNum();
 
             // Visualize
             double getVisualData(const int &joint_index_, const int &data_index_);
@@ -100,8 +98,8 @@ namespace ec_calculator
             // Debug
             void printTree();
             void print();
-            Eigen::Matrix<double, 6, 1> getTargetPose();
-            Eigen::Matrix<double, 6, 1> getMidPose();
+            Eigen::Matrix<double, 6, 1> getTargetPose(const int &ik_index_);
+            Eigen::Matrix<double, 6, 1> getMidPose(const int &ik_index_);
     };
 }
 

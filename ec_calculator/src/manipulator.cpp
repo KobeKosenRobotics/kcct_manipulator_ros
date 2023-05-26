@@ -229,7 +229,7 @@ namespace ec_calculator
         _error_all.resize(6*_ik_index, 1);
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _error_all.block(6*ik_index, 0, 6, 1) = _interpolation[ik_index].getCosInterpolation() - getPose(_end_joint_index[ik_index]);
+            _error_all.block(6*ik_index, 0, 6, 1) = _interpolation[ik_index].getSigmoidInterpolation() - getPose(_end_joint_index[ik_index]);
         }
         _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(getJacobian()) * _error_all;
         return _target_angular_velocity;
@@ -252,7 +252,7 @@ namespace ec_calculator
         _jacobian_block[ik_index_].resize(6, _JOINT_NUM);
         _jacobian_block[ik_index_].setZero();
 
-        for(int ik_index = _start_joint_index[ik_index_]; ik_index < _end_joint_index[ik_index_]; ik_index++)
+        for(int ik_index = _start_joint_index[ik_index_]; ik_index < std::min(_end_joint_index[ik_index_], _JOINT_NUM); ik_index++)
         {
             _jacobian_block[ik_index_].block(0, ik_index, 6, 1) = _joints[_end_joint_index[ik_index_]].getXiDagger(ik_index);
         }
@@ -356,7 +356,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 6, 1> Manipulator::getMidPose(const int &ik_index_)
     {
-        if(_ec_enable) return _interpolation[ik_index_].getCosInterpolation();
+        if(_ec_enable) return _interpolation[ik_index_].getSigmoidInterpolation();
 
         return Eigen::Matrix<double, 6, 1>::Zero();
     }

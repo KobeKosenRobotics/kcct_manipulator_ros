@@ -22,8 +22,8 @@ namespace ec_calculator
 
             double _distance;
             double _during_time;
-            double _linear_velocity = 0.5;  // [m/s]
-            double _sigmoid_gain = 1;
+            double _linear_velocity = 1;  // [m/s]
+            double _sigmoid_gain = 2;
 
         public:
             void setLinearVelocity(const double &linear_velocity_);

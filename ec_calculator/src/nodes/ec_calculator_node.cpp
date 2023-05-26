@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     angular_velocity.data.resize(manip.getJointNum());
     target_angle.data.resize(manip.getJointNum());
 
-    // /* New naviT(oo)n
+    // /* New naviT(oo)n */
     // int cha = 1, joi = 8;
     // Eigen::Matrix<bool, 1, 8> cha_ma;
     // for(int i = 0; i < joi; i++)
@@ -104,20 +104,59 @@ int main(int argc, char **argv)
     // manip.print();
     // angular_velocity.data.resize(manip.getJointNum());
     // target_angle.data.resize(manip.getJointNum());
-    // */
 
-    int cha = 1, joi = 30;
-    Eigen::Matrix<bool, 1, 30> cha_ma;
-    for(int i = 0; i < joi; i++)
-    {
-        cha_ma(0, i) = 1;
-    }
-    Eigen::Matrix<double, 3, 31> joi_po;
+    // /* Serial 30-DOF */
+    // int cha = 1, joi = 30;
+    // Eigen::Matrix<bool, 1, 30> cha_ma;
+    // for(int i = 0; i < joi; i++)
+    // {
+    //     cha_ma(0, i) = 1;
+    // }
+    // Eigen::Matrix<double, 3, 31> joi_po;
+    // joi_po.setZero();
+    // for(int i = 4; i < (cha+joi); i++)
+    // {
+    //     joi_po(2,i) = 0.2;
+    // }
+    // Eigen::Matrix<double, 3, 30> tra;
+    // tra.setZero();
+    // tra(0, 0) = 1;
+    // tra(1, 1) = 1;
+    // tra(2, 2) = 1;
+    // Eigen::Matrix<double, 3, 30> rot;
+    // rot.setZero();
+    // for(int i = 3; i < joi; i++)
+    // {
+    //     rot(i%3, i) = 1;
+    // }
+    // Eigen::Matrix<double, 30, 30> a2a_ga;
+    // a2a_ga.setIdentity();
+    // double ec_ga = 2;
+
+    // model.changeModel(cha, joi, cha_ma, joi_po, tra, rot, a2a_ga, ec_ga);
+
+    // manip.init(&model);
+    // manip.printTree();
+    // manip.print();
+    // angular_velocity.data.resize(manip.getJointNum());
+    // target_angle.data.resize(manip.getJointNum());
+
+    /* Chain 30-DOF */
+    int cha = 3, joi = 30;
+    Eigen::Matrix<bool, 3, 30> cha_ma;
+    cha_ma <<
+        //             5                         14             19          23                29
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1;
+    Eigen::Matrix<double, 3, 33> joi_po;
     joi_po.setZero();
     for(int i = 4; i < (cha+joi); i++)
     {
         joi_po(2,i) = 0.2;
     }
+    joi_po(0, 15) = 0.2;
+    joi_po(0, 24) = 0.2;
     Eigen::Matrix<double, 3, 30> tra;
     tra.setZero();
     tra(0, 0) = 1;

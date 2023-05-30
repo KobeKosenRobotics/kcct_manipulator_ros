@@ -69,35 +69,59 @@ namespace ec_calculator
     void Joint::setParameters(Model *model_)
     {
         clearParameters();
+        setTorqueControlEnable(model_->getTorqueControlEnable());
         setQ(model_->getJointPositionLink(_index));
         setW(model_->getRotationAxis(_index));
         setV(model_->getTranslationAxis(_index));   // "setV()" must be executed after "setW()"
         setXi();
         setGstZero();
+
+        if(_torque_control_enable)
+        {
+            setQg(model_->getCenterOfGravityLink(_index));
+            setGsrZero();
+            setInertia(model_->getInertia(_index));
+        }
     }
 
     void Joint::clearParameters()
     {
         _q.setZero();
+        _qg.setZero();
         _v.setZero();
         _w.setZero();
-        _lp.setZero();
+        _l.setZero();
+        _lg.setZero();
         _xi.setZero();
         _gst_zero.setZero();
+        _gsr_zero.setZero();
+        _i.setZero();
+    }
+
+    void Joint::setTorqueControlEnable(const bool &torque_control_enable_)
+    {
+        _torque_control_enable = torque_control_enable_;
     }
 
     void Joint::setQ(const Eigen::Matrix<double, 3, 1> &joint_position_link_)
     {
-        _lp = joint_position_link_;
+        _l = joint_position_link_;
 
         if(_parent == nullptr)
         {
-            _q = joint_position_link_;
+            _q = _l;
         }
         else
         {
-            _q = _parent->_q + joint_position_link_;
+            _q = _parent->_q + _l;
         }
+    }
+
+    void Joint::setQg(const Eigen::Matrix<double, 3, 1> &center_of_gravity_link_)
+    {
+        _lg = center_of_gravity_link_;
+
+        _qg = _q + _lg;
     }
 
     void Joint::setV(const Eigen::Matrix<double, 3, 1> &translation_axis_)
@@ -125,8 +149,20 @@ namespace ec_calculator
     void Joint::setGstZero()
     {
         _gst_zero <<
-        EigenUtility.getIdentity3(), _q,
-        0.0, 0.0, 0.0, 1.0;
+            EigenUtility.getIdentity3(), _q,
+            0.0, 0.0, 0.0, 1.0;
+    }
+
+    void Joint::setGsrZero()
+    {
+        _gsr_zero <<
+            EigenUtility.getIdentity3(), _qg,
+            0.0, 0.0, 0.0, 1.0;
+    }
+
+    void Joint::setInertia(const Eigen::Matrix<double, 6, 6> &inertia_)
+    {
+        _i = inertia_;
     }
 
     // Visualize
@@ -142,7 +178,7 @@ namespace ec_calculator
 
         if(_parent == nullptr)
         {
-            _visual_data.block(0, 0, 3, 1) = _lp;
+            _visual_data.block(0, 0, 3, 1) = _l;
             return;
         }
 
@@ -152,7 +188,7 @@ namespace ec_calculator
             return;
         }
 
-        _visual_data.block(0, 0, 3, 1) = _lp;
+        _visual_data.block(0, 0, 3, 1) = _l;
         return;
     }
 
@@ -176,8 +212,8 @@ namespace ec_calculator
         if(_w.norm() == 0)
         {
             _exp_xi_hat_theta <<
-            EigenUtility.getIdentity3(), _theta*_v,
-            0.0, 0.0, 0.0, 1.0;
+                EigenUtility.getIdentity3(), _theta*_v,
+                0.0, 0.0, 0.0, 1.0;
 
             return _exp_xi_hat_theta;
         }
@@ -185,8 +221,8 @@ namespace ec_calculator
         getExpWHatTheta();
 
         _exp_xi_hat_theta <<
-        _exp_w_hat_theta, ((EigenUtility.getIdentity3() - _exp_w_hat_theta) * (_w.cross(_v))) + (_w*_w.transpose()) * _v * _theta,
-        0.0, 0.0, 0.0, 1.0;
+            _exp_w_hat_theta, ((EigenUtility.getIdentity3() - _exp_w_hat_theta) * (_w.cross(_v))) + (_w*_w.transpose()) * _v * _theta,
+            0.0, 0.0, 0.0, 1.0;
 
         return _exp_xi_hat_theta;
     }
@@ -224,6 +260,11 @@ namespace ec_calculator
         }
 
         return _parent->getGstThetaRecursion()*getExpXiHatTheta();
+    }
+
+    Eigen::Matrix<double, 4, 4> Joint::getGsrTheta()
+    {
+        return getGstThetaRecursion()*_gsr_zero;
     }
 
     // Inverse Kinematics

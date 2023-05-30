@@ -342,11 +342,12 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        for(int i = 0; i < _ik_index; i++)
-        {
-            std::cout << _start_joint_index[i] << " to " << _end_joint_index[i] << std::endl;
-            std::cout << getPose(_end_joint_index[i]) << std::endl << std::endl;
-        }
+        // for(int i = 0; i < _ik_index; i++)
+        // {
+        //     std::cout << _start_joint_index[i] << " to " << _end_joint_index[i] << std::endl;
+        //     std::cout << getPose(_end_joint_index[i]) << std::endl << std::endl;
+        // }
+        std::cout << _joints[5].getGsrTheta() << "\n\n";
     }
 
     Eigen::Matrix<double, 6, 1> Manipulator::getTargetPose(const int &ik_index_)

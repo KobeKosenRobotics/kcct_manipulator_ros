@@ -63,13 +63,16 @@ namespace ec_calculator
             void setParent(Joint &parent);
             bool addChild(Joint &child);
             void clearChildren();
+            int getNumOfParentGenerations();
+            bool isTipJoint();
+            bool isParent(const int &parent_index_);
 
             // Properties
             int getIndex();
             std::string getName();
             std::string getParentName();
-            int getNumOfParentGenerations();
-            bool isTipJoint();
+            Eigen::Matrix<double, 6, 1> getXi(const int &parent_index_);
+            Eigen::Matrix<double, 6, 6> getI();
 
             // Parameter Setters
             void setParameters(Model *model_);
@@ -100,10 +103,12 @@ namespace ec_calculator
 
             // Inverse Kinematics
             Eigen::Matrix<double, 6, 1> getXiDagger(const int &minimum_index_); // a column of Jacobian body matrix
-                bool isParent(const int &parent_index_);
-                Eigen::Matrix<double, 6, 1> getXi(const int &parent_index_);
                 Eigen::Matrix<double, 4, 4> getParentGstTheta(const int &minimum_index_);
                     Eigen::Matrix<double, 4, 4> getParentGstThetaRecursion();
+
+            // Torque Control
+            Eigen::Matrix<double, 6, 1> getXiDaggerG(const int &minimum_index_);    // a column of Jacobian body matrix (gsr)
+                Eigen::Matrix<double, 4, 4> getParentGsrTheta(const int &minimum_index_);
 
             // Debug
             std::string getChildrenList();

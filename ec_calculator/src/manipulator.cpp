@@ -25,6 +25,11 @@ namespace ec_calculator
         _target_pose.resize(1);
         _jacobian_block.resize(1);
 
+        _Mf.resize(_JOINT_NUM, _JOINT_NUM);
+        _jacobian_g.resize(_JOINT_NUM);
+        _Cf.resize(_JOINT_NUM, _JOINT_NUM);
+        _Nf.resize(_JOINT_NUM, 1);
+
         for(int index = 0; index < _JOINT_NUM; index++)
         {
             _joints[index].init(index, "Joint" + std::to_string(index));
@@ -262,6 +267,35 @@ namespace ec_calculator
         return _jacobian_block[ik_index_];
     }
 
+    // Torque Control
+    Eigen::Matrix<double, -1, -1> Manipulator::getMf()
+    {
+        _Mf.setZero();
+
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            getJacobianG(joint);
+            _Mf += (_jacobian_g[joint].transpose() * _joints[joint].getI() * _jacobian_g[joint]);
+        }
+
+        return _Mf;
+    }
+
+    Eigen::Matrix<double, 6, -1> Manipulator::getJacobianG(const int &joint_index_)
+    {
+        _jacobian_g[joint_index_].resize(6, _JOINT_NUM);
+        _jacobian_g[joint_index_].setZero();
+
+        for(int joint = 0; joint <= joint_index_; joint++)
+        {
+            _jacobian_g[joint_index_].block(0, joint, 6, 1) = _joints[joint_index_].getXiDaggerG(joint);
+        }
+
+        _jacobian_g[joint_index_] = EigenUtility.getTransformationMatrix(_joints[joint_index_].getGsrTheta()) * _jacobian_g[joint_index_];
+
+        return _jacobian_g[joint_index_];
+    }
+
     // Angular Velocity to Angle (for Visualization)
     Eigen::Matrix<double, -1, 1> Manipulator::angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_)
     {
@@ -346,8 +380,15 @@ namespace ec_calculator
         // {
         //     std::cout << _start_joint_index[i] << " to " << _end_joint_index[i] << std::endl;
         //     std::cout << getPose(_end_joint_index[i]) << std::endl << std::endl;
+        //     getPose(_end_joint_index[i]);
         // }
-        std::cout << _joints[5].getGsrTheta() << "\n\n";
+        for(int i = 0; i < _JOINT_NUM; i++)
+        {
+            std::cout << i << "\n";
+            // std::cout << getJacobianBlock(0) << "\n";
+            std::cout << getJacobianG(i) << "\n\n";
+        }
+        std::cout << getMf() << "\n\n";
     }
 
     Eigen::Matrix<double, 6, 1> Manipulator::getTargetPose(const int &ik_index_)

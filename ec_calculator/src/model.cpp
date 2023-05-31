@@ -5,10 +5,10 @@ namespace ec_calculator
     // Constructor
     Model::Model()
     {
+        _torque_control_enable = true;
+
         _chain_num = 3;
         _joint_num = 10;
-
-        _torque_control_enable = true;
 
         _chain_mat.resize(_chain_num, _joint_num);
         _chain_mat <<
@@ -31,9 +31,9 @@ namespace ec_calculator
 
         _rotation_axis.resize(3, _joint_num);
         _rotation_axis <<
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1, 0, 1, 1, 1;
+        1, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0, 0, 0, 1;
 
         if(_torque_control_enable)
         {

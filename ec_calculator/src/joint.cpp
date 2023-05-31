@@ -36,6 +36,25 @@ namespace ec_calculator
         _children.clear();
     }
 
+    int Joint::getNumOfParentGenerations()
+    {
+        if(_index <= 0) return 0;
+        return _parent->getNumOfParentGenerations()+1;
+    }
+
+    bool Joint::isTipJoint()
+    {
+        if(_children.size() == 0) return true;
+        return false;
+    }
+
+    bool Joint::isParent(const int &parent_index_)
+    {
+        if(_index == parent_index_) return true;
+        if(_parent == nullptr) return false;
+        return _parent->isParent(parent_index_);
+    }
+
     // Properties
     int Joint::getIndex()
     {
@@ -53,16 +72,15 @@ namespace ec_calculator
         return _parent->getName();
     }
 
-    int Joint::getNumOfParentGenerations()
+    Eigen::Matrix<double, 6, 1> Joint::getXi(const int &parent_index_)
     {
-        if(_index <= 0) return 0;
-        return _parent->getNumOfParentGenerations()+1;
+        if(_index == parent_index_) return _xi;
+        return _parent->getXi(parent_index_);
     }
 
-    bool Joint::isTipJoint()
+    Eigen::Matrix<double, 6, 6> Joint::getI()
     {
-        if(_children.size() == 0) return true;
-        return false;
+        return _i;
     }
 
     // Parameters Setters
@@ -275,19 +293,6 @@ namespace ec_calculator
         return EigenUtility.adjointInverse(getParentGstTheta(minimum_index_))*getXi(minimum_index_);
     }
 
-    bool Joint::isParent(const int &parent_index_)
-    {
-        if(_index == parent_index_) return true;
-        if(_parent == nullptr) return false;
-        return _parent->isParent(parent_index_);
-    }
-
-    Eigen::Matrix<double, 6, 1> Joint::getXi(const int &parent_index_)
-    {
-        if(_index == parent_index_) return _xi;
-        return _parent->getXi(parent_index_);
-    }
-
     Eigen::Matrix<double, 4, 4> Joint::getParentGstTheta(const int &minimum_index_)
     {
         if(_parent == nullptr) return _gst_zero;
@@ -305,6 +310,24 @@ namespace ec_calculator
         _parent->_minimum_index = _minimum_index;
 
         return _parent->getParentGstThetaRecursion()*getExpXiHatTheta();
+    }
+
+    // Torque Control
+    Eigen::Matrix<double, 6, 1> Joint::getXiDaggerG(const int &minimum_index_)
+    {
+        if(!isParent(minimum_index_)) return Eigen::Matrix<double, 6, 1>::Zero();
+
+        return EigenUtility.adjointInverse(getParentGsrTheta(minimum_index_)) * getXi(minimum_index_);
+    }
+
+    Eigen::Matrix<double, 4, 4> Joint::getParentGsrTheta(const int &minimum_index_)
+    {
+        if(_parent == nullptr) return getExpXiHatTheta()*_gsr_zero;
+
+        _minimum_index = minimum_index_;
+        _parent->_minimum_index = _minimum_index;
+
+        return getParentGstThetaRecursion()*_gsr_zero;
     }
 
     // Debug

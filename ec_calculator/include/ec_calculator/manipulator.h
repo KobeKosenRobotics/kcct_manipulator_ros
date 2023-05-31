@@ -24,6 +24,8 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _target_angle;
             Eigen::Matrix<double, -1, 1> _angular_velocity;
             Eigen::Matrix<double, -1, 1> _target_angular_velocity;
+            Eigen::Matrix<double, -1, 1> _torque;
+            Eigen::Matrix<double, -1, 1> _target_torque;
 
             bool _ec_enable = false;
             bool _emergency_stop = false;
@@ -38,6 +40,12 @@ namespace ec_calculator
             std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
             Eigen::Matrix<double, -1, -1> _jacobian;
                 std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
+
+            // Torque Control
+            Eigen::Matrix<double, -1, -1> _Mf;
+                std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_g;
+            Eigen::Matrix<double, -1, -1> _Cf;
+            Eigen::Matrix<double, -1, -1> _Nf;
 
             // Time
             std::chrono::system_clock::time_point _start_time, _end_time;
@@ -77,12 +85,18 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
             Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle();
 
-            // // Inverse Kinematics
+            // Inverse Kinematics
             void setJointPose(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_pose_);
                 void clearJointPose();
             Eigen::Matrix<double, -1, 1> getAngularVelocityByEC();
                 Eigen::Matrix<double, -1, -1> getJacobian();
                     Eigen::Matrix<double, 6, -1> getJacobianBlock(const int &ik_index_);
+
+            // Torque Control
+            Eigen::Matrix<double, -1, -1> getMf();
+                Eigen::Matrix<double, 6, -1> getJacobianG(const int &joint_index_);
+            Eigen::Matrix<double, -1, -1> getCf();
+            Eigen::Matrix<double, -1, -1> getNf();
 
             // Angular Velocity to Angle (for Visualization)
             Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);

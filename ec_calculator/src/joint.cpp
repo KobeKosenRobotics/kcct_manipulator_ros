@@ -72,6 +72,11 @@ namespace ec_calculator
         return _parent->getName();
     }
 
+    Eigen::Matrix<double, 6, 1> Joint::getXi()
+    {
+        return _xi;
+    }
+
     Eigen::Matrix<double, 6, 1> Joint::getXi(const int &parent_index_)
     {
         if(_index == parent_index_) return _xi;
@@ -111,6 +116,7 @@ namespace ec_calculator
         _l.setZero();
         _lg.setZero();
         _xi.setZero();
+        _xi_hat.setZero();
         _gst_zero.setZero();
         _gsr_zero.setZero();
         _i.setZero();
@@ -162,6 +168,10 @@ namespace ec_calculator
     void Joint::setXi()
     {
         _xi << _v, _w;
+
+        _xi_hat <<
+            EigenUtility.hat(_w), _v,
+            0.0, 0.0, 0.0, 1.0;
     }
 
     void Joint::setGstZero()
@@ -219,14 +229,22 @@ namespace ec_calculator
     // Forward Kinematics
     void Joint::updateTheta(const double &theta_)
     {
+        _was_calculated = false;
+
         _theta = theta_;
         _cos_theta = cos(theta_);
         _sin_theta = sin(theta_);
         _v_theta = 1 - _cos_theta;
+
+        getExpXiHatTheta();
+
+        _was_calculated = true;
     }
 
     Eigen::Matrix<double, 4, 4> Joint::getExpXiHatTheta()
     {
+        if(_was_calculated) return _exp_xi_hat_theta;
+
         if(_w.norm() == 0)
         {
             _exp_xi_hat_theta <<
@@ -295,6 +313,8 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getParentGstTheta(const int &minimum_index_)
     {
+        if(!isParent(minimum_index_)) return Eigen::Matrix<double, 4, 4>::Zero();
+
         if(_parent == nullptr) return _gst_zero;
 
         _minimum_index = minimum_index_;
@@ -322,12 +342,42 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getParentGsrTheta(const int &minimum_index_)
     {
+        if(!isParent(minimum_index_)) return Eigen::Matrix<double, 4, 4>::Zero();
+
         if(_parent == nullptr) return getExpXiHatTheta()*_gsr_zero;
 
         _minimum_index = minimum_index_;
         _parent->_minimum_index = _minimum_index;
 
         return getParentGstThetaRecursion()*_gsr_zero;
+    }
+
+    Eigen::Matrix<double, 4, 4> Joint::get_dGsr_dTh(const int &minimum_index_, const int &differentiating_index_)
+    {
+        if(!isParent(minimum_index_)) return Eigen::Matrix<double, 4, 4>::Zero();
+        if(!isParent(differentiating_index_)) return Eigen::Matrix<double, 4, 4>::Zero();
+
+        _minimum_index = minimum_index_;
+        _differentiating_index = differentiating_index_;
+
+        return get_dGsr_dThRecursion() * _gsr_zero;
+    }
+
+    Eigen::Matrix<double, 4, 4> Joint::get_dGsr_dThRecursion()
+    {
+        if(_index == _minimum_index)
+        {
+            if(_index == _differentiating_index) return _xi_hat * getExpXiHatTheta();
+
+            return getExpXiHatTheta();
+        }
+
+        _parent->_minimum_index = _minimum_index;
+        _parent->_differentiating_index = _differentiating_index;
+
+        if(_index == _differentiating_index) return _parent->get_dGsr_dThRecursion() * _xi_hat * getExpXiHatTheta();
+
+        return _parent->get_dGsr_dThRecursion() * getExpXiHatTheta();
     }
 
     // Debug

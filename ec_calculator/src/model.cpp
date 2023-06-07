@@ -42,6 +42,8 @@ namespace ec_calculator
 
             _center_of_gravity_link.resize(3, _joint_num);
             _center_of_gravity_link = 0.5*_joint_position_link;
+
+            _gravitational_acceleration = -9.8;
         }
 
         _angle_2_angular_velocity_gain.resize(_joint_num, _joint_num);
@@ -208,6 +210,11 @@ namespace ec_calculator
         _ec_gain = ec_gain_;
     }
 
+    void Model::changeGravitationalAcceleration(const double &gravitational_acceleration_)
+    {
+        _gravitational_acceleration = gravitational_acceleration_;
+    }
+
     // Parameter Getters
     bool Model::getTorqueControlEnable()
     {
@@ -276,5 +283,10 @@ namespace ec_calculator
     double Model::getECGain()
     {
         return _ec_gain;
+    }
+
+    double Model::getGravitationalAcceleration()
+    {
+        return _gravitational_acceleration;
     }
 }

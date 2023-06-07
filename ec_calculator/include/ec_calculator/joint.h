@@ -26,6 +26,7 @@ namespace ec_calculator
             std::vector<Joint*> _children { nullptr };
 
             // Parameter
+            bool _was_calculated;
             bool _torque_control_enable;
             Eigen::Matrix<double, 3, 1> _q;         // joint position
             Eigen::Matrix<double, 3, 1> _qg;        // joint position
@@ -34,6 +35,7 @@ namespace ec_calculator
             Eigen::Matrix<double, 3, 1> _l;         // joint position link (parent)
             Eigen::Matrix<double, 3, 1> _lg;        // center of gravity link
             Eigen::Matrix<double, 6, 1> _xi;        // twist
+            Eigen::Matrix<double, 4, 4> _xi_hat;    // twist matrix
             Eigen::Matrix<double, 4, 4> _gst_zero;  // initial homogeneous transformation matrix Base->Tool
             Eigen::Matrix<double, 4, 4> _gsr_zero;  // initial homogeneous transformation matrix Base->CenterOfGravity
             Eigen::Matrix<double, 6, 6> _i;         // inertia
@@ -51,6 +53,7 @@ namespace ec_calculator
 
             // save temporarily
             int _minimum_index;
+            int _differentiating_index;
 
         public:
             // Constructor
@@ -71,6 +74,7 @@ namespace ec_calculator
             int getIndex();
             std::string getName();
             std::string getParentName();
+            Eigen::Matrix<double, 6, 1> getXi();
             Eigen::Matrix<double, 6, 1> getXi(const int &parent_index_);
             Eigen::Matrix<double, 6, 6> getI();
 
@@ -109,6 +113,8 @@ namespace ec_calculator
             // Torque Control
             Eigen::Matrix<double, 6, 1> getXiDaggerG(const int &minimum_index_);    // a column of Jacobian body matrix (gsr)
                 Eigen::Matrix<double, 4, 4> getParentGsrTheta(const int &minimum_index_);
+            Eigen::Matrix<double, 4, 4> get_dGsr_dTh(const int &minimum_index_, const int &differentiating_index_);
+                Eigen::Matrix<double, 4, 4> get_dGsr_dThRecursion();
 
             // Debug
             std::string getChildrenList();

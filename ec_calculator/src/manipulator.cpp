@@ -28,6 +28,8 @@ namespace ec_calculator
         _Mf.resize(_JOINT_NUM, _JOINT_NUM);
         _jacobian_g.resize(_JOINT_NUM);
         _Cf.resize(_JOINT_NUM, _JOINT_NUM);
+        _dMab_dThc.resize(_JOINT_NUM*_JOINT_NUM*_JOINT_NUM);
+        _d_adj_inv_gab_d_thc.resize(_JOINT_NUM*_JOINT_NUM*_JOINT_NUM);
         _Nf.resize(_JOINT_NUM, 1);
 
         for(int index = 0; index < _JOINT_NUM; index++)
@@ -46,6 +48,8 @@ namespace ec_calculator
         setAngle2AngularVelocityGain(_model->getAngle2AngularVelocityGain());
 
         setECGain(_model->getECGain());
+
+        setGravitationalAcceleration(_model->getGravitationalAcceleration());
 
         _is_first_time_measurement = true;
     }
@@ -125,6 +129,11 @@ namespace ec_calculator
     void Manipulator::setECGain(const double &ec_gain_)
     {
         _ec_gain = ec_gain_;
+    }
+
+    void Manipulator::setGravitationalAcceleration(const double &gravitational_acceleration_)
+    {
+        _gravitational_acceleration = gravitational_acceleration_;
     }
 
     // Properties
@@ -296,6 +305,122 @@ namespace ec_calculator
         return _jacobian_g[joint_index_];
     }
 
+    Eigen::Matrix<double, -1, -1> Manipulator::getCf()
+    {
+        _Cf.setZero();
+
+        _was_dMab_dThc_calculated = false;
+        _was_d_adj_inv_gab_d_thc_calculated = false;
+
+        for(int i = 0; i < _JOINT_NUM; i++)
+        {
+            for(int j = 0; j < _JOINT_NUM; j++)
+            {
+                for(int k = 0; k < _JOINT_NUM; k++)
+                {
+                    get_dAdjointInverseGab_dThc(i, j, k);
+                }
+            }
+        }
+        _was_d_adj_inv_gab_d_thc_calculated = true;
+
+        for(int i = 0; i < _JOINT_NUM; i++)
+        {
+            for(int j = 0; j < _JOINT_NUM; j++)
+            {
+                for(int k = 0; k < _JOINT_NUM; k++)
+                {
+                    get_dMab_dThc(i, j, k);
+                }
+            }
+        }
+
+        _was_dMab_dThc_calculated = true;
+
+        for(int joint_i = 0; joint_i < _JOINT_NUM; joint_i++)
+        {
+            for(int joint_j = 0; joint_j < _JOINT_NUM; joint_j++)
+            {
+                _Cf(joint_i, joint_j) = getCfBlock(joint_i, joint_j);
+            }
+        }
+
+        return _Cf;
+    }
+
+    double Manipulator::getCfBlock(const int &i_, const int &j_)
+    {
+        double Cf_block_ = 0;
+
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            Cf_block_ += (0.5 * (get_dMab_dThc(i_, j_, joint) + get_dMab_dThc(i_, joint, j_) - get_dMab_dThc(joint, j_, i_)));
+        }
+
+        return Cf_block_;
+    }
+
+    double Manipulator::get_dMab_dThc(const int &a_, const int &b_, const int &c_)
+    {
+        int index_ = a_*_JOINT_NUM*_JOINT_NUM + b_*_JOINT_NUM + c_;
+
+        if(_was_dMab_dThc_calculated) return _dMab_dThc[index_];
+
+        _dMab_dThc[index_] = 0;
+
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            _dMab_dThc[index_] += ((_joints[a_].getXi()).transpose() * ((get_dAdjointInverseGab_dThc(a_, joint, c_)).transpose() * _joints[joint].getI() * EigenUtility.adjointInverse(_joints[joint].getParentGsrTheta(b_)) + EigenUtility.adjointInverse(_joints[joint].getParentGsrTheta(a_)) * _joints[joint].getI() * get_dAdjointInverseGab_dThc(b_, joint, c_)) * _joints[b_].getXi());
+        }
+
+        return _dMab_dThc[index_];
+    }
+
+    Eigen::Matrix<double, 6, 6> Manipulator::get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_)
+    {
+        // TODO: write easy to read
+        int index_ = a_*_JOINT_NUM*_JOINT_NUM + b_*_JOINT_NUM + c_;
+
+        if(_was_d_adj_inv_gab_d_thc_calculated) return _d_adj_inv_gab_d_thc[index_];
+
+        _d_adj_inv_gab_d_thc[index_].setZero();
+
+        Eigen::Matrix<double, 4, 4> g_mat_, d_gab_mat_d_thc_;
+        g_mat_ = _joints[b_].getParentGsrTheta(a_);
+        d_gab_mat_d_thc_ = _joints[b_].get_dGsr_dTh(a_, c_);
+
+        Eigen::Matrix<double, 3, 3> rot_, d_rot_;
+        Eigen::Matrix<double, 3, 1> pos_, d_pos_;
+        rot_ = g_mat_.block(0, 0, 3, 3);
+        d_rot_ = d_gab_mat_d_thc_.block(0, 0, 3, 3);
+        pos_ = g_mat_.block(0, 3, 3, 1);
+        d_pos_ = d_gab_mat_d_thc_.block(0, 3, 3, 1);
+
+        _d_adj_inv_gab_d_thc[index_] <<
+            d_rot_.transpose(), - d_rot_.transpose() * EigenUtility.hat(pos_) - rot_.transpose() * EigenUtility.hat(d_pos_),
+            Eigen::Matrix<double, 3, 3>::Zero(), d_rot_.transpose();
+
+        return _d_adj_inv_gab_d_thc[index_];
+    }
+
+    Eigen::Matrix<double, -1, 1> Manipulator::getNf()
+    {
+        _Nf.setZero();
+
+        for(int joint_i = 0; joint_i < _JOINT_NUM; joint_i++)
+        {
+            for(int chain = 0; chain < _CHAIN_NUM; chain++)
+            {
+                for(int joint_j = 0; joint_j < _JOINT_NUM; joint_j++)
+                {
+                    _Nf(joint_i, 0) += _joints[joint_j].getI()(0, 0)*_gravitational_acceleration*_joints[_tip_index[chain]].get_dGsr_dTh(0, joint_i)(2, 3);
+                }
+            }
+        }
+
+        return _Nf;
+    }
+
     // Angular Velocity to Angle (for Visualization)
     Eigen::Matrix<double, -1, 1> Manipulator::angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_)
     {
@@ -382,13 +507,31 @@ namespace ec_calculator
         //     std::cout << getPose(_end_joint_index[i]) << std::endl << std::endl;
         //     getPose(_end_joint_index[i]);
         // }
-        for(int i = 0; i < _JOINT_NUM; i++)
-        {
-            std::cout << i << "\n";
-            // std::cout << getJacobianBlock(0) << "\n";
-            std::cout << getJacobianG(i) << "\n\n";
-        }
-        std::cout << getMf() << "\n\n";
+        // for(int i = 0; i < _JOINT_NUM; i++)
+        // {
+        //     std::cout << i << "\n";
+        //     // std::cout << getJacobianBlock(0) << "\n";
+        //     std::cout << getJacobianG(i) << "\n\n";
+        // }
+        std::cout << "Mf\n" << getMf() << std::endl << std::endl;
+        std::cout << "Cf\n" << getCf() << std::endl << std::endl;
+        std::cout << "Nf\n" << getNf() << std::endl << std::endl;
+
+        // for(int i = 0; i < _JOINT_NUM; i++)
+        // {
+        //     for(int j = 0; j < _JOINT_NUM; j++)
+        //     {
+        //         for(int k = 0; k < _JOINT_NUM; k++)
+        //         {
+        //             std::cout << i << " " << j << " " << k << std::endl;
+        //             // std::cout << get_dAdjointInverseGab_dThc(i, j, k) << std::endl << std::endl;
+        //             // std::cout << EigenUtility.adjointInverse(_joints[i].getParentGsrTheta(j)) << std::endl << std::endl;
+        //             // std::cout << get_dMab_dThc(i, j, k) << std::endl << std::endl;
+        //             // std::cout << (_joints[k].getXi()).transpose() << std::endl << std::endl;
+        //             // std::cout << getCfBlock(i, j) << std::endl << std::endl;
+        //         }
+        //     }
+        // }
     }
 
     Eigen::Matrix<double, 6, 1> Manipulator::getTargetPose(const int &ik_index_)

@@ -6,11 +6,17 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32MultiArray.h>
 
+#include <ros/ros.h>
+
 using namespace ec_calculator;
 
 Manipulator manip;
 ManipulatorTFPublisher tfPublisher(manip);
 Model model;
+
+ros::Time start, end;
+double sum = 0;
+int cycle = 0;
 
 // Publisher
 std_msgs::Float32MultiArray angular_velocity;
@@ -67,7 +73,6 @@ int main(int argc, char **argv)
 
     manip.init(&model);
     manip.printTree();
-    manip.print();
     angular_velocity.data.resize(manip.getJointNum());
     target_angle.data.resize(manip.getJointNum());
 
@@ -197,9 +202,21 @@ int main(int argc, char **argv)
 
         manip.print();
 
+        /* Time Measure */
+        start = ros::Time::now();
+        manip.getMf();
+        manip.getCf();
+        manip.getNf();
+        end = ros::Time::now();
+        sum += (end - start).toSec();
+        cycle++;
+        std::cout << cycle << std::endl;
+
         ros::spinOnce();
         loop_rate.sleep();
     }
+
+    std::cout << "time: " << sum/cycle << "\tcycle: " << cycle << std::endl << std::endl;
 
     return 0;
 }

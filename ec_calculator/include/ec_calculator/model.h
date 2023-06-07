@@ -30,6 +30,9 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, -1> _angle_2_angular_velocity_gain;
             double _ec_gain;
 
+            // Gravitational Acceleration
+            double _gravitational_acceleration; // [m/s^2]
+
         public:
             // Constructor
             Model();
@@ -70,6 +73,8 @@ namespace ec_calculator
                 void changeAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_);
                 void changeECGain(const double &ec_gain_);
 
+                void changeGravitationalAcceleration(const double &gravitational_acceleration_);
+
             // Parameter Getters
             bool getTorqueControlEnable();
             int getJointNum();
@@ -84,6 +89,8 @@ namespace ec_calculator
 
             Eigen::Matrix<double, -1, -1> getAngle2AngularVelocityGain();
             double getECGain();
+
+            double getGravitationalAcceleration();
     };
 }
 

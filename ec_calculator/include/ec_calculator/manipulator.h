@@ -18,6 +18,7 @@ namespace ec_calculator
             std::vector<int> _tip_index;   // joints[_tip_index[]] have no children.
             Eigen::Matrix<double, -1, -1> _angle_2_angular_velocity_gain;
             double _ec_gain;
+            double _gravitational_acceleration;
 
             // Parameters
             Eigen::Matrix<double, -1, 1> _angle;
@@ -45,6 +46,10 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, -1> _Mf;
                 std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_g;
             Eigen::Matrix<double, -1, -1> _Cf;
+                bool _was_dMab_dThc_calculated;
+                std::vector<double> _dMab_dThc;
+                bool _was_d_adj_inv_gab_d_thc_calculated;
+                std::vector<Eigen::Matrix<double, 6, 6>> _d_adj_inv_gab_d_thc;
             Eigen::Matrix<double, -1, -1> _Nf;
 
             // Time
@@ -62,6 +67,7 @@ namespace ec_calculator
                     void clearTipIndex();
                 void setAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_);
                 void setECGain(const double &ec_gain_);
+                void setGravitationalAcceleration(const double &gravitational_acceleration_);
 
             // Properties
             int getChainNum();
@@ -96,7 +102,10 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, -1> getMf();
                 Eigen::Matrix<double, 6, -1> getJacobianG(const int &joint_index_);
             Eigen::Matrix<double, -1, -1> getCf();
-            Eigen::Matrix<double, -1, -1> getNf();
+                double getCfBlock(const int &i_, const int &j_);
+                    double get_dMab_dThc(const int &a_, const int &b_, const int &c_);
+                        Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_);
+            Eigen::Matrix<double, -1, 1> getNf();
 
             // Angular Velocity to Angle (for Visualization)
             Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);

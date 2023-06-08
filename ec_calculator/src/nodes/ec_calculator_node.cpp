@@ -195,28 +195,27 @@ int main(int argc, char **argv)
             tfPublisher.publish("manipulator_base_link", "MidTargetPose"+std::to_string(i), manip.getMidPose(i));
         }
 
-        manip.angularVelocity2Angle(manip.getAngularVelocity());    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
-
-        angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocity());
-        angular_velocity_pub.publish(angular_velocity);
-
-        manip.print();
+        // manip.angularVelocity2Angle(manip.getAngularVelocity());    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
 
         /* Time Measure */
         start = ros::Time::now();
-        manip.getMf();
-        manip.getCf();
-        manip.getNf();
+        manip.torque2Angle(manip.getTorqueByAngle());    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
         end = ros::Time::now();
         sum += (end - start).toSec();
         cycle++;
-        std::cout << cycle << std::endl;
+        // std::cout << cycle << std::endl;
+
+        // angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocity());
+        // angular_velocity.data = EigenUtility.matrix2Array(manip.getTorqueByAngle());
+        // angular_velocity_pub.publish(angular_velocity);
+
+        manip.print();
 
         ros::spinOnce();
         loop_rate.sleep();
     }
 
-    std::cout << "time: " << sum/cycle << "\tcycle: " << cycle << std::endl << std::endl;
+    std::cout << "time: " << sum << "\tcycle: " << cycle << "\tmean time: " << sum/cycle << std::endl << std::endl;
 
     return 0;
 }

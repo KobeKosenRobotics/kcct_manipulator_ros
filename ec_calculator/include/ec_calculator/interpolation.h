@@ -31,9 +31,14 @@ namespace ec_calculator
             void setPoint(const Eigen::Matrix<double, -1, 1> &start_point_, const Eigen::Matrix<double, -1, 1> &end_point_);
             double getDistance();
             double getDuringTime();
+            double getMidTime();
             Eigen::Matrix<double, -1, 1> getLinearInterpolation();
             Eigen::Matrix<double, -1, 1> getCosInterpolation();
+            Eigen::Matrix<double, -1, 1> getDCosInterpolation();
+            Eigen::Matrix<double, -1, 1> getDDCosInterpolation();
             Eigen::Matrix<double, -1, 1> getSigmoidInterpolation();
+            Eigen::Matrix<double, -1, 1> getDSigmoidInterpolation();
+            Eigen::Matrix<double, -1, 1> getDDSigmoidInterpolation();
     };
 }
 

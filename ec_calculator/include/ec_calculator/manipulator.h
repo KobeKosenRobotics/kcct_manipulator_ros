@@ -16,8 +16,10 @@ namespace ec_calculator
             int _JOINT_NUM, _CHAIN_NUM;
             std::vector<Joint> _joints;
             std::vector<int> _tip_index;   // joints[_tip_index[]] have no children.
-            Eigen::Matrix<double, -1, -1> _angle_2_angular_velocity_gain;
-            double _ec_gain;
+            Eigen::Matrix<double, -1, -1> _angle_velocity_control_p_gain;
+            double _pose_velocity_control_p_gain;
+            double _angle_torque_control_p_gain;
+            double _angle_torque_control_d_gain;
             double _gravitational_acceleration;
 
             // Parameters
@@ -25,6 +27,8 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _target_angle;
             Eigen::Matrix<double, -1, 1> _angular_velocity;
             Eigen::Matrix<double, -1, 1> _target_angular_velocity;
+            Eigen::Matrix<double, -1, 1> _angular_acceleration;
+            Eigen::Matrix<double, -1, 1> _target_angular_acceleration;
             Eigen::Matrix<double, -1, 1> _torque;
             Eigen::Matrix<double, -1, 1> _target_torque;
 
@@ -34,7 +38,7 @@ namespace ec_calculator
 
             // Inverse Kinematics
             int _ik_index = 0;
-            std::vector<Interpolation> _interpolation;
+            std::vector<Interpolation> _ik_interpolation;
             std::vector<int> _start_joint_index;
             std::vector<int> _end_joint_index;
             Eigen::Matrix<double, -1, 1> _error_all;
@@ -43,6 +47,7 @@ namespace ec_calculator
                 std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
 
             // Torque Control
+            Interpolation _target_angle_interpolation;
             Eigen::Matrix<double, -1, -1> _Mf;
                 std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_g;
             Eigen::Matrix<double, -1, -1> _Cf;
@@ -65,8 +70,10 @@ namespace ec_calculator
                 void setJointParameters();
                     void setTipIndex(const int &tip_index_);
                     void clearTipIndex();
-                void setAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_);
-                void setECGain(const double &ec_gain_);
+                void setAngleVelocityControlPGain(const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_);
+                void setPoseVelocityControlPGain(const double &pose_velocity_control_p_gain_);
+                void setAngleTorqueControlPGain(const double &angle_torque_control_p_gain_);
+                void setAngleTorqueControlDGain(const double &angle_torque_control_d_gain_);
                 void setGravitationalAcceleration(const double &gravitational_acceleration_);
 
             // Properties
@@ -99,16 +106,19 @@ namespace ec_calculator
                     Eigen::Matrix<double, 6, -1> getJacobianBlock(const int &ik_index_);
 
             // Torque Control
-            Eigen::Matrix<double, -1, -1> getMf();
-                Eigen::Matrix<double, 6, -1> getJacobianG(const int &joint_index_);
-            Eigen::Matrix<double, -1, -1> getCf();
-                double getCfBlock(const int &i_, const int &j_);
-                    double get_dMab_dThc(const int &a_, const int &b_, const int &c_);
-                        Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_);
-            Eigen::Matrix<double, -1, 1> getNf();
+            Eigen::Matrix<double, -1, 1> getTorqueByAngle();
+                Eigen::Matrix<double, -1, -1> getMf();
+                    Eigen::Matrix<double, 6, -1> getJacobianG(const int &joint_index_);
+                Eigen::Matrix<double, -1, -1> getCf();
+                    double getCfBlock(const int &i_, const int &j_);
+                        double get_dMab_dThc(const int &a_, const int &b_, const int &c_);
+                            Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_);
+                Eigen::Matrix<double, -1, 1> getNf();
 
             // Angular Velocity to Angle (for Visualization)
             Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
+            // Torque to Angle (for Visualization)
+            Eigen::Matrix<double, -1, 1> torque2Angle(const Eigen::Matrix<double, -1, 1> &torque_);
 
             // Subscriber
             void setECEnable(const bool &ec_enable_);

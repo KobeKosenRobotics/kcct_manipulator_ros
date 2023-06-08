@@ -13,26 +13,26 @@ namespace ec_calculator
         _chain_mat.resize(_chain_num, _joint_num);
         _chain_mat <<
         // 1  2  3  4  5  6  7  8  9 10
-        1, 1, 1, 0, 0, 1, 0, 0, 1, 0,
-        1, 1, 1, 1, 0, 0, 1, 0, 0, 1,
-        1, 1, 0, 0, 1, 0, 0, 1, 0, 0;
+        1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 0, 1, 0,
+        1, 1, 1, 1, 1, 1, 1, 0, 0, 1;
 
         _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
-        0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         _translation_axis.resize(3, _joint_num);
         _translation_axis <<
-        0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         _rotation_axis.resize(3, _joint_num);
         _rotation_axis <<
         1, 0, 0, 1, 0, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 1, 0, 1, 0, 1, 0,
         0, 0, 1, 0, 0, 1, 0, 0, 0, 1;
 
         if(_torque_control_enable)
@@ -43,13 +43,16 @@ namespace ec_calculator
             _center_of_gravity_link.resize(3, _joint_num);
             _center_of_gravity_link = 0.5*_joint_position_link;
 
-            _gravitational_acceleration = -9.8;
+            _angle_torque_control_p_gain = 0.3;
+            _angle_torque_control_d_gain = -0.5;
+
+            _gravitational_acceleration = 9.8;
         }
 
-        _angle_2_angular_velocity_gain.resize(_joint_num, _joint_num);
-        _angle_2_angular_velocity_gain.setIdentity(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
 
-        _ec_gain = 1.0;
+        _pose_velocity_control_p_gain = 1.0;
     }
 
     // Change Model
@@ -59,8 +62,8 @@ namespace ec_calculator
                             const Eigen::Matrix<double, 3, -1> &joint_position_link_,
                             const Eigen::Matrix<double, 3, -1> &translation_axis_,
                             const Eigen::Matrix<double, 3, -1> &rotation_axis_,
-                            const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_,
-                            const double &ec_gain_)
+                            const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_,
+                            const double &pose_velocity_control_p_gain_)
     {
         // TODO: If any of the parameters cannot be changed, emergency stop change true.
         changeChainNum(chain_num_);
@@ -69,8 +72,8 @@ namespace ec_calculator
         changeJointPositionLink(joint_position_link_);
         changeTranslationAxis(translation_axis_);
         changeRotationAxis(rotation_axis_);
-        changeAngle2AngularVelocityGain(angle_2_angular_velocity_gain_);
-        changeECGain(ec_gain_);
+        changeAngleVelocityControlPGain(angle_velocity_control_p_gain_);
+        changePoseVelocityControlPGain(pose_velocity_control_p_gain_);
     }
 
     void Model::changeModel(const int &chain_num_,
@@ -81,8 +84,8 @@ namespace ec_calculator
                             const Eigen::Matrix<double, 3, -1> &rotation_axis_,
                             const Eigen::Matrix<double, 10, -1> &inertia_,
                             const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_,
-                            const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_,
-                            const double &ec_gain_)
+                            const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_,
+                            const double &pose_velocity_control_p_gain_)
     {
         // TODO: If any of the parameters cannot be changed, emergency stop change true.
         changeChainNum(chain_num_);
@@ -96,8 +99,8 @@ namespace ec_calculator
             changeInertia(inertia_);
             changeCenterOfGravityLink(center_of_gravity_link_);
         }
-        changeAngle2AngularVelocityGain(angle_2_angular_velocity_gain_);
-        changeECGain(ec_gain_);
+        changeAngleVelocityControlPGain(angle_velocity_control_p_gain_);
+        changePoseVelocityControlPGain(pose_velocity_control_p_gain_);
     }
     void Model::changeTorqueControlEnable(const bool &torque_control_enable_)
     {
@@ -192,22 +195,32 @@ namespace ec_calculator
         }
     }
 
-    void Model::changeAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_)
+    void Model::changeAngleVelocityControlPGain(const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_)
     {
-        if(angle_2_angular_velocity_gain_.rows() == _joint_num && angle_2_angular_velocity_gain_.cols() == _joint_num)
+        if(angle_velocity_control_p_gain_.rows() == _joint_num && angle_velocity_control_p_gain_.cols() == _joint_num)
         {
-            _angle_2_angular_velocity_gain.resize(_joint_num, _joint_num);
-            _angle_2_angular_velocity_gain = angle_2_angular_velocity_gain_;
+            _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
+            _angle_velocity_control_p_gain = angle_velocity_control_p_gain_;
         }
         else
         {
-            std::cout << "Matrix(angle_2_angular_velocity_gain_) Size do not match Joint Number." << std::endl;
+            std::cout << "Matrix(angle_velocity_control_p_gain_) Size do not match Joint Number." << std::endl;
         }
     }
 
-    void Model::changeECGain(const double &ec_gain_)
+    void Model::changePoseVelocityControlPGain(const double &pose_velocity_control_p_gain_)
     {
-        _ec_gain = ec_gain_;
+        _pose_velocity_control_p_gain = pose_velocity_control_p_gain_;
+    }
+
+    void Model::changeAngleTorqueControlPGain(const double &angle_torque_control_p_gain_)
+    {
+        _angle_torque_control_p_gain = angle_torque_control_p_gain_;
+    }
+
+    void Model::changeAngleTorqueControlDGain(const double &angle_torque_control_d_gain_)
+    {
+        _angle_torque_control_d_gain = angle_torque_control_d_gain_;
     }
 
     void Model::changeGravitationalAcceleration(const double &gravitational_acceleration_)
@@ -275,14 +288,24 @@ namespace ec_calculator
         return _center_of_gravity_link.col(joint_);
     }
 
-    Eigen::Matrix<double, -1, -1> Model::getAngle2AngularVelocityGain()
+    Eigen::Matrix<double, -1, -1> Model::getAngleVelocityControlPGain()
     {
-        return _angle_2_angular_velocity_gain;
+        return _angle_velocity_control_p_gain;
     }
 
-    double Model::getECGain()
+    double Model::getPoseVelocityControlPGain()
     {
-        return _ec_gain;
+        return _pose_velocity_control_p_gain;
+    }
+
+    double Model::getAngleTorqueControlPGain()
+    {
+        return _angle_torque_control_p_gain;
+    }
+
+    double Model::getAngleTorqueControlDGain()
+    {
+        return _angle_torque_control_d_gain;
     }
 
     double Model::getGravitationalAcceleration()

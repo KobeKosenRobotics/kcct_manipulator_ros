@@ -5,6 +5,154 @@ namespace ec_calculator
     // Constructor
     Model::Model()
     {
+        /* open manipulator *//*
+        _torque_control_enable = true;
+
+        _chain_num = 1;
+        _joint_num = 6;
+
+        _chain_mat.resize(_chain_num, _joint_num);
+        _chain_mat <<
+            1, 1, 1, 1, 1, 1;
+
+        _joint_position_link.resize(3, (_joint_num + _chain_num));
+        _joint_position_link <<
+              0.0, 0.0,  30.0, - 30.0, 0.0,   0.0, 0.0,
+              0.0, 0.0,   0.0,    0.0, 0.0,   0.0, 0.0,
+            159.0, 0.0, 264.0,  258.0, 0.0, 123.0, 0.0;
+        _joint_position_link *= 0.001;
+
+        _translation_axis.resize(3, _joint_num);
+        _translation_axis <<
+            0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0;
+
+        _rotation_axis.resize(3, _joint_num);
+        _rotation_axis <<
+            0, 0, 0, 0, 0, 0,
+            0, 1, 1, 0, 1, 0,
+            1, 0, 0, 1, 0, 1;
+
+        if(_torque_control_enable)
+        {
+            _inertia.resize(10, _joint_num);
+            _inertia.setConstant(1.0);
+            _inertia.transpose() <<
+                1030,
+                1.4957303e+06,  0.0000000e+00,  0.0000000e+00,
+                0.0000000e+00,  4.5009641e+05, -1.0959043e+04,
+                0.0000000e+00, -1.0959043e+04,  1.4874997e+06,
+                1404,
+                 1.0627201e+07, 1.2357497e+04, -1.2920605e+06,
+                 1.2357497e+04, 1.0014640e+07,  1.5798255e+05,
+                -1.2920605e+06, 1.5798255e+05,  1.9568681e+06,
+                1236,
+                 3.1318491e+06, -6.0760429e+03, 2.4765806e+04,
+                -6.0760429e+03,  2.9193915e+06, 4.2823763e+04,
+                 2.4765806e+04,  4.2823763e+04, 9.2402606e+05,
+                491,
+                 3.9670485e+05, -3.3867048e+00, -4.7608394e+01,
+                -3.3867048e+00,  2.3556702e+05,  3.9098238e+03,
+                -4.7608394e+01,  3.9098238e+03,  2.9647894e+05,
+                454,
+                4.7548066e+05, 0.0000000e+00, 0.0000000e+00,
+                0.0000000e+00, 3.9961989e+05, 1.4840847e+04,
+                0.0000000e+00, 1.4840847e+04, 1.9795791e+05,
+                1.0,
+                1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0,
+                1.0, 1.0, 1.0;
+            _inertia.block(0, 0, 1, _joint_num) *= 0.001;
+            _inertia.block(1, 0, 9, _joint_num) *= std::pow(0.001, 3);
+
+            _center_of_gravity_link.resize(3, _joint_num);
+            _center_of_gravity_link.transpose() <<
+                0, 1, -1.1,
+                17.9, 0.3, 206.9,
+                0.2, 0.3, 123.9,
+                0, -1.5, -7.7,
+                0, 0.8, 69.5,
+                0, 0, 0;
+            _center_of_gravity_link *= 0.001;
+
+            // _angle_torque_control_p_gain = 500.0;
+            _angle_torque_control_p_gain = 50.0;
+            // _angle_torque_control_d_gain = -1.0;
+
+            _gravitational_acceleration = 9.8;
+        }
+
+        _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
+
+        _pose_velocity_control_p_gain = 1.0;
+        */
+
+
+        /*SCARA*/
+        _torque_control_enable = true;
+
+        _chain_num = 1;
+        _joint_num = 4;
+
+        _chain_mat.resize(_chain_num, _joint_num);
+        _chain_mat <<
+            1, 1, 1, 1;
+
+        _joint_position_link.resize(3, (_joint_num + _chain_num));
+        _joint_position_link <<
+            0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0;
+
+        _translation_axis.resize(3, _joint_num);
+        _translation_axis <<
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 1;
+
+        _rotation_axis.resize(3, _joint_num);
+        _rotation_axis <<
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            1, 1, 1, 0;
+
+        if(_torque_control_enable)
+        {
+            _inertia.resize(10, _joint_num);
+            _inertia.setConstant(0.0);
+            _inertia.row(0).setConstant(1.0);
+            _inertia.row(1).setConstant(1.0);
+            _inertia.row(5).setConstant(1.0);
+            _inertia.row(9).setConstant(1.0);
+            _inertia.row(2).setConstant(0.1);
+            _inertia.row(3).setConstant(0.1);
+            _inertia.row(4).setConstant(0.1);
+            _inertia.row(6).setConstant(0.1);
+            _inertia.row(7).setConstant(0.1);
+            _inertia.row(8).setConstant(0.1);
+
+            _center_of_gravity_link.resize(3, _joint_num);
+            _center_of_gravity_link.transpose() <<
+                0, 0.5, 0,
+                0, 0.5, 0,
+                0, 0, 0,
+                0, 0, 0;
+
+            // _angle_torque_control_p_gain = 500.0;
+            _angle_torque_control_p_gain = 50.0;
+            // _angle_torque_control_d_gain = -1.0;
+
+            _gravitational_acceleration = 9.8;
+        }
+
+        _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
+
+        _pose_velocity_control_p_gain = 1.0;
+
+        /* test *//*
         _torque_control_enable = true;
 
         _chain_num = 3;
@@ -20,7 +168,7 @@ namespace ec_calculator
         _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         _translation_axis.resize(3, _joint_num);
@@ -41,7 +189,11 @@ namespace ec_calculator
             _inertia.setConstant(1.0);
 
             _center_of_gravity_link.resize(3, _joint_num);
-            _center_of_gravity_link = 0.5*_joint_position_link;
+            _center_of_gravity_link <<
+            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+            0  , 0  , 0  , 0  , 0  , 0  , 1  , 0.5, 0  , 0  ,
+            0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ;
+            // _center_of_gravity_link = 0.5*_joint_position_link;
 
             _angle_torque_control_p_gain = 0.3;
             _angle_torque_control_d_gain = -0.5;
@@ -53,6 +205,7 @@ namespace ec_calculator
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
 
         _pose_velocity_control_p_gain = 1.0;
+        */
     }
 
     // Change Model

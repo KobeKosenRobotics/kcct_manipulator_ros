@@ -171,7 +171,7 @@ namespace ec_calculator
 
         _xi_hat <<
             EigenUtility.hat(_w), _v,
-            0.0, 0.0, 0.0, 1.0;
+            0.0, 0.0, 0.0, 0.0;
     }
 
     void Joint::setGstZero()
@@ -354,6 +354,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::get_dGsr_dTh(const int &minimum_index_, const int &differentiating_index_)
     {
+        if((differentiating_index_ < minimum_index_) || (_index < differentiating_index_)) return Eigen::Matrix<double, 4, 4>::Zero();
         if(!isParent(minimum_index_)) return Eigen::Matrix<double, 4, 4>::Zero();
         if(!isParent(differentiating_index_)) return Eigen::Matrix<double, 4, 4>::Zero();
 
@@ -391,10 +392,11 @@ namespace ec_calculator
     {
         std::string tree;
         if(_parent == nullptr) tree += " --->\t";
+
+        if(_children.size() == 0) return tree + "(" + std::to_string(_index) + ")" + "\n\n";
+
         tree += std::to_string(_index);
         tree += " --->\t";
-
-        if(_children.size() == 0) return tree + "\n\n";
 
         tree += _children[0]->getChildrenList(getNumOfParentGenerations()+1);
 

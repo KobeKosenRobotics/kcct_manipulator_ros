@@ -32,9 +32,11 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _torque;
             Eigen::Matrix<double, -1, 1> _target_torque;
 
-            bool _ec_enable = false;
             bool _emergency_stop = false;
+            bool _ik_enable = false;
             bool _motor_enable = false;
+            bool _simulation_enable = true;
+            bool _torque_enable = false;
 
             // Inverse Kinematics
             int _ik_index = 0;
@@ -82,12 +84,17 @@ namespace ec_calculator
             std::string getJointName(const int &joint_index_);
             std::string getJointParentName(const int &joint_index_);
             int getInverseKinematicsNum();
+            bool getSimulationEnable();
+            bool getTorqueEnable();
 
             // Visualize
             double getVisualData(const int &joint_index_, const int &data_index_);
 
             // Forward Kinematics
             void updateAngle(const Eigen::Matrix<double, -1, 1> &angle_);
+            void updateAngularVelocity(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
+            void updateAngularAcceleration(const Eigen::Matrix<double, -1, 1> &angular_acceleration_);
+            void updateTorque(const Eigen::Matrix<double, -1, 1> &torque_);
             Eigen::Matrix<double, -1, 1> getAngle();
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);
 
@@ -113,6 +120,10 @@ namespace ec_calculator
                     double getCfBlock(const int &i_, const int &j_);
                         double get_dMab_dThc(const int &a_, const int &b_, const int &c_);
                             Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_);
+                Eigen::Matrix<double, 4, 4> getCfSpecific();
+                    double getCfBlockSpecific(const int &i_, const int &j_);
+                        double get_dMab_dThcSpecific(const int &a_, const int &b_, const int &c_);
+                            Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThcSpecific(const int &a_, const int &b_, const int &c_);
                 Eigen::Matrix<double, -1, 1> getNf();
 
             // Angular Velocity to Angle (for Visualization)
@@ -121,9 +132,11 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> torque2Angle(const Eigen::Matrix<double, -1, 1> &torque_);
 
             // Subscriber
-            void setECEnable(const bool &ec_enable_);
             void setEmergencyStop(const bool &emergency_stop_);
+            void setIKEnable(const bool &ik_enable_);
             void setMotorEnable(const bool &motor_enable_);
+            void setSimulationEnable(const bool &simulation_enable_);
+            void setTorqueEnable(const bool &torque_enable_);
             void setTargetAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
             void setTargetPose(const Eigen::Matrix<double, -1, 1> &target_pose_);    // 2: start_joint, end_joint, 6: 3position, 3orientation
             void setTargetVelocity(const Eigen::Matrix<double, -1, 1> &target_velocity_);
@@ -133,6 +146,7 @@ namespace ec_calculator
             void print();
             Eigen::Matrix<double, 6, 1> getTargetPose(const int &ik_index_);
             Eigen::Matrix<double, 6, 1> getMidPose(const int &ik_index_);
+            void get_SCARA();
     };
 }
 

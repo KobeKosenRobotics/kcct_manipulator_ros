@@ -9,6 +9,8 @@ namespace ec_calculator
 
     void ManipulatorTFPublisher::publish()
     {
+        if(!_manipulator->getSimulationEnable()) return;
+
         static tf::TransformBroadcaster br;
         geometry_msgs::TransformStamped transform_stamped;
         static tf2::Quaternion q;
@@ -41,6 +43,8 @@ namespace ec_calculator
 
     void ManipulatorTFPublisher::publish(const std::string &base_name_, const std::string &point_name_, const Eigen::Matrix<double, 6, 1> &pose_)
     {
+        if(!_manipulator->getSimulationEnable()) return;
+
         static tf::TransformBroadcaster br;
         geometry_msgs::TransformStamped transform_stamped;
         static tf2::Quaternion q;

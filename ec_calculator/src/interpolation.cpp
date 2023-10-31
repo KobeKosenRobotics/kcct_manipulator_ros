@@ -21,6 +21,9 @@ namespace ec_calculator
 
         _during_time = getDuringTime();
 
+        if(0.0 < _during_time) _sin_gain = ((2.0*M_PI)/(_during_time*_during_time))*(_end_point - _start_point);
+        else _sin_gain = 0.0*_start_point;
+
         _start_time = std::chrono::system_clock::now();
     }
 
@@ -55,27 +58,32 @@ namespace ec_calculator
         return _mid_point;
     }
 
-    Eigen::Matrix<double, -1, 1> Interpolation::getCosInterpolation()
+    Eigen::Matrix<double, -1, 1> Interpolation::getSinInterpolation()
     {
         getMidTime();
-        _mid_time = (1 - cos(_mid_time * M_PI))/2.0;
-        _mid_point = _start_point * (1 - _mid_time) + _end_point * _mid_time;
+        _mid_time *= (2.0*M_PI);
+
+        _mid_point = pow((_during_time/(2.0*M_PI)), 2)*(-sin(_mid_time) + _mid_time)*_sin_gain + _start_point;
 
         return _mid_point;
     }
 
-    Eigen::Matrix<double, -1, 1> Interpolation::getDCosInterpolation()
+    Eigen::Matrix<double, -1, 1> Interpolation::getDSinInterpolation()
     {
         getMidTime();
-        _mid_point = (M_PI*sin(M_PI*_mid_time)*(_end_point - _start_point))/2.0;
+        _mid_time *= (2.0*M_PI);
+
+        _mid_point = (_during_time/(2.0*M_PI))*(-cos(_mid_time) + 1.0)*_sin_gain;
 
         return _mid_point;
     }
 
-    Eigen::Matrix<double, -1, 1> Interpolation::getDDCosInterpolation()
+    Eigen::Matrix<double, -1, 1> Interpolation::getDDSinInterpolation()
     {
         getMidTime();
-        _mid_point = (M_PI*M_PI*cos(M_PI*_mid_time)*(_end_point - _start_point))/2.0;
+        _mid_time *= (2.0*M_PI);
+
+        _mid_point = (sin(_mid_time))*_sin_gain;
 
         return _mid_point;
     }
@@ -90,23 +98,4 @@ namespace ec_calculator
 
         return _mid_point;
     }
-
-    Eigen::Matrix<double, -1, 1> Interpolation::getDSigmoidInterpolation()
-    {
-        getMidTime();
-        _mid_point = -(2*_sigmoid_gain*exp(_sigmoid_gain*(2*_mid_time - 1))*(exp(_sigmoid_gain) + 1)*(_end_point - _start_point))/(2*exp(_sigmoid_gain*(2*_mid_time - 1)) - exp(_sigmoid_gain*(4*_mid_time - 1)) + exp(2*_sigmoid_gain*(2*_mid_time - 1)) - 2*exp(2*_mid_time*_sigmoid_gain) - exp(_sigmoid_gain) + 1);
-
-        return _mid_point;
-    }
-
-    // Eigen::Matrix<double, -1, 1> Interpolation::getSigmoidInterpolation()
-    // {
-        // getMidTime();
-        // double A_ = exp(-_sigmoid_gain*(2*_mid_time-1));
-        // double B_ = exp(-_sigmoid_gain);
-        // _mid_time = 0.5*(1 + (1-A_)/(1+A_)*(1+B_)/(1-B_));
-        // _mid_point = _start_point * (1 - _mid_time) + _end_point * _mid_time;
-
-        // return _mid_point;
-    // }
 }

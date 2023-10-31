@@ -1,5 +1,6 @@
 #include "ec_calculator/manipulator.h"
 #include "ec_calculator/eigenUtility.h"
+#include "ec_calculator/differential_integral.h"
 
 namespace ec_calculator
 {
@@ -58,15 +59,14 @@ namespace ec_calculator
 
         setGravitationalAcceleration(_model->getGravitationalAcceleration());
 
-        _is_first_time_measurement = true;
+        _is_first_during_time_measurement = true;
     }
 
     void Manipulator::clearParameters()
     {
         _angle.setZero();
         _target_angle.setZero();
-        _target_angle_interpolation.setLinearVelocity(1);
-        _target_angle_interpolation.setSigmoidGain(1);
+        _target_angle_interpolation.setLinearVelocity(0.2);
         _target_angle_interpolation.setPoint(_angle, _target_angle);
         _angular_velocity.setZero();
         _target_angular_velocity.setZero();
@@ -273,6 +273,7 @@ namespace ec_calculator
         if(!_motor_enable)
         {
             angularVelocity2Angle(_target_angular_velocity);
+            return EigenUtility.getZeros(_JOINT_NUM, 1);
         }
 
         return _target_angular_velocity;
@@ -280,11 +281,12 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle()
     {
-        _target_angular_velocity = _angle_velocity_control_p_gain * (_target_angle_interpolation.getCosInterpolation() - _angle);
+        _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation() + _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
 
         if(!_motor_enable)
         {
             angularVelocity2Angle(_target_angular_velocity);
+            return EigenUtility.getZeros(_JOINT_NUM, 1);
         }
 
         return _target_angular_velocity;
@@ -313,13 +315,14 @@ namespace ec_calculator
         _error_all.resize(6*_ik_index, 1);
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _error_all.block(6*ik_index, 0, 6, 1) = _ik_interpolation[ik_index].getSigmoidInterpolation() - getPose(_end_joint_index[ik_index]);
+            _error_all.block(6*ik_index, 0, 6, 1) = _ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - getPose(_end_joint_index[ik_index]));
         }
-        _target_angular_velocity = _pose_velocity_control_p_gain * EigenUtility.getPseudoInverseMatrix(getJacobian()) * _error_all;
+        _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(getJacobian()) * _error_all;
 
         if(!_motor_enable)
         {
             angularVelocity2Angle(_target_angular_velocity);
+            return EigenUtility.getZeros(_JOINT_NUM, 1);
         }
 
         return _target_angular_velocity;
@@ -347,7 +350,7 @@ namespace ec_calculator
             _jacobian_block[ik_index_].block(0, ik_index, 6, 1) = _joints[_end_joint_index[ik_index_]].getXiDagger(ik_index);
         }
 
-        _jacobian_block[ik_index_] = EigenUtility.getTransformationMatrix(_joints[_end_joint_index[ik_index_]].getGstTheta()) * _jacobian_block[ik_index_];
+        _jacobian_block[ik_index_] = (EigenUtility.getTransformationMatrix(_joints[_end_joint_index[ik_index_]].getGstTheta())).inverse() * _jacobian_block[ik_index_];
 
         return _jacobian_block[ik_index_];
     }
@@ -357,23 +360,35 @@ namespace ec_calculator
     {
         if(_emergency_stop)
         {
-            _torque.setZero();
-            torque2Angle(_torque);
-            return _torque;
+            _target_torque.setZero();
+            torque2Angle(_target_torque);
+            return _target_torque;
         }
 
         if(!_torque_enable) return _target_torque.setZero();
 
         getMf();
-        // getCf();
-        getCfSpecific();
+        getCf();
         getNf();
 
-        _target_torque = _Mf * (_angle_torque_control_p_gain * (_target_angle_interpolation.getCosInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+        /* Gain Example *//*
+        Eigen::Matrix<double, 6, 6> gain_matrix_;
+        gain_matrix_.setZero();
+        gain_matrix_(0,0) = 1000.0;
+        gain_matrix_(1,1) = 10.0;
+        gain_matrix_(2,2) = 15.0;
+        gain_matrix_(3,3) = 800.0;
+        gain_matrix_(4,4) = 50; // _angle_torque_control_p_gain;
+
+        _target_torque = _Mf * (gain_matrix_ * (_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+        */
+
+        _target_torque = _Mf * (_target_angle_interpolation.getDDSinInterpolation() + _angle_torque_control_d_gain*(_target_angle_interpolation.getDSinInterpolation() - _angular_velocity) + _angle_torque_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
 
         if(!_motor_enable)
         {
             torque2Angle(_target_torque);
+            return EigenUtility.getZeros(_JOINT_NUM, 1);
         }
 
         return _target_torque;
@@ -453,7 +468,7 @@ namespace ec_calculator
 
     double Manipulator::getCfBlock(const int &i_, const int &j_)
     {
-        double Cf_block_ = 0;
+        double Cf_block_ = 0.0;
 
         for(int joint = 0; joint < _JOINT_NUM; joint++)
         {
@@ -471,7 +486,7 @@ namespace ec_calculator
 
         if(_was_dMab_dThc_calculated) return _dMab_dThc[index_];
 
-        _dMab_dThc[index_] = 0;
+        _dMab_dThc[index_] = 0.0;
 
         for(int joint = 0; joint < _JOINT_NUM; joint++)
         {
@@ -485,107 +500,6 @@ namespace ec_calculator
     Eigen::Matrix<double, 6, 6> Manipulator::get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_)
     {
         // TODO: write easy to read
-        int index_ = a_*_JOINT_NUM*_JOINT_NUM + b_*_JOINT_NUM + c_;
-
-        if(_was_d_adj_inv_gab_d_thc_calculated) return _d_adj_inv_gab_d_thc[index_];
-
-        _d_adj_inv_gab_d_thc[index_].setZero();
-
-        Eigen::Matrix<double, 4, 4> g_mat_, d_gab_mat_d_thc_;
-        g_mat_ = _joints[b_].getParentGsrTheta(a_);
-        d_gab_mat_d_thc_ = _joints[b_].get_dGsr_dTh(a_, c_);
-
-        Eigen::Matrix<double, 3, 3> rot_, d_rot_;
-        Eigen::Matrix<double, 3, 1> pos_, d_pos_;
-        rot_ = g_mat_.block(0, 0, 3, 3);
-        d_rot_ = d_gab_mat_d_thc_.block(0, 0, 3, 3);
-        pos_ = g_mat_.block(0, 3, 3, 1);
-        d_pos_ = d_gab_mat_d_thc_.block(0, 3, 3, 1);
-
-        _d_adj_inv_gab_d_thc[index_] <<
-            d_rot_.transpose(), - d_rot_.transpose() * EigenUtility.hat(pos_) - rot_.transpose() * EigenUtility.hat(d_pos_),
-            Eigen::Matrix<double, 3, 3>::Zero(), d_rot_.transpose();
-
-        return _d_adj_inv_gab_d_thc[index_];
-    }
-
-    Eigen::Matrix<double, 4, 4> Manipulator::getCfSpecific()
-    {
-        _Cf.setZero();
-
-        _was_dMab_dThc_calculated = false;
-        _was_d_adj_inv_gab_d_thc_calculated = false;
-
-        for(int i = 0; i < _JOINT_NUM; i++)
-        {
-            for(int j = 0; j < _JOINT_NUM; j++)
-            {
-                for(int k = 0; k < _JOINT_NUM; k++)
-                {
-                    get_dAdjointInverseGab_dThcSpecific(i, j, k);
-                }
-            }
-        }
-        _was_d_adj_inv_gab_d_thc_calculated = true;
-
-        for(int i = 0; i < _JOINT_NUM; i++)
-        {
-            for(int j = 0; j < _JOINT_NUM; j++)
-            {
-                for(int k = 0; k < _JOINT_NUM; k++)
-                {
-                    get_dMab_dThcSpecific(i, j, k);
-                }
-            }
-        }
-        _was_dMab_dThc_calculated = true;
-
-        for(int joint_i = 0; joint_i < _JOINT_NUM; joint_i++)
-        {
-            for(int joint_j = 0; joint_j < _JOINT_NUM; joint_j++)
-            {
-                _Cf(joint_i, joint_j) = getCfBlockSpecific(joint_i, joint_j);
-            }
-        }
-
-        return _Cf;
-    }
-
-    double Manipulator::getCfBlockSpecific(const int &i_, const int &j_)
-    {
-        double Cf_block_ = 0.0;
-
-        for(int joint = 0; joint < _JOINT_NUM; joint++)
-        {
-            Cf_block_ += (get_dMab_dThcSpecific(i_, j_, joint) + get_dMab_dThcSpecific(i_, joint, j_) - get_dMab_dThcSpecific(joint, j_, i_)) * _angular_velocity(joint, 0);
-        }
-
-        Cf_block_ *= 0.5;
-
-        return Cf_block_;
-    }
-
-    double Manipulator::get_dMab_dThcSpecific(const int &a_, const int &b_, const int &c_)
-    {
-        int index_ = a_*_JOINT_NUM*_JOINT_NUM + b_*_JOINT_NUM + c_;
-
-        if(_was_dMab_dThc_calculated) return _dMab_dThc[index_];
-
-        _dMab_dThc[index_] = 0;
-
-        // if ((1<(a_+b_))||(c_!=1)) return _dMab_dThc[index_];
-
-        for(int joint = 0; joint < _JOINT_NUM; joint++)
-        {
-            // TODO: divide the calculation
-            _dMab_dThc[index_] += (((_joints[a_].getXi()).transpose()) * (((get_dAdjointInverseGab_dThcSpecific(a_, joint, c_)).transpose()) * (_joints[joint].getI()) * (EigenUtility.adjointInverse(_joints[joint].getParentGsrTheta(b_))) + (EigenUtility.adjointInverse(_joints[joint].getParentGsrTheta(a_)).transpose()) * (_joints[joint].getI()) * get_dAdjointInverseGab_dThcSpecific(b_, joint, c_)) * (_joints[b_].getXi()));
-        }
-
-        return _dMab_dThc[index_];
-    }
-
-    Eigen::Matrix<double, 6, 6> Manipulator::get_dAdjointInverseGab_dThcSpecific(const int &a_, const int &b_, const int &c_)
-    {
         int index_ = a_*_JOINT_NUM*_JOINT_NUM + b_*_JOINT_NUM + c_;
 
         if(_was_d_adj_inv_gab_d_thc_calculated) return _d_adj_inv_gab_d_thc[index_];
@@ -635,9 +549,9 @@ namespace ec_calculator
     {
         _angular_velocity = angular_velocity_;
 
-        if(_is_first_time_measurement)
+        if(_is_first_during_time_measurement)
         {
-            _is_first_time_measurement = false;
+            _is_first_during_time_measurement = false;
             _angle.setZero();
             _start_time = std::chrono::system_clock::now();
         }
@@ -658,9 +572,9 @@ namespace ec_calculator
 
         _angular_acceleration = EigenUtility.getPseudoInverseMatrix(_Mf) * (_torque - (_Cf * _angular_velocity) - _Nf);
 
-        if(_is_first_time_measurement)
+        if(_is_first_during_time_measurement)
         {
-            _is_first_time_measurement = false;
+            _is_first_during_time_measurement = false;
             _angle.setZero();
             _start_time = std::chrono::system_clock::now();
         }
@@ -684,12 +598,16 @@ namespace ec_calculator
 
         _ik_enable = ik_enable_;
 
-        _target_angle_interpolation.setPoint(_angle, _target_angle);
-        // setTargetAngle(_target_angle);
-
-        for(int ik_index = 0; ik_index < _ik_index; ik_index++)
+        if(_ik_enable)
         {
-            _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+            for(int ik_index = 0; ik_index < _ik_index; ik_index++)
+            {
+                _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+            }
+        }
+        else
+        {
+            _target_angle_interpolation.setPoint(_angle, _target_angle);
         }
     }
 
@@ -719,6 +637,11 @@ namespace ec_calculator
         {
             _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
         }
+    }
+
+    bool Manipulator::getMotorEnable()
+    {
+        return _motor_enable;
     }
 
     void Manipulator::setSimulationEnable(const bool &simulation_enable_)
@@ -786,15 +709,38 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        std::cout << "Mf\n" << _Mf << std::endl << std::endl;
-        std::cout << "Cf\n" << _Cf << std::endl << std::endl;
-        std::cout << "Nf\n" << _Nf << std::endl << std::endl;
+        // std::cout << "Mf\n" << _Mf << std::endl << std::endl;
+        // std::cout << "Cf\n" << _Cf << std::endl << std::endl;
+        // std::cout << "Nf\n" << _Nf << std::endl << std::endl;
 
-        std::cout << "gain : " << _angle_torque_control_p_gain << std::endl;
+        // // std::cout << "gain : " << _angle_torque_control_p_gain << std::endl;
         std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
-        std::cout << "angular_velocity :" << std::endl << _angular_velocity << std::endl << std::endl;
+        std::cout << "pose :" << std::endl << getPose(6) << std::endl << std::endl;
+        // // std::cout << "angular_velocity :" << std::endl << _angular_velocity << std::endl << std::endl;
 
-        get_SCARA();
+        // std::cout << "torque :" << std::endl << _torque << std::endl << std::endl;
+
+        // std::cout << "cumulative time :" << std::endl << updateCumulativeTime() << std::endl << std::endl;
+
+        // getNowTorque();
+
+        // if(_motor_enable)
+        // {
+        //     /* Writing to a File */
+        //     std::ofstream output_file("/home/amar/Documents/Tokuken/ConverterParameter/all_joint_move.csv", std::ios::app);
+
+        //     output_file << _cumulative_time << ",";
+
+        //     for(int j = 0; j < 6; j++)
+        //     {
+        //         output_file << _torque(j,0) << "," << _now_torque(j,0) << ",";
+        //         // output_file << _target_torque(j,0) << "," << _torque(j,0) << ",";
+        //     }
+
+        //     output_file << std::endl;
+        // }
+
+        // get_SCARA();
     }
 
     Eigen::Matrix<double, 6, 1> Manipulator::getTargetPose(const int &ik_index_)
@@ -804,7 +750,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 6, 1> Manipulator::getMidPose(const int &ik_index_)
     {
-        if(_ik_enable) return _ik_interpolation[ik_index_].getSigmoidInterpolation();
+        if(_ik_enable) return _ik_interpolation[ik_index_].getSinInterpolation();
 
         return Eigen::Matrix<double, 6, 1>::Zero();
     }
@@ -839,5 +785,29 @@ namespace ec_calculator
         std::cout << "Mf_SCARA\n" << Mf_SCARA_ << std::endl << std::endl;
         std::cout << "Cf_SCARA\n" << Cf_SCARA_ << std::endl << std::endl;
         std::cout << "Nf_SCARA\n" << Nf_SCARA_ << std::endl << std::endl;
+    }
+
+    Eigen::Matrix<double, 6, 1> Manipulator::getIdealTorque()
+    {
+        getMf();
+        getCf();
+        getNf();
+
+        _angular_acceleration = _angular_acc_diff.differential(_angular_velocity);
+
+        _ideal_torque = _Mf*_angular_acceleration + _Cf*_angular_velocity + _Nf;
+
+        return _ideal_torque;
+    }
+
+    double Manipulator::updateCumulativeTime()
+    {
+        if(_is_first_cumulative_time_measurement)
+        {
+            _is_first_cumulative_time_measurement = false;
+            _cumulative_time_start = std::chrono::system_clock::now();
+        }
+
+        return _cumulative_time = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-_cumulative_time_start).count();
     }
 }

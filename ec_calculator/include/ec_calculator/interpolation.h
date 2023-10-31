@@ -25,6 +25,8 @@ namespace ec_calculator
             double _linear_velocity = 0.1;  // [m/s]
             double _sigmoid_gain = 2;
 
+            Eigen::Matrix<double, -1, 1> _sin_gain;
+
         public:
             void setLinearVelocity(const double &linear_velocity_);
             void setSigmoidGain(const double &sigmoid_gain_);
@@ -33,12 +35,10 @@ namespace ec_calculator
             double getDuringTime();
             double getMidTime();
             Eigen::Matrix<double, -1, 1> getLinearInterpolation();
-            Eigen::Matrix<double, -1, 1> getCosInterpolation();
-            Eigen::Matrix<double, -1, 1> getDCosInterpolation();
-            Eigen::Matrix<double, -1, 1> getDDCosInterpolation();
+            Eigen::Matrix<double, -1, 1> getSinInterpolation();
+            Eigen::Matrix<double, -1, 1> getDSinInterpolation();
+            Eigen::Matrix<double, -1, 1> getDDSinInterpolation();
             Eigen::Matrix<double, -1, 1> getSigmoidInterpolation();
-            Eigen::Matrix<double, -1, 1> getDSigmoidInterpolation();
-            Eigen::Matrix<double, -1, 1> getDDSigmoidInterpolation();
     };
 }
 

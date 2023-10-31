@@ -18,6 +18,7 @@ Model model;
 ros::Time start, end;
 double sum = 0;
 int cycle = 0;
+bool free_fall = false;
 
 // Publisher
 std_msgs::Float32MultiArray target_angular_velocity;
@@ -42,6 +43,7 @@ std_msgs::Float32MultiArray target_pose;    // 2: start_joint, end_joint, 6: 3po
 
 void emergency_stop_cb(std_msgs::Bool::ConstPtr msg)
 {
+    // free_fall = true;
     manip.setEmergencyStop(msg->data);
 }
 
@@ -72,7 +74,10 @@ void gain_cb(std_msgs::Int16::ConstPtr msg)
 
 void angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
-    manip.updateAngle(EigenUtility.array2Matrix(msg->data));
+    if(manip.getMotorEnable())
+    {
+        manip.updateAngle(EigenUtility.array2Matrix(msg->data));
+    }
 }
 
 void angular_velocity_cb(std_msgs::Float32MultiArray::ConstPtr msg)
@@ -245,7 +250,7 @@ int main(int argc, char **argv)
     // target_torque.data.resize(manip.getJointNum());
     // target_angle.data.resize(manip.getJointNum());
 
-    /* check Motion Equation *//*
+    /* check Motion Equation */
     Eigen::Matrix<double, 470, 8> torque_data;
     torque_data << // 251~720   rows = 720-250 = 470;
         1500, 46.3, -0.24612, -0.566428, 0.26544, 0.70784, -0.24648, 0.1896, 
@@ -721,7 +726,6 @@ int main(int argc, char **argv)
 
     Eigen::Matrix<double, 6, 1> torque_initial;
     torque_initial = manip.getTorqueByAngle();
-    */
 
     while(nh.ok())
     {
@@ -741,18 +745,24 @@ int main(int argc, char **argv)
         // cycle++;
         // std::cout << cycle << std::endl;
 
-        /* check Motion Equation *//*
-        manip.getMf();
-        manip.getCf();
-        manip.getNf();
-        manip.torque2Angle((torque_data.block(cycle, 2, 1, 6) - torque_data.block(0, 2, 1, 6)).transpose() + torque_initial);
-        cycle++;
-        */
+        if(free_fall)
+        {
+            /* check Motion Equation */
+            manip.getMf();
+            manip.getCf();
+            manip.getNf();
+            manip.torque2Angle(Eigen::Matrix<double, 6, 1>::Zero());
+            // manip.torque2Angle((torque_data.block(cycle, 2, 1, 6) - torque_data.block(0, 2, 1, 6)).transpose() + torque_initial);
+            cycle++;
+        }
 
-        target_angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocity());
-        target_torque.data = EigenUtility.matrix2Array(manip.getTorqueByAngle());
-        target_angular_velocity_pub.publish(target_angular_velocity);
-        target_torque_pub.publish(target_torque);
+        else
+        {
+            target_angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocity());
+            target_torque.data = EigenUtility.matrix2Array(manip.getTorqueByAngle());
+            target_angular_velocity_pub.publish(target_angular_velocity);
+            target_torque_pub.publish(target_torque);
+        }
 
         manip.print();
 

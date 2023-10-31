@@ -3,8 +3,12 @@
 #include "model.h"
 #include "joint.h"
 #include "interpolation.h"
+#include "differential_integral.h"
 
 #include <chrono>
+#include <string>
+#include <fstream>
+#include <sstream>
 
 namespace ec_calculator
 {
@@ -62,7 +66,11 @@ namespace ec_calculator
             // Time
             std::chrono::system_clock::time_point _start_time, _end_time;
             double _during_time;
-            bool _is_first_time_measurement = true; // TODO: Whether to reset when changing models
+            bool _is_first_during_time_measurement = true; // TODO: Whether to reset when changing models
+
+            std::chrono::system_clock::time_point _cumulative_time_start;
+            double _cumulative_time = 0.0;
+            bool _is_first_cumulative_time_measurement = true;
 
         public:
             // Initialize
@@ -120,10 +128,6 @@ namespace ec_calculator
                     double getCfBlock(const int &i_, const int &j_);
                         double get_dMab_dThc(const int &a_, const int &b_, const int &c_);
                             Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_);
-                Eigen::Matrix<double, 4, 4> getCfSpecific();
-                    double getCfBlockSpecific(const int &i_, const int &j_);
-                        double get_dMab_dThcSpecific(const int &a_, const int &b_, const int &c_);
-                            Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThcSpecific(const int &a_, const int &b_, const int &c_);
                 Eigen::Matrix<double, -1, 1> getNf();
 
             // Angular Velocity to Angle (for Visualization)
@@ -135,6 +139,7 @@ namespace ec_calculator
             void setEmergencyStop(const bool &emergency_stop_);
             void setIKEnable(const bool &ik_enable_);
             void setMotorEnable(const bool &motor_enable_);
+            bool getMotorEnable();
             void setSimulationEnable(const bool &simulation_enable_);
             void setTorqueEnable(const bool &torque_enable_);
             void setTargetAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
@@ -147,6 +152,10 @@ namespace ec_calculator
             Eigen::Matrix<double, 6, 1> getTargetPose(const int &ik_index_);
             Eigen::Matrix<double, 6, 1> getMidPose(const int &ik_index_);
             void get_SCARA();
+            Eigen::Matrix<double, 6, 1> getIdealTorque();
+                DifferentialIntegral _angular_acc_diff;
+                Eigen::Matrix<double, 6, 1> _ideal_torque;
+            double updateCumulativeTime();
     };
 }
 

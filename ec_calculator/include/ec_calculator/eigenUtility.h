@@ -51,6 +51,14 @@ namespace ec_calculator
                 return identity_;
             }
 
+            Eigen::Matrix<double, -1, -1> getZeros(const int &rows, const int &columns)
+            {
+                Eigen::Matrix<double, -1, -1> zeros_;
+                zeros_.resize(rows, columns);
+                zeros_.setZero();
+                return zeros_;
+            }
+
             Eigen::Matrix<double, 3, 3> hat(const Eigen::Matrix<double, 3, 1> &vec)
             {
                 Eigen::Matrix<double, 3, 3> hat_vec_;

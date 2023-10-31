@@ -5,7 +5,7 @@ namespace ec_calculator
     // Constructor
     Model::Model()
     {
-        /* open manipulator *//*
+        /* open manipulator */
         _torque_control_enable = true;
 
         _chain_num = 1;
@@ -59,26 +59,25 @@ namespace ec_calculator
                 4.7548066e+05, 0.0000000e+00, 0.0000000e+00,
                 0.0000000e+00, 3.9961989e+05, 1.4840847e+04,
                 0.0000000e+00, 1.4840847e+04, 1.9795791e+05,
-                1.0,
-                1.0, 1.0, 1.0,
-                1.0, 1.0, 1.0,
-                1.0, 1.0, 1.0;
+                5.0,
+                5.0, 0.0, 0.0,
+                0.0, 5.0, 0.0,
+                0.0, 0.0, 5.0;
             _inertia.block(0, 0, 1, _joint_num) *= 0.001;
             _inertia.block(1, 0, 9, _joint_num) *= std::pow(0.001, 3);
 
             _center_of_gravity_link.resize(3, _joint_num);
             _center_of_gravity_link.transpose() <<
-                0, 1, -1.1,
-                17.9, 0.3, 206.9,
-                0.2, 0.3, 123.9,
-                0, -1.5, -7.7,
-                0, 0.8, 69.5,
-                0, 0, 0;
+                  0  ,  1  , -  1.1,    // gl0 = g00
+                 17.9,  0.3,  206.9,    // gl1 = g01
+                -29.8,  0.3,  123.9,    // gl2 = g02 + q0 - q2 = g02 - l02 = g02[0.2,0.3,387.9] - [30,0,264]
+                  0  , -1.5, -  7.7,    // gl3 = g03 + q0 - q3 = g03 - l03 = g03 - [0,0,264+258] = g03[0,-1.5,514.3] - [0,0,522]
+                  0  ,  0.8,   69.5,    // gl4 = g04 + q0 - q4 = g04 - l04 = g04[0,0.8,591.5] - [0,0,522]
+                  0  ,  0  ,    0  ;    // gl5 = g05 = 0
             _center_of_gravity_link *= 0.001;
 
-            // _angle_torque_control_p_gain = 500.0;
-            _angle_torque_control_p_gain = 50.0;
-            // _angle_torque_control_d_gain = -1.0;
+            _angle_torque_control_p_gain = 0.2;
+            _angle_torque_control_d_gain = 0.2;
 
             _gravitational_acceleration = 9.8;
         }
@@ -86,11 +85,9 @@ namespace ec_calculator
         _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
 
-        _pose_velocity_control_p_gain = 1.0;
-        */
+        _pose_velocity_control_p_gain = 0.5;
 
-
-        /*SCARA*/
+        /* SCARA *//*
         _torque_control_enable = true;
 
         _chain_num = 1;
@@ -151,6 +148,7 @@ namespace ec_calculator
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
 
         _pose_velocity_control_p_gain = 1.0;
+        */
 
         /* test *//*
         _torque_control_enable = true;

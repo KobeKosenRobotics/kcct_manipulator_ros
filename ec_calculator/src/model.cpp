@@ -5,7 +5,7 @@ namespace ec_calculator
     // Constructor
     Model::Model()
     {
-        /* open manipulator */
+        /* open manipulator *//*
         _torque_control_enable = true;
 
         _chain_num = 1;
@@ -81,6 +81,43 @@ namespace ec_calculator
 
             _gravitational_acceleration = 9.8;
         }
+
+        _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
+
+        _pose_velocity_control_p_gain = 0.5;
+        */
+
+        /* 1 Arm 3 fingers */
+        _torque_control_enable = false;
+
+        _chain_num = 3;
+        _joint_num = 15;
+
+        _chain_mat.resize(_chain_num, _joint_num);
+        _chain_mat <<
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1;
+
+        _joint_position_link.resize(3, (_joint_num + _chain_num));
+        _joint_position_link <<
+              0.0, 0.0,  30.0, - 30.0, 0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+              0.0, 0.0,   0.0,    0.0, 0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
+            159.0, 0.0, 264.0,  258.0, 0.0, 123.0, 0.0, 100.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0, 100.0, 100.0, 100.0, 100.0;
+        _joint_position_link *= 0.001;
+
+        _translation_axis.resize(3, _joint_num);
+        _translation_axis.setZero();
+
+        _rotation_axis.resize(3, _joint_num);
+        _rotation_axis <<
+            0, 0, 0, 0, 0, 0, -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0),
+            0, 1, 1, 0, 1, 0,  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),
+            1, 0, 0, 1, 0, 1,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0;
+            // cost -sint 0
+            // sint  cost 0
+            // 0     0    1
 
         _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);

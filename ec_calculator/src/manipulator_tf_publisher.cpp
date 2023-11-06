@@ -26,7 +26,7 @@ namespace ec_calculator
             transform_stamped.transform.translation.y = _manipulator->getVisualData(joint, 1);
             transform_stamped.transform.translation.z = _manipulator->getVisualData(joint, 2);
 
-            q.setRPY(_manipulator->getVisualData(joint, 3), _manipulator->getVisualData(joint, 4), _manipulator->getVisualData(joint, 5));
+            q.setRPY(_manipulator->getVisualData(joint, 5), _manipulator->getVisualData(joint, 4), _manipulator->getVisualData(joint, 3));
             transform_stamped.transform.rotation.x = q.x();
             transform_stamped.transform.rotation.y = q.y();
             transform_stamped.transform.rotation.z = q.z();

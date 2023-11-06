@@ -202,7 +202,7 @@ namespace ec_calculator
 
     void Joint::setVisualData()
     {
-        _visual_data.block(3, 0, 3, 1) = _theta * _w;
+        _visual_data.block(3, 0, 3, 1) = EigenUtility.getEulerAngle(getExpWHatTheta());
 
         if(_parent == nullptr)
         {

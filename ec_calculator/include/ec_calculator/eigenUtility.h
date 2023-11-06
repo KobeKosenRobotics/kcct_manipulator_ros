@@ -128,20 +128,29 @@ namespace ec_calculator
 
                 pose_.block(0,0,3,1) = homogeneous_trans_mat.block(0,3,3,1);
 
-                pose_(4,0) = -asin(homogeneous_trans_mat(2,0));
-
-                pose_(3,0) = +acos(homogeneous_trans_mat(0,0)/cos(pose_(4,0)));
-                if(homogeneous_trans_mat(1,0)/cos(pose_(4,0)) < 0) pose_(3,0) *= (-1);
-
-                pose_(5,0) = acos(homogeneous_trans_mat(2,2)/cos(pose_(4,0)));
-                if(homogeneous_trans_mat(2,1)/cos(pose_(4,0)) < 0) pose_(5,0) *=(-1);
-
-                for(int i = 3; i < 6; i++)
-                {
-                    if(std::isnan(pose_(i,0))) pose_(i,0) = 0.0;
-                }
+                pose_.block(3,0,3,1) = getEulerAngle(homogeneous_trans_mat.block(0,0,3,3));
 
                 return pose_;
+            }
+
+            Eigen::Matrix<double, 3, 1> getEulerAngle(const Eigen::Matrix<double, 3, 3> &rotation_mat_)
+            {
+                Eigen::Matrix<double, 3, 1> euler_angle_;
+
+                euler_angle_(1,0) = -asin(rotation_mat_(2,0));
+
+                euler_angle_(0,0) = +acos(rotation_mat_(0,0)/cos(euler_angle_(1,0)));
+                if(rotation_mat_(1,0)/cos(euler_angle_(1,0)) < 0) euler_angle_(0,0) *= (-1);
+
+                euler_angle_(2,0) = acos(rotation_mat_(2,2)/cos(euler_angle_(1,0)));
+                if(rotation_mat_(2,1)/cos(euler_angle_(1,0)) < 0) euler_angle_(2,0) *=(-1);
+
+                for(int i = 0; i < 3; i++)
+                {
+                    if(std::isnan(euler_angle_(i,0))) euler_angle_(i,0) = 0.0;
+                }
+
+                return euler_angle_;
             }
 
             Eigen::Matrix<double, 6, 6> adjoint(const Eigen::Matrix<double, 4, 4> &mat)

@@ -93,6 +93,7 @@ namespace ec_calculator
 
         _chain_num = 3;
         _joint_num = 15;
+        _binding_conditions = 3;
 
         _chain_mat.resize(_chain_num, _joint_num);
         _chain_mat <<
@@ -305,6 +306,16 @@ namespace ec_calculator
         _joint_num = joint_num_;
     }
 
+    void Model::changeBindingConditions(const int &binding_conditions_)
+    {
+        if(binding_conditions_ <= 0 || 6 < binding_conditions_)
+        {
+            std::cout << "Binding Conditions is wrong." << std::endl;
+        }
+
+        _binding_conditions = binding_conditions_;
+    }
+
     void Model::changeChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat_)
     {
         if(chain_mat_.rows() == _chain_num && chain_mat_.cols() == _joint_num)
@@ -432,9 +443,44 @@ namespace ec_calculator
         return _chain_num;
     }
 
+    int Model::getBindingConditions()
+    {
+        return _binding_conditions;
+    }
+
     Eigen::Matrix<bool, -1, -1> Model::getChainMat()
     {
         return _chain_mat;
+    }
+
+    Eigen::Matrix<double, -1, 6> Model::getBindingConditionsMatrix()
+    {
+        _binding_conditions_matrix.resize(_binding_conditions, 6);
+        _binding_conditions_matrix.setZero();
+
+        if(_binding_conditions == 1)
+        {
+            _binding_conditions_matrix(0,2) = 1;
+        }
+        else if(_binding_conditions == 3)
+        {
+            _binding_conditions_matrix(0,0) = 1;
+            _binding_conditions_matrix(1,1) = 1;
+            _binding_conditions_matrix(2,2) = 1;
+        }
+        else if(_binding_conditions == 4)
+        {
+            _binding_conditions_matrix(0,0) = 1;
+            _binding_conditions_matrix(1,1) = 1;
+            _binding_conditions_matrix(2,2) = 1;
+            _binding_conditions_matrix(3,5) = 1;
+        }
+        else if(_binding_conditions == 6)
+        {
+            _binding_conditions_matrix.setIdentity();
+        }
+
+        return _binding_conditions_matrix;
     }
 
     Eigen::Matrix<double, 3, 1> Model::getJointPositionLink(const int &joint_)

@@ -17,7 +17,8 @@ namespace ec_calculator
         private:
             // Model
             Model* _model;
-            int _JOINT_NUM, _CHAIN_NUM;
+            int _JOINT_NUM, _CHAIN_NUM, _BINDING_CONDITIONS;
+            Eigen::Matrix<double, -1, 6> _binding_conditions_matrix;
             std::vector<Joint> _joints;
             std::vector<int> _tip_index;   // joints[_tip_index[]] have no children.
             Eigen::Matrix<double, -1, -1> _angle_velocity_control_p_gain;
@@ -76,7 +77,8 @@ namespace ec_calculator
             // Initialize
             void init(Model* model_);
                 void clearParameters();
-                bool setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix);
+                bool setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix_);
+                void setBindingConditionsMatrix(const Eigen::Matrix<double, -1, 6> &binding_conditions_matrix_);
                 void setJointParameters();
                     void setTipIndex(const int &tip_index_);
                     void clearTipIndex();

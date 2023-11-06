@@ -13,6 +13,7 @@ namespace ec_calculator
 
         _JOINT_NUM = _model->getJointNum();
         _CHAIN_NUM = _model->getChainNum();
+        _BINDING_CONDITIONS = _model->getBindingConditions();
         _joints.clear();
         _joints.resize(_JOINT_NUM+_CHAIN_NUM);
 
@@ -49,6 +50,7 @@ namespace ec_calculator
         }
 
         setChainMatrix(_model->getChainMat());
+        setBindingConditionsMatrix(_model->getBindingConditionsMatrix());
 
         setJointParameters();
 
@@ -76,7 +78,7 @@ namespace ec_calculator
         _target_torque.setZero();
     }
 
-    bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat)
+    bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix_)
     {
         std::cout << "\nSetChainMatrix:" << std::endl;
         for(int chain = 0; chain < _CHAIN_NUM; chain++)
@@ -84,7 +86,7 @@ namespace ec_calculator
             int parent = -1;
             for(int child = 0; child < _JOINT_NUM; child++)
             {
-                if(!chain_mat(chain, child)) continue;
+                if(!chain_matrix_(chain, child)) continue;
                 if(parent != -1)
                 {
                     _joints[child].setParent(_joints[parent]);
@@ -115,6 +117,12 @@ namespace ec_calculator
             }
         }
         return true;
+    }
+
+    void Manipulator::setBindingConditionsMatrix(const Eigen::Matrix<double, -1, 6> &binding_conditions_matrix_)
+    {
+        _binding_conditions_matrix.resize(_BINDING_CONDITIONS, 6);
+        _binding_conditions_matrix = binding_conditions_matrix_;
     }
 
     void Manipulator::setJointParameters()
@@ -312,10 +320,10 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByEC()
     {
-        _error_all.resize(6*_ik_index, 1);
+        _error_all.resize(_BINDING_CONDITIONS*_ik_index, 1);
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _error_all.block(6*ik_index, 0, 6, 1) = _ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - getPose(_end_joint_index[ik_index]));
+            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = _binding_conditions_matrix*(_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - getPose(_end_joint_index[ik_index])));
         }
         _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(getJacobian()) * _error_all;
 
@@ -330,11 +338,11 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, -1> Manipulator::getJacobian()
     {
-        _jacobian.resize(6*_ik_index, _JOINT_NUM);
+        _jacobian.resize(_BINDING_CONDITIONS*_ik_index, _JOINT_NUM);
 
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _jacobian.block(6*ik_index, 0, 6, _JOINT_NUM) = getJacobianBlock(ik_index);
+            _jacobian.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, _JOINT_NUM) = _binding_conditions_matrix*getJacobianBlock(ik_index);
         }
 
         return _jacobian;

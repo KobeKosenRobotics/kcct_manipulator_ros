@@ -709,6 +709,33 @@ namespace ec_calculator
         }
     }
 
+    void Manipulator::setTargetPolygon(const Eigen::Matrix<double, -1, 1> &target_polygon_)
+    {
+        _ik_interpolation.resize(_CHAIN_NUM);
+        _start_joint_index.resize(_CHAIN_NUM);
+        _end_joint_index.resize(_CHAIN_NUM);
+        _target_pose.resize(_CHAIN_NUM);
+        _jacobian_block.resize(_CHAIN_NUM);
+
+        clearJointPose();
+
+        if(target_polygon_.size() < 7)
+        {
+            std::cout << "Target Polygon must be at least 7 dimensions." << std::endl;
+        }
+
+        Eigen::Matrix<double, 3, 1> base_vector_;
+        base_vector_ << 1.0, 0.0, 0.0;
+        Eigen::Matrix<double, 6, 1> polygon_pose_;
+
+        for(int ik_index = 0; ik_index < _CHAIN_NUM; ik_index++)
+        {
+            polygon_pose_ = target_polygon_.block(0,0,6,1);
+            polygon_pose_.block(0,0,3,1) += EigenUtility.getRotationMatrixZ(polygon_pose_(3,0))*EigenUtility.getRotationMatrixY(polygon_pose_(4,0))*EigenUtility.getRotationMatrixX(polygon_pose_(5,0))*(target_polygon_(6,0)*EigenUtility.getRotationMatrixZ(2.0*ik_index*M_PI/(double)_CHAIN_NUM)*base_vector_);
+            setJointPose(0, (_JOINT_NUM + ik_index), polygon_pose_);
+        }
+    }
+
     // Debug
     void Manipulator::printTree()
     {

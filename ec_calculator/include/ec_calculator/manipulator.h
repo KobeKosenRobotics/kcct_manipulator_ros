@@ -146,7 +146,7 @@ namespace ec_calculator
             void setTorqueEnable(const bool &torque_enable_);
             void setTargetAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
             void setTargetPose(const Eigen::Matrix<double, -1, 1> &target_pose_);    // 2: start_joint, end_joint, 6: 3position, 3orientation
-            void setTargetVelocity(const Eigen::Matrix<double, -1, 1> &target_velocity_);
+            void setTargetPolygon(const Eigen::Matrix<double, -1, 1> &target_polygon_);
 
             // Debug
             void printTree();

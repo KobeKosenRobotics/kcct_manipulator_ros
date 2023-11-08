@@ -88,7 +88,7 @@ namespace ec_calculator
         _pose_velocity_control_p_gain = 0.5;
         */
 
-        /* 1 Arm 3 fingers */
+        /* 1 Arm 3 fingers *//*
         _torque_control_enable = false;
 
         _chain_num = 3;
@@ -103,9 +103,9 @@ namespace ec_calculator
 
         _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
-              0.0, 0.0,  30.0, - 30.0, 0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
-              0.0, 0.0,   0.0,    0.0, 0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,
-            159.0, 0.0, 264.0,  258.0, 0.0, 123.0, 0.0, 100.0, 100.0, 0.0, 100.0, 100.0, 0.0, 100.0, 100.0, 100.0, 100.0, 100.0;
+              0.0, 0.0,  30.0, - 30.0, 0.0,   0.0, 50.0*cos(0.0*M_PI/3.0),  0.0,  0.0, 50.0*cos(2.0*M_PI/3.0),  0.0,  0.0, 50.0*cos(4.0*M_PI/3.0),  0.0,  0.0,  0.0,  0.0,  0.0,
+              0.0, 0.0,   0.0,    0.0, 0.0,   0.0, 50.0*sin(0.0*M_PI/3.0),  0.0,  0.0, 50.0*sin(2.0*M_PI/3.0),  0.0,  0.0, 50.0*sin(4.0*M_PI/3.0),  0.0,  0.0,  0.0,  0.0,  0.0,
+            159.0, 0.0, 264.0,  258.0, 0.0, 123.0,                    0.0, 50.0, 50.0,                    0.0, 50.0, 50.0,                    0.0, 50.0, 50.0, 50.0, 50.0, 50.0;
         _joint_position_link *= 0.001;
 
         _translation_axis.resize(3, _joint_num);
@@ -124,6 +124,55 @@ namespace ec_calculator
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
 
         _pose_velocity_control_p_gain = 0.5;
+        */
+
+        /* 1 Arm 1 fingers */
+        _torque_control_enable = false;
+
+        _chain_num = 1;
+        _joint_num = 9;
+        _binding_conditions = 6;
+
+        _chain_mat.resize(_chain_num, _joint_num);
+        _chain_mat <<
+            1, 1, 1, 1, 1, 1, 1, 1, 1;
+
+        _joint_position_link.resize(3, (_joint_num + _chain_num));
+        _joint_position_link <<
+              0.0, 0.0,  30.0, - 30.0, 0.0,   0.0, -100.0,  0.0,  0.0,  0.0,
+              0.0, 0.0,   0.0,    0.0, 0.0,   0.0,    0.0,  0.0,  0.0,  0.0,
+            159.0, 0.0, 264.0,  258.0, 0.0, 123.0,  200.0, 50.0, 50.0, 50.0;
+        _joint_position_link *= 0.001;
+
+        _translation_axis.resize(3, _joint_num);
+        _translation_axis.setZero();
+
+        _rotation_axis.resize(3, _joint_num);
+        _rotation_axis <<
+            0, 0, 0, 0, 0, 0, -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0),
+            0, 1, 1, 0, 1, 0,  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),
+            1, 0, 0, 1, 0, 1,                  0,                  0,                  0;
+            // cost -sint 0
+            // sint  cost 0
+            // 0     0    1
+
+        _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
+
+        _pose_velocity_control_p_gain = 0.5;
+
+        _angle_limit.resize(2, _joint_num);
+        _angle_limit <<
+            -M_PI, -M_PI/2.0, -    M_PI/2.0, -M_PI, -M_PI/2.0, -M_PI, -M_PI/2.0, -M_PI/2.0, -M_PI/2.0,
+            +M_PI, +M_PI/2.0, +3.0*M_PI/4.0, +M_PI, +M_PI/2.0, +M_PI, +M_PI/2.0, +M_PI/2.0, +M_PI/2.0;
+
+        _angular_velocity_limit.resize(2, _joint_num);
+        _angular_velocity_limit.setZero();
+
+        _angular_acceleration_limit.resize(2, _joint_num);
+        _angular_acceleration_limit.setZero();
+
+        _jacobian_determinant_limit = 1.0e-6;
 
         /* SCARA *//*
         _torque_control_enable = true;
@@ -427,6 +476,62 @@ namespace ec_calculator
         _gravitational_acceleration = gravitational_acceleration_;
     }
 
+    void Model::changeAngleLimit(const Eigen::Matrix<double, 2, -1> &angle_limit_)
+    {
+        if(angle_limit_.cols() != _joint_num)
+        {
+            std::cout << "Matrix(angle_limit_) Size do not match Joint Number." << std::endl;
+            return;
+        }
+
+        _angle_limit.resize(2, _joint_num);
+
+        for(int joint = 0; joint < _joint_num; joint++)
+        {
+            _angle_limit(0,joint) = angle_limit_(0,joint);
+            _angle_limit(1,joint) = angle_limit_(1,joint);
+        }
+    }
+
+    void Model::changeAngularVelocityLimit(const Eigen::Matrix<double, 2, -1> &angular_velocity_limit_)
+    {
+        if(angular_velocity_limit_.cols() != _joint_num)
+        {
+            std::cout << "Matrix(angular_velocity_limit_) Size do not match Joint Number." << std::endl;
+            return;
+        }
+
+        _angular_velocity_limit.resize(2, _joint_num);
+
+        for(int joint = 0; joint < _joint_num; joint++)
+        {
+            _angular_velocity_limit(0,joint) = angular_velocity_limit_(0,joint);
+            _angular_velocity_limit(1,joint) = angular_velocity_limit_(1,joint);
+        }
+    }
+
+    void Model::changeAngularAccelerationLimit(const Eigen::Matrix<double, 2, -1> &angular_acceleration_limit_)
+    {
+        if(angular_acceleration_limit_.cols() != _joint_num)
+        {
+            std::cout << "Matrix(angular_acceleration_limit_) Size do not match Joint Number." << std::endl;
+            return;
+        }
+
+        _angular_acceleration_limit.resize(2, _joint_num);
+
+        for(int joint = 0; joint < _joint_num; joint++)
+        {
+            _angular_acceleration_limit(0,joint) = angular_acceleration_limit_(0,joint);
+            _angular_acceleration_limit(1,joint) = angular_acceleration_limit_(1,joint);
+        }
+    }
+
+    void Model::changeJacobianDeterminantLimit(const double &jacobian_determinant_limit_)
+    {
+        _jacobian_determinant_limit = jacobian_determinant_limit_;
+    }
+
     // Parameter Getters
     bool Model::getTorqueControlEnable()
     {
@@ -545,5 +650,52 @@ namespace ec_calculator
     double Model::getGravitationalAcceleration()
     {
         return _gravitational_acceleration;
+    }
+
+    Eigen::Matrix<double, 2, -1> Model::getAngleLimit()
+    {
+        for(int joint = 0; joint < _joint_num; joint++)
+        {
+            if(_angle_limit(0,joint) == _angle_limit(1,joint))
+            {
+                _angle_limit(0,joint) = -M_PI/2.0;
+                _angle_limit(1,joint) = +M_PI/2.0;
+            }
+        }
+
+        return _angle_limit;
+    }
+
+    Eigen::Matrix<double, 2, -1> Model::getAngularVelocityLimit()
+    {
+        for(int joint = 0; joint < _joint_num; joint++)
+        {
+            if(_angular_velocity_limit(0,joint) == _angular_velocity_limit(1,joint))
+            {
+                _angular_velocity_limit(0,joint) = -0.5*M_PI;
+                _angular_velocity_limit(1,joint) = +0.5*M_PI;
+            }
+        }
+
+        return _angular_velocity_limit;
+    }
+
+    Eigen::Matrix<double, 2, -1> Model::getAngularAccelerationLimit()
+    {
+        for(int joint = 0; joint < _joint_num; joint++)
+        {
+            if(_angular_acceleration_limit(0,joint) == _angular_acceleration_limit(1,joint))
+            {
+                _angular_acceleration_limit(0,joint) = -0.5*M_PI;
+                _angular_acceleration_limit(1,joint) = +0.5*M_PI;
+            }
+        }
+
+        return _angular_acceleration_limit;
+    }
+
+    double Model::getJacobianDeterminantLimit()
+    {
+        return _jacobian_determinant_limit;
     }
 }

@@ -37,6 +37,12 @@ namespace ec_calculator
             // Gravitational Acceleration
             double _gravitational_acceleration; // [m/s^2]
 
+            // Safety Limit
+            Eigen::Matrix<double, 2, -1> _angle_limit;
+            Eigen::Matrix<double, 2, -1> _angular_velocity_limit;
+            Eigen::Matrix<double, 2, -1> _angular_acceleration_limit;
+            double _jacobian_determinant_limit;
+
         public:
             // Constructor
             Model();
@@ -82,6 +88,11 @@ namespace ec_calculator
 
                 void changeGravitationalAcceleration(const double &gravitational_acceleration_);
 
+                void changeAngleLimit(const Eigen::Matrix<double, 2, -1> &angle_limit_);
+                void changeAngularVelocityLimit(const Eigen::Matrix<double, 2, -1> &angular_velocity_limit_);
+                void changeAngularAccelerationLimit(const Eigen::Matrix<double, 2, -1> &angular_acceleration_limit_);
+                void changeJacobianDeterminantLimit(const double &jacobian_determinant_limit_);
+
             // Parameter Getters
             bool getTorqueControlEnable();
             int getJointNum();
@@ -102,6 +113,11 @@ namespace ec_calculator
             double getAngleTorqueControlDGain();
 
             double getGravitationalAcceleration();
+
+            Eigen::Matrix<double, 2, -1> getAngleLimit();
+            Eigen::Matrix<double, 2, -1> getAngularVelocityLimit();
+            Eigen::Matrix<double, 2, -1> getAngularAccelerationLimit();
+            double getJacobianDeterminantLimit();
     };
 }
 

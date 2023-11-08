@@ -22,7 +22,7 @@ namespace ec_calculator
 
             double _distance;
             double _during_time;
-            double _linear_velocity = 0.1;  // [m/s]
+            double _linear_velocity = 0.05;  // [m/s]
             double _sigmoid_gain = 2;
 
             Eigen::Matrix<double, -1, 1> _sin_gain;

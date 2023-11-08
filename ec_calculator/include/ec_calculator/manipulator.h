@@ -26,6 +26,10 @@ namespace ec_calculator
             double _angle_torque_control_p_gain;
             double _angle_torque_control_d_gain;
             double _gravitational_acceleration;
+            Eigen::Matrix<double, 2, -1> _angle_limit;
+            Eigen::Matrix<double, 2, -1> _angular_velocity_limit;
+            Eigen::Matrix<double, 2, -1> _angular_acceleration_limit;
+            double _jacobian_determinant_limit;
 
             // Parameters
             Eigen::Matrix<double, -1, 1> _angle;
@@ -87,6 +91,10 @@ namespace ec_calculator
                 void setAngleTorqueControlPGain(const double &angle_torque_control_p_gain_);
                 void setAngleTorqueControlDGain(const double &angle_torque_control_d_gain_);
                 void setGravitationalAcceleration(const double &gravitational_acceleration_);
+                void setAngleLimit(const Eigen::Matrix<double, 2, -1> &angle_limit_);
+                void setAngularVelocityLimit(const Eigen::Matrix<double, 2, -1> &angular_velocity_limit_);
+                void setAngularAccelerationLimit(const Eigen::Matrix<double, 2, -1> &angular_acceleration_limit_);
+                void setJacobianDeterminantLimit(const double &jacobian_determinant_limit_);
 
             // Properties
             int getChainNum();

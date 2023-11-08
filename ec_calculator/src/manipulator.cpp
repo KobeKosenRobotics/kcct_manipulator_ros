@@ -61,6 +61,11 @@ namespace ec_calculator
 
         setGravitationalAcceleration(_model->getGravitationalAcceleration());
 
+        setAngleLimit(_model->getAngleLimit());
+        setAngularVelocityLimit(_model->getAngularVelocityLimit());
+        setAngularAccelerationLimit(_model->getAngularAccelerationLimit());
+        setJacobianDeterminantLimit(_model->getJacobianDeterminantLimit());
+
         _is_first_during_time_measurement = true;
     }
 
@@ -68,7 +73,7 @@ namespace ec_calculator
     {
         _angle.setZero();
         _target_angle.setZero();
-        _target_angle_interpolation.setLinearVelocity(0.2);
+        _target_angle_interpolation.setLinearVelocity(0.1);
         _target_angle_interpolation.setPoint(_angle, _target_angle);
         _angular_velocity.setZero();
         _target_angular_velocity.setZero();
@@ -168,6 +173,29 @@ namespace ec_calculator
         _gravitational_acceleration = gravitational_acceleration_;
     }
 
+    void Manipulator::setAngleLimit(const Eigen::Matrix<double, 2, -1> &angle_limit_)
+    {
+        _angle_limit.resize(2, _JOINT_NUM);
+        _angle_limit = angle_limit_;
+    }
+
+    void Manipulator::setAngularVelocityLimit(const Eigen::Matrix<double, 2, -1> &angular_velocity_limit_)
+    {
+        _angular_velocity_limit.resize(2, _JOINT_NUM);
+        _angular_velocity_limit = angular_velocity_limit_;
+    }
+
+    void Manipulator::setAngularAccelerationLimit(const Eigen::Matrix<double, 2, -1> &angular_acceleration_limit_)
+    {
+        _angular_acceleration_limit.resize(2, _JOINT_NUM);
+        _angular_acceleration_limit = angular_acceleration_limit_;
+    }
+
+    void Manipulator::setJacobianDeterminantLimit(const double &jacobian_determinant_limit_)
+    {
+        _jacobian_determinant_limit = jacobian_determinant_limit_;
+    }
+
     // Properties
     int Manipulator::getChainNum()
     {
@@ -231,9 +259,9 @@ namespace ec_calculator
         _angular_velocity = angular_velocity_;
     }
 
-    void Manipulator::updateAngularAcceleration(const Eigen::Matrix<double, -1, 1> &angular_acceleration_)
+    void Manipulator::updateAngularAcceleration(const Eigen::Matrix<double, -1, 1> &angular_velocity_)
     {
-        _angular_acceleration = angular_acceleration_;
+        _angular_acceleration = _angular_acc_diff.differential(angular_velocity_);
     }
 
     void Manipulator::updateTorque(const Eigen::Matrix<double, -1, 1> &torque_)
@@ -254,6 +282,9 @@ namespace ec_calculator
     // AC or IK
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocity()
     {
+        if(_torque_enable) return _target_angular_velocity.setZero();
+
+        // Emergency Stop
         if(_emergency_stop)
         {
             _target_angular_velocity.setZero();
@@ -261,23 +292,44 @@ namespace ec_calculator
             return _target_angular_velocity;
         }
 
-        if(_torque_enable) return _target_angular_velocity.setZero();
-
+        // Calculation
         if(_ik_enable)
         {
-            return getAngularVelocityByEC();
+            getAngularVelocityByEC();
         }
         else
         {
-            return getAngularVelocityByAngle();
+            getAngularVelocityByAngle();
         }
-    }
 
-    // Angle Command
-    Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
-    {
-        _target_angular_velocity = _angle_velocity_control_p_gain * (target_angle_ - _angle);
+        // Angle Limit
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            if(_angle_limit(0,joint) < _angle(joint,0) && _angle(joint,0) < _angle_limit(1,joint)) continue;
 
+            if(_angle(joint,0) <= _angle_limit(0,joint) && 0.0 <= _target_angular_velocity(joint,0)) continue;
+
+            else if(_angle_limit(1,joint) <= _angle(joint,0) && _target_angular_velocity(joint,0) <= 0.0) continue;
+
+            _target_angular_velocity(joint,0) = 0.0;
+        }
+
+        // Angular Velocity Limit
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            _target_angular_velocity(joint,0) = std::min(std::max(_target_angular_velocity(joint,0), _angular_velocity_limit(0,joint)), _angular_velocity_limit(1,joint));
+        }
+
+        // Angular Acceleration Limit
+        for(int joint = 0; joint < _JOINT_NUM; joint++)
+        {
+            if(_angular_acceleration_limit(0,joint) < _angular_acceleration(joint,0) && _angular_acceleration(joint,0) < _angular_acceleration_limit(1,joint)) continue;
+            _target_angular_velocity(joint,0) *= 0.5;
+
+            _emergency_stop = true;
+        }
+
+        // Motor Limit
         if(!_motor_enable)
         {
             angularVelocity2Angle(_target_angular_velocity);
@@ -287,15 +339,17 @@ namespace ec_calculator
         return _target_angular_velocity;
     }
 
+    // Angle Command
+    Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_)
+    {
+        _target_angular_velocity = _angle_velocity_control_p_gain * (target_angle_ - _angle);
+
+        return _target_angular_velocity;
+    }
+
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle()
     {
         _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation() + _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
-
-        if(!_motor_enable)
-        {
-            angularVelocity2Angle(_target_angular_velocity);
-            return EigenUtility.getZeros(_JOINT_NUM, 1);
-        }
 
         return _target_angular_velocity;
     }
@@ -308,7 +362,7 @@ namespace ec_calculator
         if(_target_pose[_ik_index] != target_pose_)
         {
             _target_pose[_ik_index] = target_pose_;
-            _ik_interpolation[_ik_index].setPoint(getPose(_end_joint_index[_ik_index]), _target_pose[_ik_index]);
+            _ik_interpolation[_ik_index].setPoint(_binding_conditions_matrix*getPose(_end_joint_index[_ik_index]), _binding_conditions_matrix*_target_pose[_ik_index]);
         }
         _ik_index++;
     }
@@ -320,18 +374,25 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByEC()
     {
+        if(_ik_index == 0) return _target_angular_velocity;
+
         _error_all.resize(_BINDING_CONDITIONS*_ik_index, 1);
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = _binding_conditions_matrix*(_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - getPose(_end_joint_index[ik_index])));
+            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
         }
-        _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(getJacobian()) * _error_all;
 
-        if(!_motor_enable)
+        getJacobian();
+
+        // Singular Configuration
+        double jacobian_determinant_ = fabs((_jacobian*_jacobian.transpose()).determinant());
+        if(jacobian_determinant_ < _jacobian_determinant_limit)
         {
-            angularVelocity2Angle(_target_angular_velocity);
-            return EigenUtility.getZeros(_JOINT_NUM, 1);
+            _target_angular_velocity *= 0.5;
+            return _target_angular_velocity;
         }
+
+        _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(_jacobian) * _error_all;
 
         return _target_angular_velocity;
     }
@@ -366,14 +427,15 @@ namespace ec_calculator
     // Torque Control
     Eigen::Matrix<double, -1, 1> Manipulator::getTorqueByAngle()
     {
+        if(!_torque_enable) return _target_torque.setZero();
+
+        // TODO: integrate into getTorque()
         if(_emergency_stop)
         {
             _target_torque.setZero();
             torque2Angle(_target_torque);
             return _target_torque;
         }
-
-        if(!_torque_enable) return _target_torque.setZero();
 
         getMf();
         getCf();
@@ -393,6 +455,7 @@ namespace ec_calculator
 
         _target_torque = _Mf * (_target_angle_interpolation.getDDSinInterpolation() + _angle_torque_control_d_gain*(_target_angle_interpolation.getDSinInterpolation() - _angular_velocity) + _angle_torque_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
 
+        // TODO: integrate into getTorque()
         if(!_motor_enable)
         {
             torque2Angle(_target_torque);
@@ -556,6 +619,7 @@ namespace ec_calculator
     Eigen::Matrix<double, -1, 1> Manipulator::angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_)
     {
         _angular_velocity = angular_velocity_;
+        _angular_acceleration = _angular_acc_diff.differential(_angular_velocity);
 
         if(_is_first_during_time_measurement)
         {
@@ -610,7 +674,7 @@ namespace ec_calculator
         {
             for(int ik_index = 0; ik_index < _ik_index; ik_index++)
             {
-                _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+                _ik_interpolation[ik_index].setPoint(_binding_conditions_matrix*getPose(_end_joint_index[ik_index]), _binding_conditions_matrix*_target_pose[ik_index]);
             }
         }
         else
@@ -625,11 +689,13 @@ namespace ec_calculator
 
         _emergency_stop = emergency_stop_;
 
+        if(_emergency_stop) return;
+
         _target_angle_interpolation.setPoint(_angle, _target_angle);
 
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+            _ik_interpolation[ik_index].setPoint(_binding_conditions_matrix*getPose(_end_joint_index[ik_index]), _binding_conditions_matrix*_target_pose[ik_index]);
         }
     }
 
@@ -643,7 +709,7 @@ namespace ec_calculator
 
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+            _ik_interpolation[ik_index].setPoint(_binding_conditions_matrix*getPose(_end_joint_index[ik_index]), _binding_conditions_matrix*_target_pose[ik_index]);
         }
     }
 
@@ -662,7 +728,7 @@ namespace ec_calculator
 
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+            _ik_interpolation[ik_index].setPoint(_binding_conditions_matrix*getPose(_end_joint_index[ik_index]), _binding_conditions_matrix*_target_pose[ik_index]);
         }
     }
 
@@ -678,7 +744,7 @@ namespace ec_calculator
 
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _ik_interpolation[ik_index].setPoint(getPose(_end_joint_index[ik_index]), _target_pose[ik_index]);
+            _ik_interpolation[ik_index].setPoint(_binding_conditions_matrix*getPose(_end_joint_index[ik_index]), _binding_conditions_matrix*_target_pose[ik_index]);
         }
     }
 
@@ -732,7 +798,7 @@ namespace ec_calculator
         {
             polygon_pose_ = target_polygon_.block(0,0,6,1);
             polygon_pose_.block(0,0,3,1) += EigenUtility.getRotationMatrixZ(polygon_pose_(3,0))*EigenUtility.getRotationMatrixY(polygon_pose_(4,0))*EigenUtility.getRotationMatrixX(polygon_pose_(5,0))*(target_polygon_(6,0)*EigenUtility.getRotationMatrixZ(2.0*ik_index*M_PI/(double)_CHAIN_NUM)*base_vector_);
-            setJointPose(0, (_JOINT_NUM + ik_index), polygon_pose_);
+            setJointPose(0, _tip_index[ik_index], polygon_pose_);
         }
     }
 
@@ -748,10 +814,11 @@ namespace ec_calculator
         // std::cout << "Cf\n" << _Cf << std::endl << std::endl;
         // std::cout << "Nf\n" << _Nf << std::endl << std::endl;
 
-        // // std::cout << "gain : " << _angle_torque_control_p_gain << std::endl;
+        // std::cout << "gain : " << _angle_torque_control_p_gain << std::endl;
         // std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
         // std::cout << "pose :" << std::endl << getPose(6) << std::endl << std::endl;
-        // // std::cout << "angular_velocity :" << std::endl << _angular_velocity << std::endl << std::endl;
+        // std::cout << "angular velocity :" << std::endl << _angular_velocity << std::endl << std::endl;
+        // std::cout << "angular acceleration :" << std::endl << _angular_acceleration << std::endl << std::endl;
 
         // std::cout << "torque :" << std::endl << _torque << std::endl << std::endl;
 
@@ -785,7 +852,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 6, 1> Manipulator::getMidPose(const int &ik_index_)
     {
-        if(_ik_enable) return _ik_interpolation[ik_index_].getSinInterpolation();
+        if(_ik_enable) return _binding_conditions_matrix.transpose()*_ik_interpolation[ik_index_].getSinInterpolation();
 
         return Eigen::Matrix<double, 6, 1>::Zero();
     }

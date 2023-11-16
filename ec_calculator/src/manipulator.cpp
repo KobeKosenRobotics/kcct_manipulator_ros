@@ -323,10 +323,18 @@ namespace ec_calculator
         // Angular Acceleration Limit
         for(int joint = 0; joint < _JOINT_NUM; joint++)
         {
+            if(!_ik_enable)
+            {
+                if(fabs(_angular_velocity(joint,0)) < 0.10*_angular_velocity_limit(1,joint)) continue;
+            }
+
+            if(fabs(_angular_velocity(joint,0)) < 0.05*_angular_velocity_limit(1,joint)) continue;
+
             if(_angular_acceleration_limit(0,joint) < _angular_acceleration(joint,0) && _angular_acceleration(joint,0) < _angular_acceleration_limit(1,joint)) continue;
             _target_angular_velocity(joint,0) *= 0.5;
 
             _emergency_stop = true;
+            std::cout << "Angular Acceleration Limit" << std::endl;
         }
 
         // Motor Limit
@@ -389,6 +397,9 @@ namespace ec_calculator
         if(jacobian_determinant_ < _jacobian_determinant_limit)
         {
             _target_angular_velocity *= 0.5;
+            _emergency_stop = true;
+            std::cout << "near Singular Configuration" << std::endl;
+
             return _target_angular_velocity;
         }
 

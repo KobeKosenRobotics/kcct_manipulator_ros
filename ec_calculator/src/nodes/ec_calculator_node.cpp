@@ -101,8 +101,8 @@ void target_angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 
 void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
-    manip.setTargetPose(EigenUtility.array2Matrix(msg->data));
-    // manip.setTargetPolygon(EigenUtility.array2Matrix(msg->data));
+    // manip.setTargetPose(EigenUtility.array2Matrix(msg->data));
+    manip.setTargetPolygon(EigenUtility.array2Matrix(msg->data));
 }
 
 int main(int argc, char **argv)

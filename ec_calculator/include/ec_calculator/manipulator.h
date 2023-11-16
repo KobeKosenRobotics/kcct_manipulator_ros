@@ -41,7 +41,7 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _torque;
             Eigen::Matrix<double, -1, 1> _target_torque;
 
-            bool _emergency_stop = false;
+            bool _emergency_stop = true;
             bool _ik_enable = false;
             bool _motor_enable = false;
             bool _simulation_enable = true;

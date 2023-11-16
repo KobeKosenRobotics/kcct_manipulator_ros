@@ -88,7 +88,7 @@ namespace ec_calculator
         _pose_velocity_control_p_gain = 0.5;
         */
 
-        /* 1 Arm 3 fingers *//*
+        /* 1 Arm 3 fingers */
         _torque_control_enable = false;
 
         _chain_num = 3;
@@ -103,9 +103,9 @@ namespace ec_calculator
 
         _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
-              0.0, 0.0,  30.0, - 30.0, 0.0,   0.0, 50.0*cos(0.0*M_PI/3.0),  0.0,  0.0, 50.0*cos(2.0*M_PI/3.0),  0.0,  0.0, 50.0*cos(4.0*M_PI/3.0),  0.0,  0.0,  0.0,  0.0,  0.0,
-              0.0, 0.0,   0.0,    0.0, 0.0,   0.0, 50.0*sin(0.0*M_PI/3.0),  0.0,  0.0, 50.0*sin(2.0*M_PI/3.0),  0.0,  0.0, 50.0*sin(4.0*M_PI/3.0),  0.0,  0.0,  0.0,  0.0,  0.0,
-            159.0, 0.0, 264.0,  258.0, 0.0, 123.0,                    0.0, 50.0, 50.0,                    0.0, 50.0, 50.0,                    0.0, 50.0, 50.0, 50.0, 50.0, 50.0;
+              0.0, 0.0,  30.0, - 30.0, 0.0,   0.0, 80.0*cos(0.0*M_PI/3.0),  0.0,  0.0, 80.0*cos(2.0*M_PI/3.0),  0.0,  0.0, 80.0*cos(4.0*M_PI/3.0),  0.0,  0.0,  0.0,  0.0,  0.0,
+              0.0, 0.0,   0.0,    0.0, 0.0,   0.0, 80.0*sin(0.0*M_PI/3.0),  0.0,  0.0, 80.0*sin(2.0*M_PI/3.0),  0.0,  0.0, 80.0*sin(4.0*M_PI/3.0),  0.0,  0.0,  0.0,  0.0,  0.0,
+            159.0, 0.0, 264.0,  258.0, 0.0, 123.0,                  160.0, 50.0, 50.0,                  160.0, 50.0, 50.0,                  160.0, 50.0, 50.0, 50.0, 50.0, 50.0;
         _joint_position_link *= 0.001;
 
         _translation_axis.resize(3, _joint_num);
@@ -113,8 +113,8 @@ namespace ec_calculator
 
         _rotation_axis.resize(3, _joint_num);
         _rotation_axis <<
-            0, 0, 0, 0, 0, 0, -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0),
-            0, 1, 1, 0, 1, 0,  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),
+            0, 0, 0, 0, 0, 0,  sin(0.0*M_PI/3.0),  sin(0.0*M_PI/3.0),  sin(0.0*M_PI/3.0),  sin(2.0*M_PI/3.0),  sin(2.0*M_PI/3.0),  sin(2.0*M_PI/3.0),  sin(4.0*M_PI/3.0),  sin(4.0*M_PI/3.0),  sin(4.0*M_PI/3.0),
+            0, 1, 1, 0, 1, 0, -cos(0.0*M_PI/3.0), -cos(0.0*M_PI/3.0), -cos(0.0*M_PI/3.0), -cos(2.0*M_PI/3.0), -cos(2.0*M_PI/3.0), -cos(2.0*M_PI/3.0), -cos(4.0*M_PI/3.0), -cos(4.0*M_PI/3.0), -cos(4.0*M_PI/3.0),
             1, 0, 0, 1, 0, 1,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0;
             // cost -sint 0
             // sint  cost 0
@@ -124,14 +124,26 @@ namespace ec_calculator
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
 
         _pose_velocity_control_p_gain = 0.5;
-        */
 
-        /* 1 Arm 1 fingers */
+        _angle_limit.resize(2, _joint_num);
+        _angle_limit <<
+            -M_PI, -M_PI/2.0, -    M_PI/2.0, -M_PI, -M_PI/2.0, -M_PI, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0,
+            +M_PI, +M_PI/2.0, +3.0*M_PI/4.0, +M_PI, +M_PI/2.0, +M_PI, +M_PI/9.0, +M_PI/9.0, +M_PI/9.0, +M_PI/9.0, +M_PI/9.0, +M_PI/9.0, +M_PI/9.0, +M_PI/9.0, +M_PI/9.0;
+
+        _angular_velocity_limit.resize(2, _joint_num);
+        _angular_velocity_limit.setZero();
+
+        _angular_acceleration_limit.resize(2, _joint_num);
+        _angular_acceleration_limit.setZero();
+
+        _jacobian_determinant_limit = 1.0e-30;
+
+        /* 1 Arm 1 fingers *//*
         _torque_control_enable = false;
 
         _chain_num = 1;
         _joint_num = 9;
-        _binding_conditions = 6;
+        _binding_conditions = 3;
 
         _chain_mat.resize(_chain_num, _joint_num);
         _chain_mat <<
@@ -163,8 +175,8 @@ namespace ec_calculator
 
         _angle_limit.resize(2, _joint_num);
         _angle_limit <<
-            -M_PI, -M_PI/2.0, -    M_PI/2.0, -M_PI, -M_PI/2.0, -M_PI, -M_PI/2.0, -M_PI/2.0, -M_PI/2.0,
-            +M_PI, +M_PI/2.0, +3.0*M_PI/4.0, +M_PI, +M_PI/2.0, +M_PI, +M_PI/2.0, +M_PI/2.0, +M_PI/2.0;
+            -M_PI, -M_PI/2.0, -    M_PI/2.0, -M_PI, -M_PI/2.0, -M_PI, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0,
+            +M_PI, +M_PI/2.0, +3.0*M_PI/4.0, +M_PI, +M_PI/2.0, +M_PI, +M_PI/3.0, +M_PI/3.0, +M_PI/3.0;
 
         _angular_velocity_limit.resize(2, _joint_num);
         _angular_velocity_limit.setZero();
@@ -173,6 +185,7 @@ namespace ec_calculator
         _angular_acceleration_limit.setZero();
 
         _jacobian_determinant_limit = 1.0e-6;
+        */
 
         /* SCARA *//*
         _torque_control_enable = true;
@@ -672,8 +685,8 @@ namespace ec_calculator
         {
             if(_angular_velocity_limit(0,joint) == _angular_velocity_limit(1,joint))
             {
-                _angular_velocity_limit(0,joint) = -0.5*M_PI;
-                _angular_velocity_limit(1,joint) = +0.5*M_PI;
+                _angular_velocity_limit(0,joint) = -M_PI;
+                _angular_velocity_limit(1,joint) = +M_PI;
             }
         }
 
@@ -686,8 +699,8 @@ namespace ec_calculator
         {
             if(_angular_acceleration_limit(0,joint) == _angular_acceleration_limit(1,joint))
             {
-                _angular_acceleration_limit(0,joint) = -0.5*M_PI;
-                _angular_acceleration_limit(1,joint) = +0.5*M_PI;
+                _angular_acceleration_limit(0,joint) = -M_PI;
+                _angular_acceleration_limit(1,joint) = +M_PI;
             }
         }
 

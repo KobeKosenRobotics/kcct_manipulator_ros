@@ -107,7 +107,7 @@ void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "ECCalculator");
+    ros::init(argc, argv, "ec_calculator_node");
     ros::NodeHandle nh;
     double rate = 100.0;
     ros::Rate loop_rate(rate);

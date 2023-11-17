@@ -84,6 +84,7 @@ namespace ec_calculator
 
         _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain *= 0.1;
 
         _pose_velocity_control_p_gain = 0.5;
         */
@@ -122,6 +123,7 @@ namespace ec_calculator
 
         _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain *= 0.1;
 
         _pose_velocity_control_p_gain = 0.5;
 
@@ -170,6 +172,7 @@ namespace ec_calculator
 
         _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
+        _angle_velocity_control_p_gain *= 0.1;
 
         _pose_velocity_control_p_gain = 0.5;
 

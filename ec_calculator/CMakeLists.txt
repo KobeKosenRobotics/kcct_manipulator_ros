@@ -166,6 +166,11 @@ set(HEADERS include/ec_calculator/different_integral.h)
 add_executable(ec_calculator_node src/interpolation src/model src/joint src/manipulator src/manipulator_tf_publisher src/differential_integral src/nodes/ec_calculator_node)
 target_link_libraries(ec_calculator_node ${catkin_LIBRARIES} "/usr/include/eigen3")
 
+set(HEADERS include/ec_calculator/wait.h)
+set(HEADERS include/ec_calculator/publish_manager.h)
+add_executable(publish_manager_node src/wait src/publish_manager src/nodes/publish_manager_node)
+target_link_libraries(publish_manager_node ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############

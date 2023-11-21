@@ -1,6 +1,11 @@
 <launch>
     <node name="ec_calculator_node" pkg="ec_calculator" type="ec_calculator_node" output="screen"/>
 
+    <arg name="publish_manager" default="false"/>
+    <group if="$(arg publish_manager)">
+        <node name="publish_manager_node" pkg="ec_calculator" type="publish_manager_node" output="screen"/>
+    </group>
+
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ec_calculator)/rviz/default.rviz"/>
     <node name="rqt_publisher" pkg="rqt_publisher" type="rqt_publisher"/>
 </launch>

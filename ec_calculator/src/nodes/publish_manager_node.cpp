@@ -41,21 +41,77 @@ int main(int argc, char **argv)
         case 0:
             pm.setEmergencyStop(true);
 
-            if(!wait.isWaiting(5.0))
-            {
-                step++;
-            }
-
+            if(!wait.isWaiting(2.0)) step++;
             break;
 
         case 5:
             pm.setEmergencyStop(false);
-            pm.setTargetAngle(0.1, 0.2, 0.3);
+            pm.setTargetAngle(-0.5,-0.3,0.0,0.1,-1.5,0.1,    -0.5,0.2,0.2,    -0.5,0.2,0.2,    -0.5,0.2,0.2);
 
-            if(!wait.isWaiting(5.0))
-            {
-                step++;
-            }
+            if(!wait.isWaiting(10.0)) step++;
+            break;
+
+        case 8:
+            pm.setEmergencyStop(false);
+            pm.setTargetAngle(-0.5,-0.3,1.5,0.1,-1.2,0.1,    -0.5,0.2,0.2,    -0.5,0.2,0.2,    -0.5,0.2,0.2);
+
+            if(!wait.isWaiting(10.0)) step++;
+            break;
+
+        case 10:
+            pm.setTargetPose(0.15,0.12,-1,    0.46,-0,0,    0.1);
+            pm.setIKEnable(true);
+
+            if(!wait.isWaiting(5.0)) step++;
+            break;
+
+        case 15:
+            pm.setTargetPose(0.15,0.12,-1,    0.46,-0,0,    0.05);
+
+            if(!wait.isWaiting(5.0)) step++;
+            break;
+
+        case 25:
+            pm.setTargetPose(0.3,0.0,-0.95,    0,-0,0,    0.05);
+
+            if(!wait.isWaiting(30.0)) step++;
+            break;
+
+        case 30:
+            pm.setTargetPose(0.15,-0.12,-1,    -0.46,-0,0,    0.05);
+
+            if(!wait.isWaiting(30.0)) step++;
+            break;
+
+        case 40:
+            pm.setTargetPose(0.15,-0.12,-1,    -0.46,-0,0,    0.1);
+
+            if(!wait.isWaiting(5.0)) step++;
+            break;
+
+        case 45:
+            pm.setTargetAngle(0.5,-0.3,1.5,-0.1,-1.2,-0.1,    -0.5,0.2,0.2,    -0.5,0.2,0.2,    -0.5,0.2,0.2);
+            pm.setIKEnable(false);
+
+            if(!wait.isWaiting(10.0)) step++;
+            break;
+
+        case 50:
+            pm.setTargetAngle(-3.1,-0.3,0.0,0.0,-1.2,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0);
+
+            if(!wait.isWaiting(15.0)) step++;
+            break;
+
+        case 55:
+            pm.setTargetAngle(-3.1,-0.3,0.0,0.0,-1.2,0.0,    1.0,0.3,0.3,    1.0,0.3,0.3,    1.0,0.3,0.3);
+
+            if(!wait.isWaiting(10.0)) step++;
+            break;
+
+        case 60:
+            pm.setTargetAngle(-3.1,-0.3,0.0,0.0,-1.2,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0);
+
+            if(!wait.isWaiting(15.0)) step++;
             break;
 
         default:

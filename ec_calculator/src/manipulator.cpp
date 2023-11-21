@@ -73,7 +73,7 @@ namespace ec_calculator
     {
         _angle.setZero();
         _target_angle.setZero();
-        _target_angle_interpolation.setLinearVelocity(0.1);
+        _target_angle_interpolation.setLinearVelocity(0.3);
         _target_angle_interpolation.setPoint(_angle, _target_angle);
         _angular_velocity.setZero();
         _target_angular_velocity.setZero();
@@ -826,8 +826,8 @@ namespace ec_calculator
         // std::cout << "Nf\n" << _Nf << std::endl << std::endl;
 
         // std::cout << "gain : " << _angle_torque_control_p_gain << std::endl;
-        // std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
-        // std::cout << "pose :" << std::endl << getPose(6) << std::endl << std::endl;
+        std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
+        std::cout << "pose5 :" << std::endl << getPose(5) << std::endl << std::endl;
         // std::cout << "angular velocity :" << std::endl << _angular_velocity << std::endl << std::endl;
         // std::cout << "angular acceleration :" << std::endl << _angular_acceleration << std::endl << std::endl;
 

@@ -104,9 +104,12 @@ namespace ec_calculator
 
         _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
-               0.0, 0.0,   30.0, - 30.0, 0.0,    0.0, 80.0*cos(0.0*M_PI/3.0),   0.0,   0.0, 80.0*cos(2.0*M_PI/3.0),   0.0,   0.0, 80.0*cos(4.0*M_PI/3.0),   0.0,   0.0,   0.0,   0.0,   0.0,
-               0.0, 0.0,    0.0,    0.0, 0.0,    0.0, 80.0*sin(0.0*M_PI/3.0),   0.0,   0.0, 80.0*sin(2.0*M_PI/3.0),   0.0,   0.0, 80.0*sin(4.0*M_PI/3.0),   0.0,   0.0,   0.0,   0.0,   0.0,
-            -159.0, 0.0, -264.0, -258.0, 0.0, -123.0,                 -160.0, -50.0, -50.0,                 -160.0, -50.0, -50.0,                 -160.0, -50.0, -50.0, -50.0, -50.0, -50.0;
+               0.0, 0.0, - 30.0,   30.0, 0.0,    0.0, -80.0*cos(-0.0*M_PI/3.0),   0.0,   0.0, -80.0*cos(-2.0*M_PI/3.0),   0.0,   0.0, -80.0*cos(-4.0*M_PI/3.0),   0.0,   0.0,   0.0,   0.0,   0.0,
+               0.0, 0.0,    0.0,    0.0, 0.0,    0.0, -80.0*sin(-0.0*M_PI/3.0),   0.0,   0.0, -80.0*sin(-2.0*M_PI/3.0),   0.0,   0.0, -80.0*sin(-4.0*M_PI/3.0),   0.0,   0.0,   0.0,   0.0,   0.0,
+            -159.0, 0.0, -264.0, -258.0, 0.0, -123.0,                   -160.0, -50.0, -50.0,                   -160.0, -50.0, -50.0,                   -160.0, -50.0, -50.0, -50.0, -50.0, -50.0;
+            //    0.0, 0.0,   30.0, - 30.0, 0.0,    0.0, 80.0*cos(0.0*M_PI/3.0),   0.0,   0.0, 80.0*cos(2.0*M_PI/3.0),   0.0,   0.0, 80.0*cos(4.0*M_PI/3.0),   0.0,   0.0,   0.0,   0.0,   0.0,
+            //    0.0, 0.0,    0.0,    0.0, 0.0,    0.0, 80.0*sin(0.0*M_PI/3.0),   0.0,   0.0, 80.0*sin(2.0*M_PI/3.0),   0.0,   0.0, 80.0*sin(4.0*M_PI/3.0),   0.0,   0.0,   0.0,   0.0,   0.0,
+            // -159.0, 0.0, -264.0, -258.0, 0.0, -123.0,                 -160.0, -50.0, -50.0,                 -160.0, -50.0, -50.0,                 -160.0, -50.0, -50.0, -50.0, -50.0, -50.0;
         _joint_position_link *= 0.001;
 
         _translation_axis.resize(3, _joint_num);
@@ -114,23 +117,26 @@ namespace ec_calculator
 
         _rotation_axis.resize(3, _joint_num);
         _rotation_axis <<
-             0,  0,  0,  0,  0,  0, -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0),
-             0, -1, -1,  0, -1,  0,  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),
-            -1,  0,  0, -1,  0, -1,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0;
+             0, 0, 0,  0, 0,  0,  sin(-0.0*M_PI/3.0),  sin(-0.0*M_PI/3.0),  sin(-0.0*M_PI/3.0),  sin(-2.0*M_PI/3.0),  sin(-2.0*M_PI/3.0),  sin(-2.0*M_PI/3.0),  sin(-4.0*M_PI/3.0),  sin(-4.0*M_PI/3.0),  sin(-4.0*M_PI/3.0),
+             0, 1, 1,  0, 1,  0, -cos(-0.0*M_PI/3.0), -cos(-0.0*M_PI/3.0), -cos(-0.0*M_PI/3.0), -cos(-2.0*M_PI/3.0), -cos(-2.0*M_PI/3.0), -cos(-2.0*M_PI/3.0), -cos(-4.0*M_PI/3.0), -cos(-4.0*M_PI/3.0), -cos(-4.0*M_PI/3.0),
+            -1, 0, 0, -1, 0, -1,                   0,                   0,                   0,                   0,                   0,                   0,                   0,                   0,                   0;
+            //  0,  0,  0,  0,  0,  0, -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(0.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(2.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0), -sin(4.0*M_PI/3.0),
+            //  0, -1, -1,  0, -1,  0,  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(0.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(2.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),  cos(4.0*M_PI/3.0),
+            // -1,  0,  0, -1,  0, -1,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0,                  0;
             // cost -sint 0
             // sint  cost 0
             // 0     0    1
 
         _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
         _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
-        _angle_velocity_control_p_gain *= 0.1;
+        _angle_velocity_control_p_gain *= 0.2;
 
-        _pose_velocity_control_p_gain = 0.5;
+        _pose_velocity_control_p_gain = 0.3;
 
         _angle_limit.resize(2, _joint_num);
         _angle_limit <<
             -M_PI, -M_PI/2.0, -    M_PI/2.0, -M_PI, -M_PI/2.0, -M_PI, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0, -M_PI/3.0,
-            +M_PI, +M_PI/2.0, +3.0*M_PI/4.0, +M_PI, +M_PI/2.0, +M_PI, +M_PI/2.0, +M_PI/9.0, +M_PI/9.0, +M_PI/2.0, +M_PI/9.0, +M_PI/9.0, +M_PI/2.0, +M_PI/9.0, +M_PI/9.0;
+            +M_PI, +M_PI/2.0, +3.0*M_PI/4.0, +M_PI, +M_PI/2.0, +M_PI, +M_PI/2.0, +M_PI/6.0, +M_PI/6.0, +M_PI/2.0, +M_PI/6.0, +M_PI/6.0, +M_PI/2.0, +M_PI/6.0, +M_PI/6.0;
 
         _angular_velocity_limit.resize(2, _joint_num);
         _angular_velocity_limit.setZero();

@@ -357,7 +357,8 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle()
     {
-        _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation() + _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
+        // _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation() + _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
+        _target_angular_velocity = _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
 
         return _target_angular_velocity;
     }
@@ -387,7 +388,8 @@ namespace ec_calculator
         _error_all.resize(_BINDING_CONDITIONS*_ik_index, 1);
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
+            // _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
+            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
         }
 
         getJacobian();
@@ -802,13 +804,13 @@ namespace ec_calculator
         }
 
         Eigen::Matrix<double, 3, 1> base_vector_;
-        base_vector_ << 1.0, 0.0, 0.0;
+        base_vector_ << -1.0, 0.0, 0.0;
         Eigen::Matrix<double, 6, 1> polygon_pose_;
 
         for(int ik_index = 0; ik_index < _CHAIN_NUM; ik_index++)
         {
             polygon_pose_ = target_polygon_.block(0,0,6,1);
-            polygon_pose_.block(0,0,3,1) += EigenUtility.getRotationMatrixZ(polygon_pose_(3,0))*EigenUtility.getRotationMatrixY(polygon_pose_(4,0))*EigenUtility.getRotationMatrixX(polygon_pose_(5,0))*(target_polygon_(6,0)*EigenUtility.getRotationMatrixZ(2.0*ik_index*M_PI/(double)_CHAIN_NUM)*base_vector_);
+            polygon_pose_.block(0,0,3,1) += EigenUtility.getRotationMatrixZ(polygon_pose_(3,0))*EigenUtility.getRotationMatrixY(polygon_pose_(4,0))*EigenUtility.getRotationMatrixX(polygon_pose_(5,0))*(target_polygon_(6,0)*EigenUtility.getRotationMatrixZ(-2.0*ik_index*M_PI/(double)_CHAIN_NUM)*base_vector_);
             setJointPose(0, _tip_index[ik_index], polygon_pose_);
         }
     }

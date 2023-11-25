@@ -83,14 +83,14 @@ int main(int argc, char **argv)
             break;
 
         case 10:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.90,    -0.6,0,0,    0.1);
+            pm.setTargetPose(0.25+0.08,-0.13,-0.92,    -0.6,0,0,    0.1);
             pm.setIKEnable(true);
 
             if(!wait.isWaiting(1.5*15.0)) step++;
             break;
 
         case 15:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.90,    -0.6,0,0,    0.03);
+            pm.setTargetPose(0.25+0.08,-0.13,-0.92,    -0.6,0,0,    0.03);
 
             if(!wait.isWaiting(1.5*15.0)) step++;
             break;
@@ -126,13 +126,13 @@ int main(int argc, char **argv)
             break;
 
         case 35:
-            pm.setTargetPose(0.25+0.08,0.13,-0.90,    0.6,0,0,    0.05);
+            pm.setTargetPose(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.05);
 
             if(!wait.isWaiting(1.5*5.0)) step++;
             break;
 
         case 40:
-            pm.setTargetPose(0.25+0.08,0.13,-0.90,    0.6,0,0,    0.1);
+            pm.setTargetPose(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.1);
 
             if(!wait.isWaiting(1.5*10.0)) step++;
             break;

@@ -25,6 +25,7 @@ int main(int argc, char **argv)
     ros::Publisher emergency_stop_pub = nh.advertise<std_msgs::Bool>("emergency_stop", 100);
     ros::Publisher ik_enable_pub = nh.advertise<std_msgs::Bool>("ik_enable", 100);
     ros::Publisher motor_enable_pub = nh.advertise<std_msgs::Bool>("motor_enable", 100);
+    ros::Publisher polygon_enable_pub = nh.advertise<std_msgs::Bool>("polygon_enable", 100);
     ros::Publisher simulation_enable_pub = nh.advertise<std_msgs::Bool>("simulation_enable", 100);
     ros::Publisher torque_enable_pub = nh.advertise<std_msgs::Bool>("torque_enable", 100);
     ros::Publisher target_angle_pub = nh.advertise<std_msgs::Float32MultiArray>("target_angle", 100);
@@ -41,6 +42,7 @@ int main(int argc, char **argv)
         case 0:
             pm.setEmergencyStop(true);
             pm.setMotorEnable(true);
+            pm.setPolygonEnable(true);
 
             if(!wait.isWaiting(5.0)) step++;
             break;
@@ -96,37 +98,37 @@ int main(int argc, char **argv)
             break;
 
         case 20:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.86,    -0.6,0,0,    0.05);
+            pm.setTargetPose(0.25+0.08,-0.13,-0.86,    -0.6,0,0,    0.03);
 
             if(!wait.isWaiting(1.5*5.0)) step++;
             break;
 
         case 23:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.86,    0,0,0,    0.05);
+            pm.setTargetPose(0.25+0.08,-0.13,-0.86,    0,0,0,    0.03);
 
             if(!wait.isWaiting(1.5*5.0)) step++;
             break;
 
         case 25:
-            pm.setTargetPose(0.25+0.08,0,-0.86,    0,0,0,    0.05);
+            pm.setTargetPose(0.25+0.08,0,-0.86,    0,0,0,    0.03);
 
             if(!wait.isWaiting(1.5*15.0)) step++;
             break;
 
         case 30:
-            pm.setTargetPose(0.25+0.08,0.13,-0.86,    0,0,0,    0.05);
+            pm.setTargetPose(0.25+0.08,0.13,-0.86,    0,0,0,    0.03);
 
             if(!wait.isWaiting(1.5*15.0)) step++;
             break;
 
         case 33:
-            pm.setTargetPose(0.25+0.08,0.13,-0.86,    0.6,0,0,    0.05);
+            pm.setTargetPose(0.25+0.08,0.13,-0.86,    0.6,0,0,    0.03);
 
             if(!wait.isWaiting(1.5*5.0)) step++;
             break;
 
         case 35:
-            pm.setTargetPose(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.05);
+            pm.setTargetPose(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.03);
 
             if(!wait.isWaiting(1.5*5.0)) step++;
             break;
@@ -266,6 +268,7 @@ int main(int argc, char **argv)
         ik_enable_pub.publish(pm.getIKEnable());
         motor_enable_pub.publish(pm.getMotorEnable());
         simulation_enable_pub.publish(pm.getSimulationEnable());
+        polygon_enable_pub.publish(pm.getPolygonEnable());
         torque_enable_pub.publish(pm.getTorqueEnable());
         target_angle_pub.publish(pm.getTargetAngle());
         target_pose_pub.publish(pm.getTargetPose());

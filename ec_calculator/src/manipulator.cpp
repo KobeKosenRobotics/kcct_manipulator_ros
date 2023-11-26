@@ -226,6 +226,11 @@ namespace ec_calculator
         return _ik_index;
     }
 
+    bool Manipulator::getPolygonEnable()
+    {
+        return _polygon_enable;
+    }
+
     bool Manipulator::getSimulationEnable()
     {
         return _simulation_enable;
@@ -729,6 +734,13 @@ namespace ec_calculator
     bool Manipulator::getMotorEnable()
     {
         return _motor_enable;
+    }
+
+    void Manipulator::setPolygonEnable(const bool &polygon_enable_)
+    {
+        if(_polygon_enable == polygon_enable_) return;
+
+        _polygon_enable = polygon_enable_;
     }
 
     void Manipulator::setSimulationEnable(const bool &simulation_enable_)

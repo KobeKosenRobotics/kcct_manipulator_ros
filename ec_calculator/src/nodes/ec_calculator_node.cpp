@@ -23,6 +23,7 @@ std_msgs::Float32MultiArray target_torque;
 std_msgs::Bool emergency_stop;
 std_msgs::Bool ik_enable;
 std_msgs::Bool motor_enable;
+std_msgs::Bool polygon_enable;
 std_msgs::Bool simulation_enable;
 std_msgs::Bool torque_enable;
 
@@ -50,6 +51,11 @@ void ik_enable_cb(std_msgs::Bool::ConstPtr msg)
 void motor_enable_cb(std_msgs::Bool::ConstPtr msg)
 {
     manip.setMotorEnable(msg->data);
+}
+
+void polygon_enable_cb(std_msgs::Bool::ConstPtr msg)
+{
+    manip.setPolygonEnable(msg->data);
 }
 
 void simulation_enable_cb(std_msgs::Bool::ConstPtr msg)
@@ -101,8 +107,13 @@ void target_angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 
 void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
-    // manip.setTargetPose(EigenUtility.array2Matrix(msg->data));
-    manip.setTargetPolygon(EigenUtility.array2Matrix(msg->data));
+    if(manip.getPolygonEnable())
+    {
+        manip.setTargetPolygon(EigenUtility.array2Matrix(msg->data));
+        return;
+    }
+
+    manip.setTargetPose(EigenUtility.array2Matrix(msg->data));
 }
 
 int main(int argc, char **argv)
@@ -120,6 +131,7 @@ int main(int argc, char **argv)
     ros::Subscriber emergency_stop_sub = nh.subscribe<std_msgs::Bool>("emergency_stop", 100, emergency_stop_cb);
     ros::Subscriber ik_enable_sub = nh.subscribe<std_msgs::Bool>("ik_enable", 10, ik_enable_cb);
     ros::Subscriber motor_enable_sub = nh.subscribe<std_msgs::Bool>("motor_enable", 10, motor_enable_cb);
+    ros::Subscriber polygon_enable_sub = nh.subscribe<std_msgs::Bool>("polygon_enable", 10, polygon_enable_cb);
     ros::Subscriber simulation_enable_sub = nh.subscribe<std_msgs::Bool>("simulation_enable", 10, simulation_enable_cb);
     ros::Subscriber torque_enable_sub = nh.subscribe<std_msgs::Bool>("torque_enable", 10, torque_enable_cb);
     ros::Subscriber gain_sub = nh.subscribe<std_msgs::Int16>("gain", 10, gain_cb);

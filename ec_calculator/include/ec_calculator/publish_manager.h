@@ -16,6 +16,7 @@ namespace ec_calculator
             std_msgs::Bool _emergency_stop;
             std_msgs::Bool _ik_enable;
             std_msgs::Bool _motor_enable;
+            std_msgs::Bool _polygon_enable;
             std_msgs::Bool _simulation_enable;
             std_msgs::Bool _torque_enable;
 
@@ -29,6 +30,7 @@ namespace ec_calculator
             void setEmergencyStop(const bool &emergency_stop_);
             void setIKEnable(const bool &ik_enable_);
             void setMotorEnable(const bool &motor_enable_);
+            void setPolygonEnable(const bool &polygon_enable_);
             void setSimulationEnable(const bool &simulation_enable_);
             void setTorqueEnable(const bool &torque_enable_);
             template<class... A> void setTargetAngle(const A&... target_angle_)
@@ -47,6 +49,7 @@ namespace ec_calculator
             std_msgs::Bool getEmergencyStop();
             std_msgs::Bool getIKEnable();
             std_msgs::Bool getMotorEnable();
+            std_msgs::Bool getPolygonEnable();
             std_msgs::Bool getSimulationEnable();
             std_msgs::Bool getTorqueEnable();
             std_msgs::Float32MultiArray getTargetAngle();

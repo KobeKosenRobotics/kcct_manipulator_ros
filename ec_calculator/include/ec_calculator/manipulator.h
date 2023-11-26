@@ -44,6 +44,7 @@ namespace ec_calculator
             bool _emergency_stop = true;
             bool _ik_enable = false;
             bool _motor_enable = false;
+            bool _polygon_enable = false;
             bool _simulation_enable = true;
             bool _torque_enable = false;
 
@@ -102,6 +103,7 @@ namespace ec_calculator
             std::string getJointName(const int &joint_index_);
             std::string getJointParentName(const int &joint_index_);
             int getInverseKinematicsNum();
+            bool getPolygonEnable();
             bool getSimulationEnable();
             bool getTorqueEnable();
 
@@ -150,6 +152,7 @@ namespace ec_calculator
             void setIKEnable(const bool &ik_enable_);
             void setMotorEnable(const bool &motor_enable_);
             bool getMotorEnable();
+            void setPolygonEnable(const bool &polygon_enable_);
             void setSimulationEnable(const bool &simulation_enable_);
             void setTorqueEnable(const bool &torque_enable_);
             void setTargetAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);

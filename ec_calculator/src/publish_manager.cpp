@@ -7,7 +7,9 @@ namespace ec_calculator
         _emergency_stop.data = true;
         _ik_enable.data = false;
         _motor_enable.data = false;
+        _polygon_enable.data = false;
         _simulation_enable.data = true;
+        _torque_enable.data = false;
         _target_angle.data.resize(_joint_num);
         _target_pose.data.resize(7);
     }
@@ -31,6 +33,11 @@ namespace ec_calculator
     void PublishManager::setMotorEnable(const bool &motor_enable_)
     {
         _motor_enable.data = motor_enable_;
+    }
+
+    void PublishManager::setPolygonEnable(const bool &polygon_enable_)
+    {
+        _polygon_enable.data = polygon_enable_;
     }
 
     void PublishManager::setSimulationEnable(const bool &simulation_enable_)
@@ -67,6 +74,11 @@ namespace ec_calculator
     std_msgs::Bool PublishManager::getMotorEnable()
     {
         return _motor_enable;
+    }
+
+    std_msgs::Bool PublishManager::getPolygonEnable()
+    {
+        return _polygon_enable;
     }
 
     std_msgs::Bool PublishManager::getSimulationEnable()

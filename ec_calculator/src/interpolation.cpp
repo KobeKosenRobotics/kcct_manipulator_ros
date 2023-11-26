@@ -12,6 +12,13 @@ namespace ec_calculator
         _sigmoid_gain = sigmoid_gain_;
     }
 
+    void Interpolation::setDuringTime(const double &during_time_)
+    {
+        _during_time_enable = true;
+
+        _during_time = during_time_;
+    }
+
     void Interpolation::setPoint(const Eigen::Matrix<double, -1, 1> &start_point_, const Eigen::Matrix<double, -1, 1> &end_point_)
     {
         _start_point = start_point_;
@@ -36,6 +43,8 @@ namespace ec_calculator
 
     double Interpolation::getDuringTime()
     {
+        if(_during_time_enable) return _during_time;
+
         _during_time = _distance/_linear_velocity;
 
         return _during_time;

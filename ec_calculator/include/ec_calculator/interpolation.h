@@ -22,6 +22,7 @@ namespace ec_calculator
 
             double _distance;
             double _during_time;
+            bool _during_time_enable = false;
             double _linear_velocity = 0.01;  // [m/s]
             double _sigmoid_gain = 2;
 
@@ -30,6 +31,7 @@ namespace ec_calculator
         public:
             void setLinearVelocity(const double &linear_velocity_);
             void setSigmoidGain(const double &sigmoid_gain_);
+            void setDuringTime(const double &during_time_);
             void setPoint(const Eigen::Matrix<double, -1, 1> &start_point_, const Eigen::Matrix<double, -1, 1> &end_point_);
             double getDistance();
             double getDuringTime();

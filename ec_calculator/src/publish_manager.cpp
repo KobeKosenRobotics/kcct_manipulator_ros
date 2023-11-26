@@ -38,6 +38,9 @@ namespace ec_calculator
     void PublishManager::setPolygonEnable(const bool &polygon_enable_)
     {
         _polygon_enable.data = polygon_enable_;
+
+        if(_polygon_enable.data) _target_pose.data.resize(7);
+        else _target_pose.data.resize(8);
     }
 
     void PublishManager::setSimulationEnable(const bool &simulation_enable_)
@@ -50,8 +53,10 @@ namespace ec_calculator
         _torque_enable.data = torque_enable_;
     }
 
-    void PublishManager::setTargetPose(const double &x_, const double &y_, const double &z_, const double &ez_, const double &ey_, const double &ex_, const double &scale_)
+    void PublishManager::setTargetPolygon(const double &x_, const double &y_, const double &z_, const double &ez_, const double &ey_, const double &ex_, const double &scale_)
     {
+        setPolygonEnable(true);
+
         _target_pose.data[0] = x_;
         _target_pose.data[1] = y_;
         _target_pose.data[2] = z_;
@@ -59,6 +64,20 @@ namespace ec_calculator
         _target_pose.data[4] = ey_;
         _target_pose.data[5] = ex_;
         _target_pose.data[6] = scale_;
+    }
+
+    void PublishManager::setTargetPose(const int &start_joint_, const int &end_joint_, const double &x_, const double &y_, const double &z_, const double &ez_, const double &ey_, const double &ex_)
+    {
+        setPolygonEnable(false);
+
+        _target_pose.data[0] = start_joint_;
+        _target_pose.data[1] = end_joint_;
+        _target_pose.data[2] = x_;
+        _target_pose.data[3] = y_;
+        _target_pose.data[4] = z_;
+        _target_pose.data[5] = ez_;
+        _target_pose.data[6] = ey_;
+        _target_pose.data[7] = ex_;
     }
 
     std_msgs::Bool PublishManager::getEmergencyStop()

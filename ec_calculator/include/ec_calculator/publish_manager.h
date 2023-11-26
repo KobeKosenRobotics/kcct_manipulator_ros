@@ -44,7 +44,8 @@ namespace ec_calculator
                     _target_angle.data[i] = target_angle_array_[i];
                 }
             }
-            void setTargetPose(const double &x_, const double &y_, const double &z_, const double &ez_, const double &ey_, const double &ex_, const double &scale_);
+            void setTargetPolygon(const double &x_, const double &y_, const double &z_, const double &ez_, const double &ey_, const double &ex_, const double &scale_);
+            void setTargetPose(const int &start_joint_, const int &end_joint_, const double &x_, const double &y_, const double &z_, const double &ez_, const double &ey_, const double &ex_);
 
             std_msgs::Bool getEmergencyStop();
             std_msgs::Bool getIKEnable();

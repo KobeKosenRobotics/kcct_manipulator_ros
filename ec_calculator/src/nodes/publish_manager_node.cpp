@@ -33,16 +33,168 @@ int main(int argc, char **argv)
 
     pm.setJointNum(JOINT_NUM);
 
-    int step = 0;
+    int cup = 0;
 
     while(nh.ok())
     {
-        switch (step)
+        /* Cup */
+        switch (cup)
         {
         case 0:
             pm.setEmergencyStop(true);
             pm.setMotorEnable(true);
             pm.setPolygonEnable(true);
+
+            if(!wait.isWaiting(5.0)) cup++;
+            break;
+
+        case 1:
+            pm.setEmergencyStop(false);
+            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 2:
+            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 3:
+            pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 4:
+            pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 5:
+            pm.setTargetAngle(0.4,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+
+            if(!wait.isWaiting(1.5*10.0)) cup++;
+            break;
+
+        case 6:
+            pm.setTargetAngle(0.4,-1.5,1.2,0.1,0.3,0.1,    -0.5,0.7,0.7,    -0.5,0.7,0.7,    -0.5,0.7,0.7);
+
+            if(!wait.isWaiting(1.5*10.0)) cup++;
+            break;
+
+        case 10:
+            pm.setTargetPolygon(0.25+0.08,-0.13,-0.92,    -0.6,0,0,    0.1);
+            pm.setIKEnable(true);
+
+            if(!wait.isWaiting(1.5*15.0)) cup++;
+            break;
+
+        case 15:
+            pm.setTargetPolygon(0.25+0.08,-0.13,-0.92,    -0.6,0,0,    0.03);
+
+            if(!wait.isWaiting(1.5*15.0)) cup++;
+            break;
+
+        case 20:
+            pm.setTargetPolygon(0.25+0.08,-0.13,-0.86,    -0.6,0,0,    0.03);
+
+            if(!wait.isWaiting(1.5*5.0)) cup++;
+            break;
+
+        case 23:
+            pm.setTargetPolygon(0.25+0.08,-0.13,-0.86,    0,0,0,    0.03);
+
+            if(!wait.isWaiting(1.5*5.0)) cup++;
+            break;
+
+        case 25:
+            pm.setTargetPolygon(0.25+0.08,0,-0.86,    0,0,0,    0.03);
+
+            if(!wait.isWaiting(1.5*15.0)) cup++;
+            break;
+
+        case 30:
+            pm.setTargetPolygon(0.25+0.08,0.13,-0.86,    0,0,0,    0.03);
+
+            if(!wait.isWaiting(1.5*15.0)) cup++;
+            break;
+
+        case 33:
+            pm.setTargetPolygon(0.25+0.08,0.13,-0.86,    0.6,0,0,    0.03);
+
+            if(!wait.isWaiting(1.5*5.0)) cup++;
+            break;
+
+        case 35:
+            pm.setTargetPolygon(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.03);
+
+            if(!wait.isWaiting(1.5*5.0)) cup++;
+            break;
+
+        case 40:
+            pm.setTargetPolygon(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.1);
+
+            if(!wait.isWaiting(1.5*10.0)) cup++;
+            break;
+
+        case 45:
+            pm.setTargetAngle(-0.4,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+            pm.setIKEnable(false);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 50:
+            pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 55:
+            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 60:
+            pm.setEmergencyStop(false);
+            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 65:
+            pm.setEmergencyStop(false);
+            pm.setTargetAngle(0.0,0.0,0.0,0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
+
+            if(!wait.isWaiting(10.0)) cup++;
+            break;
+
+        case 70:
+            pm.setEmergencyStop(true);
+            pm.setMotorEnable(false);
+            break;
+
+        default:
+            if(cup >= 1000) break;
+            cup++;
+            break;
+        }
+
+
+
+
+
+
+        /* Pancake *//*
+        switch (step)
+        {
+        case 0:
+            pm.setEmergencyStop(true);
+            // pm.setMotorEnable(true);
 
             if(!wait.isWaiting(5.0)) step++;
             break;
@@ -78,191 +230,142 @@ int main(int argc, char **argv)
             if(!wait.isWaiting(1.5*10.0)) step++;
             break;
 
-        case 6:
-            pm.setTargetAngle(0.4,-1.5,1.2,0.1,0.3,0.1,    -0.5,0.7,0.7,    -0.5,0.7,0.7,    -0.5,0.7,0.7);
+        case 6: // grasp
+            pm.setTargetAngle(0.739,-0.540,0.420,-0.669,-1.20,0.0638,    0.420,0.270,-0.331,    0.529,0.278,-0.739,    0.439,0.316,-0.437);
+
+            if(!wait.isWaiting(1.5*20.0)) step++;
+            break;
+
+        case 10:
+            pm.setTargetAngle(0.439,-0.940,0.620,-0.469,-1.50,0.0638,    0.420,0.270,-0.331,    0.529,0.278,-0.739,    0.439,0.316,-0.437);
 
             if(!wait.isWaiting(1.5*10.0)) step++;
             break;
 
-        case 10:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.92,    -0.6,0,0,    0.1);
+        case 15:
+            pm.setTargetAngle(0.050,-0.940,0.620,-0.050,-1.50,0.050,    0.420,0.270,-0.331,    0.529,0.278,-0.739,    0.439,0.316,-0.437);
+
+            if(!wait.isWaiting(1.5*10.0)) step++;
+            break;
+
+        case 20:
+            pm.setTargetAngle(0.0261,-1.06,1.28,-0.0376,-1.071,0.0359,    0.420,0.270,-0.331,    0.529,0.278,-0.739,    0.439,0.316,-0.437);
+
+            if(!wait.isWaiting(1.5*10.0)) step++;
+            break;
+
+        case 25:
+            pm.setTargetPose(0,5,    0.283,-0.00297,-0.678,    0.000595,-0.899,0.0135);
             pm.setIKEnable(true);
 
             if(!wait.isWaiting(1.5*15.0)) step++;
             break;
 
-        case 15:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.92,    -0.6,0,0,    0.03);
-
-            if(!wait.isWaiting(1.5*15.0)) step++;
-            break;
-
-        case 20:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.86,    -0.6,0,0,    0.03);
-
-            if(!wait.isWaiting(1.5*5.0)) step++;
-            break;
-
-        case 23:
-            pm.setTargetPose(0.25+0.08,-0.13,-0.86,    0,0,0,    0.03);
-
-            if(!wait.isWaiting(1.5*5.0)) step++;
-            break;
-
-        case 25:
-            pm.setTargetPose(0.25+0.08,0,-0.86,    0,0,0,    0.03);
-
-            if(!wait.isWaiting(1.5*15.0)) step++;
-            break;
-
         case 30:
-            pm.setTargetPose(0.25+0.08,0.13,-0.86,    0,0,0,    0.03);
+            pm.setTargetPose(0,5,    0.383,-0.00297,-0.678,    0.000595,-0.899,0.0135);
+            pm.setIKEnable(true);
 
             if(!wait.isWaiting(1.5*15.0)) step++;
-            break;
-
-        case 33:
-            pm.setTargetPose(0.25+0.08,0.13,-0.86,    0.6,0,0,    0.03);
-
-            if(!wait.isWaiting(1.5*5.0)) step++;
             break;
 
         case 35:
-            pm.setTargetPose(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.03);
+            pm.setTargetPose(0,5,    0.383,-0.00297,-0.598,    0.000595,-0.899,0.0135);
+            pm.setIKEnable(true);
 
-            if(!wait.isWaiting(1.5*5.0)) step++;
+            if(!wait.isWaiting(1.5*15.0)) step++;
             break;
-
-        case 40:
-            pm.setTargetPose(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.1);
-
-            if(!wait.isWaiting(1.5*10.0)) step++;
-            break;
-
-        case 45:
-            pm.setTargetAngle(-0.4,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
-            pm.setIKEnable(false);
-
-            if(!wait.isWaiting(10.0)) step++;
-            break;
-
-        case 50:
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
-
-            if(!wait.isWaiting(10.0)) step++;
-            break;
-
-        case 55:
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
-
-            if(!wait.isWaiting(10.0)) step++;
-            break;
-
-        case 60:
-            pm.setEmergencyStop(false);
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
-
-            if(!wait.isWaiting(10.0)) step++;
-            break;
-
-        case 65:
-            pm.setEmergencyStop(false);
-            pm.setTargetAngle(0.0,0.0,0.0,0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
-
-            if(!wait.isWaiting(10.0)) step++;
-            break;
-
-        case 70:
-            pm.setEmergencyStop(true);
-            pm.setMotorEnable(false);
-            break;
-
-        default:
-            step++;
-            break;
-        }
-        // switch (step)
-        // {
-        // case 0:
-        //     pm.setEmergencyStop(true);
-
-        //     if(!wait.isWaiting(2.0)) step++;
-        //     break;
-
-        // case 5:
-        //     pm.setEmergencyStop(false);
-        //     pm.setTargetAngle(-0.5,-0.3,0.0,0.1,-1.5,0.1,    -0.5,0.2,0.2,    -0.5,0.2,0.2,    -0.5,0.2,0.2);
-
-        //     if(!wait.isWaiting(10.0)) step++;
-        //     break;
-
-        // case 8:
-        //     pm.setEmergencyStop(false);
-        //     pm.setTargetAngle(-0.5,-0.3,1.5,0.1,-1.2,0.1,    -0.5,0.2,0.2,    -0.5,0.2,0.2,    -0.5,0.2,0.2);
-
-        //     if(!wait.isWaiting(10.0)) step++;
-        //     break;
-
-        // case 10:
-        //     pm.setTargetPose(0.15,0.12,-1,    0.46,-0,0,    0.1);
-        //     pm.setIKEnable(true);
-
-        //     if(!wait.isWaiting(5.0)) step++;
-        //     break;
 
         // case 15:
-        //     pm.setTargetPose(0.15,0.12,-1,    0.46,-0,0,    0.05);
+        //     pm.setTargetPose(0,5,    0.240,-0.024,-0.594,    0.147,-1.24,-0.229);
 
-        //     if(!wait.isWaiting(5.0)) step++;
+        //     if(!wait.isWaiting(1.5*15.0)) step++;
+        //     break;
+
+        // case 20:
+        //     pm.setTargetPolygon(0.25+0.08,-0.13,-0.86,    -0.6,0,0,    0.03);
+
+        //     if(!wait.isWaiting(1.5*5.0)) step++;
+        //     break;
+
+        // case 23:
+        //     pm.setTargetPolygon(0.25+0.08,-0.13,-0.86,    0,0,0,    0.03);
+
+        //     if(!wait.isWaiting(1.5*5.0)) step++;
         //     break;
 
         // case 25:
-        //     pm.setTargetPose(0.3,0.0,-0.95,    0,-0,0,    0.05);
+        //     pm.setTargetPolygon(0.25+0.08,0,-0.86,    0,0,0,    0.03);
 
-        //     if(!wait.isWaiting(30.0)) step++;
+        //     if(!wait.isWaiting(1.5*15.0)) step++;
         //     break;
 
         // case 30:
-        //     pm.setTargetPose(0.15,-0.12,-1,    -0.46,-0,0,    0.05);
+        //     pm.setTargetPolygon(0.25+0.08,0.13,-0.86,    0,0,0,    0.03);
 
-        //     if(!wait.isWaiting(30.0)) step++;
+        //     if(!wait.isWaiting(1.5*15.0)) step++;
+        //     break;
+
+        // case 33:
+        //     pm.setTargetPolygon(0.25+0.08,0.13,-0.86,    0.6,0,0,    0.03);
+
+        //     if(!wait.isWaiting(1.5*5.0)) step++;
+        //     break;
+
+        // case 35:
+        //     pm.setTargetPolygon(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.03);
+
+        //     if(!wait.isWaiting(1.5*5.0)) step++;
         //     break;
 
         // case 40:
-        //     pm.setTargetPose(0.15,-0.12,-1,    -0.46,-0,0,    0.1);
+        //     pm.setTargetPolygon(0.25+0.08,0.13,-0.92,    0.6,0,0,    0.1);
 
-        //     if(!wait.isWaiting(5.0)) step++;
+        //     if(!wait.isWaiting(1.5*10.0)) step++;
         //     break;
 
         // case 45:
-        //     pm.setTargetAngle(0.5,-0.3,1.5,-0.1,-1.2,-0.1,    -0.5,0.2,0.2,    -0.5,0.2,0.2,    -0.5,0.2,0.2);
+        //     pm.setTargetAngle(-0.4,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
         //     pm.setIKEnable(false);
 
         //     if(!wait.isWaiting(10.0)) step++;
         //     break;
 
         // case 50:
-        //     pm.setTargetAngle(-3.1,-0.3,0.0,0.0,-1.2,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0);
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
 
-        //     if(!wait.isWaiting(15.0)) step++;
+        //     if(!wait.isWaiting(10.0)) step++;
         //     break;
 
         // case 55:
-        //     pm.setTargetAngle(-3.1,-0.3,0.0,0.0,-1.2,0.0,    1.0,0.3,0.3,    1.0,0.3,0.3,    1.0,0.3,0.3);
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
 
         //     if(!wait.isWaiting(10.0)) step++;
         //     break;
 
         // case 60:
-        //     pm.setTargetAngle(-3.1,-0.3,0.0,0.0,-1.2,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0,    -1.0,0.0,0.0);
+        //     pm.setEmergencyStop(false);
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
 
-        //     if(!wait.isWaiting(15.0)) step++;
+        //     if(!wait.isWaiting(10.0)) step++;
         //     break;
 
-        // default:
-        //     step++;
+        // case 65:
+        //     pm.setEmergencyStop(false);
+        //     pm.setTargetAngle(0.0,0.0,0.0,0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
+
+        //     if(!wait.isWaiting(10.0)) step++;
         //     break;
-        // }
+
+        // case 70:
+        //     pm.setEmergencyStop(true);
+        //     pm.setMotorEnable(false);
+        //     break;
+
+        default:
+            step++;
+            break;
+        }
+        */
 
         emergency_stop_pub.publish(pm.getEmergencyStop());
         ik_enable_pub.publish(pm.getIKEnable());

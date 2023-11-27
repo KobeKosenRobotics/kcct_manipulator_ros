@@ -84,6 +84,15 @@ namespace ec_calculator
                 return pseudo_inv_mat_;
             }
 
+            Eigen::MatrixXd getKernel(const Eigen::MatrixXd &mat_)
+            {
+                Eigen::MatrixXd kernel_;
+
+                kernel_ = mat_.fullPivLu().kernel();
+
+                return kernel_;
+            }
+
             int getRank(const Eigen::MatrixXd &mat)
             {
                 Eigen::FullPivLU<Eigen::MatrixXd> lu_decomp(mat);

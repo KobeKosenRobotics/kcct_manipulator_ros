@@ -42,7 +42,7 @@ int main(int argc, char **argv)
         {
         case 0:
             pm.setEmergencyStop(true);
-            pm.setMotorEnable(true);
+            // pm.setMotorEnable(true);
             pm.setPolygonEnable(true);
 
             if(!wait.isWaiting(5.0)) cup++;

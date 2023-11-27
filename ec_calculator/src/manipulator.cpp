@@ -25,6 +25,8 @@ namespace ec_calculator
         _target_angular_acceleration.resize(_JOINT_NUM, 1);
         _torque.resize(_JOINT_NUM, 1);
         _target_torque.resize(_JOINT_NUM, 1);
+        _error_all.resize(_JOINT_NUM, 1);
+        _jacobian_with_kernel.resize(_JOINT_NUM, _JOINT_NUM);
         clearParameters();
 
         _ik_interpolation.resize(1);
@@ -390,7 +392,9 @@ namespace ec_calculator
     {
         if(_ik_index == 0) return _target_angular_velocity;
 
-        _error_all.resize(_BINDING_CONDITIONS*_ik_index, 1);
+        // _error_all.resize(_BINDING_CONDITIONS*_ik_index, 1);
+        _error_all.setZero();
+        // _error_all.setOnes();
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
             // _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
@@ -410,7 +414,12 @@ namespace ec_calculator
             return _target_angular_velocity;
         }
 
-        _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(_jacobian) * _error_all;
+        _jacobian_kernel.resize(_JOINT_NUM, _JOINT_NUM - EigenUtility.getRank(_jacobian));
+        _jacobian_kernel = EigenUtility.getKernel(_jacobian);
+        _jacobian_with_kernel << _jacobian, _jacobian_kernel.transpose();
+
+        // _target_angular_velocity = EigenUtility.getPseudoInverseMatrix(_jacobian) * _error_all;
+        _target_angular_velocity = _jacobian_with_kernel.inverse() * _error_all;
 
         return _target_angular_velocity;
     }

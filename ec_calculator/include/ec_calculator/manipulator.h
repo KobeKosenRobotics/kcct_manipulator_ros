@@ -55,6 +55,8 @@ namespace ec_calculator
             std::vector<int> _end_joint_index;
             Eigen::Matrix<double, -1, 1> _error_all;
             std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
+            Eigen::Matrix<double, -1, -1> _jacobian_with_kernel;
+            Eigen::Matrix<double, -1, -1> _jacobian_kernel;
             Eigen::Matrix<double, -1, -1> _jacobian;
                 std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
 

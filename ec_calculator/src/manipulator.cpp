@@ -25,6 +25,7 @@ namespace ec_calculator
         _target_angular_acceleration.resize(_JOINT_NUM, 1);
         _torque.resize(_JOINT_NUM, 1);
         _target_torque.resize(_JOINT_NUM, 1);
+        _current.resize(_JOINT_NUM, 1);
         _error_all.resize(_JOINT_NUM, 1);
         _jacobian_with_kernel.resize(_JOINT_NUM, _JOINT_NUM);
         clearParameters();
@@ -83,6 +84,7 @@ namespace ec_calculator
         _target_angular_acceleration.setZero();
         _torque.setZero();
         _target_torque.setZero();
+        _current.setZero();
     }
 
     bool Manipulator::setChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_matrix_)
@@ -276,6 +278,11 @@ namespace ec_calculator
         _torque = torque_;
     }
 
+    void Manipulator::updateCurrent(const Eigen::Matrix<double, -1, 1> &current_)
+    {
+        _current = current_;
+    }
+
     Eigen::Matrix<double, 6, 1> Manipulator::getPose(const int &joint_index_)
     {
         return EigenUtility.getPose(_joints[joint_index_].getGstTheta());
@@ -364,8 +371,8 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle()
     {
-        // _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation() + _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
-        _target_angular_velocity = _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
+        _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation() + _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
+        // _target_angular_velocity = _angle_velocity_control_p_gain * (_target_angle_interpolation.getSinInterpolation() - _angle);
 
         return _target_angular_velocity;
     }
@@ -392,13 +399,12 @@ namespace ec_calculator
     {
         if(_ik_index == 0) return _target_angular_velocity;
 
-        // _error_all.resize(_BINDING_CONDITIONS*_ik_index, 1);
-        _error_all.setZero();
-        // _error_all.setOnes();
+        _error_all.setZero();   // TODO: case: _BINDING_CONDITIONS*_ik_index > _JOINT_NUM
+
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            // _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
-            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
+            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_ik_interpolation[ik_index].getDSinInterpolation() + _pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
+            // _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = (_pose_velocity_control_p_gain*(_ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]))));
         }
 
         getJacobian();
@@ -456,17 +462,22 @@ namespace ec_calculator
     {
         if(!_torque_enable) return _target_torque.setZero();
 
-        // TODO: integrate into getTorque()
-        if(_emergency_stop)
-        {
-            _target_torque.setZero();
-            torque2Angle(_target_torque);
-            return _target_torque;
-        }
-
         getMf();
         getCf();
         getNf();
+
+        // TODO: integrate into getTorque()
+        if(_emergency_stop)
+        {
+            // // Free Fall
+            // _target_torque.setZero();
+            // torque2Angle(_target_torque);
+            // return _target_torque;
+
+            // Torque Enable False
+            _torque_enable = false;
+            return _target_torque;
+        }
 
         /* Gain Example *//*
         Eigen::Matrix<double, 6, 6> gain_matrix_;
@@ -514,8 +525,6 @@ namespace ec_calculator
         {
             _jacobian_g[joint_index_].block(0, joint, 6, 1) = _joints[joint_index_].getXiDaggerG(joint);
         }
-
-        _jacobian_g[joint_index_] = EigenUtility.getTransformationMatrix(_joints[joint_index_].getGsrTheta()) * _jacobian_g[joint_index_];
 
         return _jacobian_g[joint_index_];
     }
@@ -683,6 +692,7 @@ namespace ec_calculator
         _start_time = _end_time;
 
         _angular_velocity += (_during_time * _angular_acceleration);
+        // _angular_velocity *= 0.2;
         _angle += (_during_time * _angular_velocity);
 
         updateAngle(_angle);
@@ -856,25 +866,28 @@ namespace ec_calculator
 
         // std::cout << "torque :" << std::endl << _torque << std::endl << std::endl;
 
-        // std::cout << "cumulative time :" << std::endl << updateCumulativeTime() << std::endl << std::endl;
+        std::cout << "cumulative time :" << std::endl << updateCumulativeTime() << std::endl << std::endl;
 
-        // getNowTorque();
+        getIdealTorque();
+        std::cout << "ideal torque :" << std::endl << _ideal_torque << std::endl << std::endl;
 
-        // if(_motor_enable)
-        // {
-        //     /* Writing to a File */
-        //     std::ofstream output_file("/home/amar/Documents/Tokuken/ConverterParameter/all_joint_move.csv", std::ios::app);
+        {
+            /* Writing to a File */
+            std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
 
-        //     output_file << _cumulative_time << ",";
+            output_file << _cumulative_time << ",";
 
-        //     for(int j = 0; j < 6; j++)
-        //     {
-        //         output_file << _torque(j,0) << "," << _now_torque(j,0) << ",";
-        //         // output_file << _target_torque(j,0) << "," << _torque(j,0) << ",";
-        //     }
+            for(int j = 0; j < _JOINT_NUM; j++)
+            {
+                output_file << _current(j,0) << ",";
+                output_file << _ideal_torque(j,0) << ",";
+                output_file << _angle(j,0) << ",";
+                output_file << _angular_velocity(j,0) << ",";
+                output_file << _angular_acceleration(j,0) << ",";
+            }
 
-        //     output_file << std::endl;
-        // }
+            output_file << std::endl;
+        }
 
         // get_SCARA();
     }

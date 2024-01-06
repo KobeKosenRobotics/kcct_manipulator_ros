@@ -33,6 +33,7 @@ std_msgs::Float32MultiArray angle;
 std_msgs::Float32MultiArray angular_velocity;
 std_msgs::Float32MultiArray angular_acceleration;
 std_msgs::Float32MultiArray torque;
+std_msgs::Float32MultiArray current;
 
 std_msgs::Float32MultiArray target_angle;
 std_msgs::Float32MultiArray target_pose;    // 2: start_joint, end_joint, 6: 3position, 3orientation
@@ -100,6 +101,11 @@ void torque_cb(std_msgs::Float32MultiArray::ConstPtr msg)
     manip.updateTorque(EigenUtility.array2Matrix(msg->data));
 }
 
+void current_cb(std_msgs::Float32MultiArray::ConstPtr msg)
+{
+    manip.updateCurrent(EigenUtility.array2Matrix(msg->data));
+}
+
 void target_angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
     manip.setTargetAngle(EigenUtility.array2Matrix(msg->data));
@@ -139,6 +145,7 @@ int main(int argc, char **argv)
     ros::Subscriber angular_velocity_sub = nh.subscribe<std_msgs::Float32MultiArray>("angular_velocity", 10, angular_velocity_cb);
     ros::Subscriber angular_acceleration_sub = nh.subscribe<std_msgs::Float32MultiArray>("angular_acceleration", 10, angular_acceleration_cb);
     ros::Subscriber torque_sub = nh.subscribe<std_msgs::Float32MultiArray>("torque", 10, torque_cb);
+    ros::Subscriber current_sub = nh.subscribe<std_msgs::Float32MultiArray>("current", 10, current_cb);
     ros::Subscriber target_angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_angle", 10, target_angle_cb);
     ros::Subscriber target_pose_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_pose", 10, target_pose_cb);
     target_pose.data.resize(2+6);   // 2: start_joint, end_joint, 6: 3position, 3orientation

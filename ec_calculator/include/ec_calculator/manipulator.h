@@ -40,6 +40,7 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _target_angular_acceleration;
             Eigen::Matrix<double, -1, 1> _torque;
             Eigen::Matrix<double, -1, 1> _target_torque;
+            Eigen::Matrix<double, -1, 1> _current;
 
             bool _emergency_stop = true;
             bool _ik_enable = false;
@@ -53,7 +54,7 @@ namespace ec_calculator
             std::vector<Interpolation> _ik_interpolation;
             std::vector<int> _start_joint_index;
             std::vector<int> _end_joint_index;
-            Eigen::Matrix<double, -1, 1> _error_all;
+            Eigen::Matrix<double, -1, 1> _error_all;    // _error_all(_JOINT_NUM x 1) contains redundant valuables
             std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
             Eigen::Matrix<double, -1, -1> _jacobian_with_kernel;
             Eigen::Matrix<double, -1, -1> _jacobian_kernel;
@@ -117,6 +118,7 @@ namespace ec_calculator
             void updateAngularVelocity(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
             void updateAngularAcceleration(const Eigen::Matrix<double, -1, 1> &angular_acceleration_);
             void updateTorque(const Eigen::Matrix<double, -1, 1> &torque_);
+            void updateCurrent(const Eigen::Matrix<double, -1, 1> &current_);
             Eigen::Matrix<double, -1, 1> getAngle();
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);
 

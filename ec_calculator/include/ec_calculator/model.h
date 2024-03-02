@@ -1,6 +1,7 @@
 #ifndef EC_CALCULATOR_MODEL_H
 
 #include <iostream>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/LU>
@@ -28,11 +29,13 @@ namespace ec_calculator
             Eigen::Matrix<double, 10, -1> _inertia; // mass [kg], moment of inertia [kg*m^2]:Ixx,Ixy,Ixz,Iyx,Iyy,Iyz,Izx,Izy,Izz
             Eigen::Matrix<double, 3, -1> _center_of_gravity_link;
 
+            Eigen::Matrix<double, 6, -1> _torque_current_converter;  // This is parameters for torque2Current() and current2Torque().
+
             // Gain
-            Eigen::Matrix<double, -1, -1> _angle_velocity_control_p_gain;
-            double _pose_velocity_control_p_gain;
-            double _angle_torque_control_p_gain;
-            double _angle_torque_control_d_gain;
+            std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2angular_velocity;
+            std::vector<double> _gains_pose2angular_velocity;
+            std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2torque;
+            std::vector<double> _gains_pose2torque;
 
             // Gravitational Acceleration
             double _gravitational_acceleration; // [m/s^2]
@@ -55,8 +58,8 @@ namespace ec_calculator
                             const Eigen::Matrix<double, 3, -1> &joint_position_link_,
                             const Eigen::Matrix<double, 3, -1> &translation_axis_,
                             const Eigen::Matrix<double, 3, -1> &rotation_axis_,
-                            const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_,
-                            const double &pose_velocity_control_p_gain_);
+                            const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2angular_velocity_,
+                            const std::vector<double> &gains_pose2angular_velocity_);
             // Torque Control
             void changeModel(const int &chain_num_,
                             const int &joint_num_,
@@ -66,8 +69,9 @@ namespace ec_calculator
                             const Eigen::Matrix<double, 3, -1> &rotation_axis_,
                             const Eigen::Matrix<double, 10, -1> &inertia_,
                             const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_,
-                            const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_,
-                            const double &pose_velocity_control_p_gain_);
+                            const Eigen::Matrix<double, 6, -1> &torque_current_converter_,
+                            const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2torque_,
+                            const std::vector<double> &gains_pose2torque_);
 
                 void changeTorqueControlEnable(const bool &torque_control_enable_);
                 void changeChainNum(const int &chain_num_);
@@ -81,10 +85,12 @@ namespace ec_calculator
                 void changeInertia(const Eigen::Matrix<double, 10, -1> &inertia_);
                 void changeCenterOfGravityLink(const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_);
 
-                void changeAngleVelocityControlPGain(const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_);
-                void changePoseVelocityControlPGain(const double &pose_velocity_control_p_gain_);
-                void changeAngleTorqueControlPGain(const double &angle_torque_control_p_gain_);
-                void changeAngleTorqueControlDGain(const double &angle_torque_control_d_gain_);
+                void changeTorqueCurrentConverter(const Eigen::Matrix<double, 6, -1> &torque_current_converter_);
+
+                void changeGainsAngle2AngularVelocity(const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2angular_velocity_);
+                void changeGainsPose2AngularVelocity(const std::vector<double> &gains_pose2angular_velocity_);
+                void changeGainsAngle2Torque(const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2torque_);
+                void changeGainsPose2Torque(const std::vector<double> &gains_pose2torque_);
 
                 void changeGravitationalAcceleration(const double &gravitational_acceleration_);
 
@@ -107,10 +113,12 @@ namespace ec_calculator
             Eigen::Matrix<double, 6, 6> getInertia(const int &joint_);
             Eigen::Matrix<double, 3, 1> getCenterOfGravityLink(const int &joint_);
 
-            Eigen::Matrix<double, -1, -1> getAngleVelocityControlPGain();
-            double getPoseVelocityControlPGain();
-            double getAngleTorqueControlPGain();
-            double getAngleTorqueControlDGain();
+            Eigen::Matrix<double, 6, -1> getTorqueCurrentConverter();
+
+            std::vector<Eigen::Matrix<double, -1, -1>> getGainsAngle2AngularVelocity();
+            std::vector<double> getGainsPose2AngularVelocity();
+            std::vector<Eigen::Matrix<double, -1, -1>> getGainsAngle2Torque();
+            std::vector<double> getGainsPose2Torque();
 
             double getGravitationalAcceleration();
 

@@ -4,11 +4,14 @@
 #include "joint.h"
 #include "interpolation.h"
 #include "differential_integral.h"
+#include "pid_controller.h"
 
+#include <iostream>
 #include <chrono>
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 namespace ec_calculator
 {
@@ -21,10 +24,11 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 6> _binding_conditions_matrix;
             std::vector<Joint> _joints;
             std::vector<int> _tip_index;   // joints[_tip_index[]] have no children.
-            Eigen::Matrix<double, -1, -1> _angle_velocity_control_p_gain;
-            double _pose_velocity_control_p_gain;
-            double _angle_torque_control_p_gain;
-            double _angle_torque_control_d_gain;
+            Eigen::Matrix<double, 6, -1> _torque_current_converter;
+            std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2angular_velocity;
+            std::vector<double> _gains_pose2angular_velocity;
+            std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2torque;
+            std::vector<double> _gains_pose2torque;
             double _gravitational_acceleration;
             Eigen::Matrix<double, 2, -1> _angle_limit;
             Eigen::Matrix<double, 2, -1> _angular_velocity_limit;
@@ -41,6 +45,7 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _torque;
             Eigen::Matrix<double, -1, 1> _target_torque;
             Eigen::Matrix<double, -1, 1> _current;
+            Eigen::Matrix<double, -1, 1> _target_current;
 
             bool _emergency_stop = true;
             bool _ik_enable = false;
@@ -49,20 +54,28 @@ namespace ec_calculator
             bool _simulation_enable = true;
             bool _torque_enable = false;
 
+            // PID Controller
+            PidController _pid_angle2angular_velocity;
+            PidController _pid_pose2angular_velocity;
+            PidController _pid_angle2torque;
+            PidController _pid_pose2torque;
+            Interpolation _target_angle_interpolation;
+
             // Inverse Kinematics
             int _ik_index = 0;
             std::vector<Interpolation> _ik_interpolation;
             std::vector<int> _start_joint_index;
             std::vector<int> _end_joint_index;
-            Eigen::Matrix<double, -1, 1> _error_all;    // _error_all(_JOINT_NUM x 1) contains redundant valuables
+            Eigen::Matrix<double, -1, 1> _error_all;                  // _error_all(_JOINT_NUM x 1) contains redundant valuables
+            Eigen::Matrix<double, -1, 1> _target_velocity_all;        // _target_velocity_all(_JOINT_NUM x 1) contains redundant valuables
+            // Eigen::Matrix<double, -1, 1> _target_acceleration_all;    // _target_acceleration_all(_JOINT_NUM x 1) contains redundant valuables
             std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
             Eigen::Matrix<double, -1, -1> _jacobian_with_kernel;
             Eigen::Matrix<double, -1, -1> _jacobian_kernel;
             Eigen::Matrix<double, -1, -1> _jacobian;
                 std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
 
-            // Torque Control
-            Interpolation _target_angle_interpolation;
+            // Motion Equation
             Eigen::Matrix<double, -1, -1> _Mf;
                 std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_g;
             Eigen::Matrix<double, -1, -1> _Cf;
@@ -74,7 +87,7 @@ namespace ec_calculator
 
             // Time
             std::chrono::system_clock::time_point _start_time, _end_time;
-            double _during_time;
+            double _during_time;                           // TODO: replace it DifferentialIntegral Class
             bool _is_first_during_time_measurement = true; // TODO: Whether to reset when changing models
 
             std::chrono::system_clock::time_point _cumulative_time_start;
@@ -90,10 +103,11 @@ namespace ec_calculator
                 void setJointParameters();
                     void setTipIndex(const int &tip_index_);
                     void clearTipIndex();
-                void setAngleVelocityControlPGain(const Eigen::Matrix<double, -1, -1> &angle_velocity_control_p_gain_);
-                void setPoseVelocityControlPGain(const double &pose_velocity_control_p_gain_);
-                void setAngleTorqueControlPGain(const double &angle_torque_control_p_gain_);
-                void setAngleTorqueControlDGain(const double &angle_torque_control_d_gain_);
+                void setTorqueCurrentConverter(const Eigen::Matrix<double, 6, -1> &torque_current_converter_);
+                void setGainsAngle2AngularVelocity(const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2angular_velocity_);
+                void setGainsPose2AngularVelocity(const std::vector<double> &gains_pose2angular_velocity_);
+                void setGainsAngle2Torque(const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2torque_);
+                void setGainsPose2Torque(const std::vector<double> &gains_pose2torque_);
                 void setGravitationalAcceleration(const double &gravitational_acceleration_);
                 void setAngleLimit(const Eigen::Matrix<double, 2, -1> &angle_limit_);
                 void setAngularVelocityLimit(const Eigen::Matrix<double, 2, -1> &angular_velocity_limit_);
@@ -122,13 +136,6 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> getAngle();
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);
 
-            // AC or IK
-            Eigen::Matrix<double, -1, 1> getAngularVelocity();
-
-            // Angle Command
-            Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
-            Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle();
-
             // Inverse Kinematics
             void setJointPose(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_pose_);
                 void clearJointPose();
@@ -136,15 +143,30 @@ namespace ec_calculator
                 Eigen::Matrix<double, -1, -1> getJacobian();
                     Eigen::Matrix<double, 6, -1> getJacobianBlock(const int &ik_index_);
 
+            // Motion Equation
+            Eigen::Matrix<double, -1, -1> getMf();
+                Eigen::Matrix<double, 6, -1> getJacobianG(const int &joint_index_);
+            Eigen::Matrix<double, -1, -1> getCf();
+                double getCfBlock(const int &i_, const int &j_);
+                    double get_dMab_dThc(const int &a_, const int &b_, const int &c_);
+                        Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_);
+            Eigen::Matrix<double, -1, 1> getNf();
+
+            // Velocity Control
+            Eigen::Matrix<double, -1, 1> getAngularVelocity();
+                Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
+                Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle();
+                // Eigen::Matrix<double, -1, 1> getAngularVelocityByPose();
+
             // Torque Control
-            Eigen::Matrix<double, -1, 1> getTorqueByAngle();
-                Eigen::Matrix<double, -1, -1> getMf();
-                    Eigen::Matrix<double, 6, -1> getJacobianG(const int &joint_index_);
-                Eigen::Matrix<double, -1, -1> getCf();
-                    double getCfBlock(const int &i_, const int &j_);
-                        double get_dMab_dThc(const int &a_, const int &b_, const int &c_);
-                            Eigen::Matrix<double, 6, 6> get_dAdjointInverseGab_dThc(const int &a_, const int &b_, const int &c_);
-                Eigen::Matrix<double, -1, 1> getNf();
+            Eigen::Matrix<double, -1, 1> getTorque();
+                Eigen::Matrix<double, -1, 1> getTorqueByAngle();
+                // Eigen::Matrix<double, -1, 1> getTorqueByPose();
+
+            // Torque Current Converter
+            Eigen::Matrix<double, -1, 1> getCurrent();
+                Eigen::Matrix<double, -1, 1> torque2Current();
+                Eigen::Matrix<double, -1, 1> current2Torque();
 
             // Angular Velocity to Angle (for Visualization)
             Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);

@@ -59,6 +59,16 @@ namespace ec_calculator
         return _mid_time;
     }
 
+    Eigen::Matrix<double, -1, 1> Interpolation::getStartPoint()
+    {
+        return _start_point;
+    }
+
+    Eigen::Matrix<double, -1, 1> Interpolation::getEndPoint()
+    {
+        return _end_point;
+    }
+
     Eigen::Matrix<double, -1, 1> Interpolation::getLinearInterpolation()
     {
         getMidTime();

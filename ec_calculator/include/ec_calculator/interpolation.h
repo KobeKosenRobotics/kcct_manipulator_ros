@@ -23,7 +23,7 @@ namespace ec_calculator
             double _distance;
             double _during_time;
             bool _during_time_enable = false;
-            double _linear_velocity = 0.01;  // [m/s]
+            double _linear_velocity = 0.005;  // [m/s]
             double _sigmoid_gain = 2;
 
             Eigen::Matrix<double, -1, 1> _sin_gain;
@@ -36,6 +36,8 @@ namespace ec_calculator
             double getDistance();
             double getDuringTime();
             double getMidTime();
+            Eigen::Matrix<double, -1, 1> getStartPoint();
+            Eigen::Matrix<double, -1, 1> getEndPoint();
             Eigen::Matrix<double, -1, 1> getLinearInterpolation();
             Eigen::Matrix<double, -1, 1> getSinInterpolation();
             Eigen::Matrix<double, -1, 1> getDSinInterpolation();

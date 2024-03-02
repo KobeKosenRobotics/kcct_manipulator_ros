@@ -36,6 +36,9 @@ int main(int argc, char **argv)
     int cup = 1000;         // ON = 0, OFF = 1000
     int orientation = 0;    // ON = 0, OFF = 1000
 
+    double angle_control_time_scale = 1.2;
+    double pose_control_time_scale = 1.2;
+
     while(nh.ok())
     {
         /* Cup */
@@ -197,46 +200,48 @@ int main(int argc, char **argv)
         case 5:
             pm.setEmergencyStop(true);
             pm.setPolygonEnable(true);
+            // pm.setMotorEnable(true);
 
             if(!wait.isWaiting(5.0)) orientation++;
             break;
 
         // Angle Control
-        case 10:
-            pm.setEmergencyStop(false);
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
+        // case 10:
+        //     pm.setEmergencyStop(false);
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
 
-            if(!wait.isWaiting(10.0)) orientation++;
-            break;
+        //     if(!wait.isWaiting(angle_control_time_scale*1.0)) orientation++;
+        //     break;
 
-        case 15:
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+        // case 15:
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
 
-            if(!wait.isWaiting(10.0)) orientation++;
-            break;
+        //     if(!wait.isWaiting(angle_control_time_scale*10.0)) orientation++;
+        //     break;
 
-        case 20:
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+        // case 20:
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
 
-            if(!wait.isWaiting(10.0)) orientation++;
-            break;
+        //     if(!wait.isWaiting(angle_control_time_scale*10.0)) orientation++;
+        //     break;
 
-        case 25:
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+        // case 25:
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
 
-            if(!wait.isWaiting(5.0)) orientation++;
-            break;
+        //     if(!wait.isWaiting(angle_control_time_scale*5.0)) orientation++;
+        //     break;
 
-        case 30:
-            pm.setTargetAngle(0.4,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+        // case 30:
+        //     pm.setTargetAngle(0.4,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
 
-            if(!wait.isWaiting(8.0)) orientation++;
-            break;
+        //     if(!wait.isWaiting(angle_control_time_scale*8.0)) orientation++;
+        //     break;
 
         case 35:
+            pm.setEmergencyStop(false);
             pm.setTargetAngle(0.4,-1.5,1.2,0.1,0.3,0.1,    -0.5,0.7,0.7,    -0.5,0.7,0.7,    -0.5,0.7,0.7);
 
-            if(!wait.isWaiting(15.0)) orientation++;
+            if(!wait.isWaiting(angle_control_time_scale*28.0)) orientation++;
             break;
 
         // Pose Control
@@ -244,116 +249,116 @@ int main(int argc, char **argv)
             pm.setTargetPolygon(0.33,-0.13,-0.90,    -0.6,0,0,    0.1);
             pm.setIKEnable(true);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*14.0)) orientation++;
             break;
 
         // Grasp
         case 45:
             pm.setTargetPolygon(0.33,-0.13,-0.90,    -0.6,0,0,    0.04);
 
-            if(!wait.isWaiting(20.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*12.0)) orientation++;
             break;
 
         case 50:
             pm.setTargetPolygon(0.33,-0.13,-0.86,    -0.6,0,0,    0.04);
 
-            if(!wait.isWaiting(9.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*8.0)) orientation++;
             break;
 
         case 55:
             pm.setTargetPolygon(0.33,-0.13,-0.86,    0,0,0,    0.04);
 
-            if(!wait.isWaiting(7.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*5.0)) orientation++;
             break;
 
         // Mid Pose
         case 60:
             pm.setTargetPolygon(0.33,0,-0.86,    0,0,0,    0.04);
 
-            if(!wait.isWaiting(13.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*27.0)) orientation++;
             break;
 
         // Y Rotation
         case 65:
-            pm.setTargetPolygon(0.33,0,-0.86,    0,-1,0,    0.04);
+            pm.setTargetPolygon(0.33,0,-0.86,    0,-0.5,0,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
 
         case 70:
             pm.setTargetPolygon(0.33,0,-0.86,    0,0,0,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
 
         case 75:
-            pm.setTargetPolygon(0.33,0,-0.86,    0,1,0,    0.04);
+            pm.setTargetPolygon(0.33,0,-0.86,    0,0.5,0,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
 
         case 80:
             pm.setTargetPolygon(0.33,0,-0.86,    0,0,0,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
 
         // X Rotation
         case 85:
-            pm.setTargetPolygon(0.33,0,-0.86,    0,0,-1,    0.04);
+            pm.setTargetPolygon(0.33,0,-0.86,    0,0,-0.5,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
 
         case 90:
             pm.setTargetPolygon(0.33,0,-0.86,    0,0,0,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
 
         case 95:
-            pm.setTargetPolygon(0.33,0,-0.86,    0,0,1,    0.04);
+            pm.setTargetPolygon(0.33,0,-0.86,    0,0,0.5,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
 
         case 100:
             pm.setTargetPolygon(0.33,0,-0.86,    0,0,0,    0.04);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*4.0)) orientation++;
             break;
         // Mid Pose
 
         case 105:
             pm.setTargetPolygon(0.33,0.13,-0.86,    0,0,0,    0.04);
 
-            if(!wait.isWaiting(14.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*27.0)) orientation++;
             break;
 
         case 110:
             pm.setTargetPolygon(0.33,0.13,-0.86,    0.6,0,0,    0.04);
 
-            if(!wait.isWaiting(9.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*5.0)) orientation++;
             break;
 
         case 115:
             pm.setTargetPolygon(0.33,0.13,-0.90,    0.6,0,0,    0.04);
 
-            if(!wait.isWaiting(5.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*8.0)) orientation++;
             break;
 
         // Release
         case 120:
             pm.setTargetPolygon(0.33,0.13,-0.90,    0.6,0,0,    0.1);
 
-            if(!wait.isWaiting(15.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*12.0)) orientation++;
             break;
 
         case 125:
             pm.setTargetAngle(-0.4,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
             pm.setIKEnable(false);
 
-            if(!wait.isWaiting(9.0)) orientation++;
+            if(!wait.isWaiting(pose_control_time_scale*9.0)) orientation++;
             break;
 
         // Angle Control

@@ -40,7 +40,6 @@ std_msgs::Float32MultiArray target_pose;    // 2: start_joint, end_joint, 6: 3po
 
 void emergency_stop_cb(std_msgs::Bool::ConstPtr msg)
 {
-    // free_fall = true;
     manip.setEmergencyStop(msg->data);
 }
 
@@ -69,11 +68,6 @@ void torque_enable_cb(std_msgs::Bool::ConstPtr msg)
     manip.setTorqueEnable(msg->data);
 }
 
-void gain_cb(std_msgs::Int16::ConstPtr msg)
-{
-    manip.setAngleTorqueControlPGain(msg->data);
-}
-
 void angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
     if(manip.getMotorEnable())
@@ -89,11 +83,6 @@ void angular_velocity_cb(std_msgs::Float32MultiArray::ConstPtr msg)
         manip.updateAngularVelocity(EigenUtility.array2Matrix(msg->data));
         manip.updateAngularAcceleration(EigenUtility.array2Matrix(msg->data));
     }
-}
-
-void angular_acceleration_cb(std_msgs::Float32MultiArray::ConstPtr msg)
-{
-    manip.updateAngularAcceleration(EigenUtility.array2Matrix(msg->data));
 }
 
 void torque_cb(std_msgs::Float32MultiArray::ConstPtr msg)
@@ -140,10 +129,8 @@ int main(int argc, char **argv)
     ros::Subscriber polygon_enable_sub = nh.subscribe<std_msgs::Bool>("polygon_enable", 10, polygon_enable_cb);
     ros::Subscriber simulation_enable_sub = nh.subscribe<std_msgs::Bool>("simulation_enable", 10, simulation_enable_cb);
     ros::Subscriber torque_enable_sub = nh.subscribe<std_msgs::Bool>("torque_enable", 10, torque_enable_cb);
-    ros::Subscriber gain_sub = nh.subscribe<std_msgs::Int16>("gain", 10, gain_cb);
     ros::Subscriber angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("angle", 10, angle_cb);
     ros::Subscriber angular_velocity_sub = nh.subscribe<std_msgs::Float32MultiArray>("angular_velocity", 10, angular_velocity_cb);
-    ros::Subscriber angular_acceleration_sub = nh.subscribe<std_msgs::Float32MultiArray>("angular_acceleration", 10, angular_acceleration_cb);
     ros::Subscriber torque_sub = nh.subscribe<std_msgs::Float32MultiArray>("torque", 10, torque_cb);
     ros::Subscriber current_sub = nh.subscribe<std_msgs::Float32MultiArray>("current", 10, current_cb);
     ros::Subscriber target_angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_angle", 10, target_angle_cb);
@@ -280,7 +267,7 @@ int main(int argc, char **argv)
         }
 
         target_angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocity());
-        target_torque.data = EigenUtility.matrix2Array(manip.getTorqueByAngle());
+        target_torque.data = EigenUtility.matrix2Array(manip.getCurrent());
         target_angular_velocity_pub.publish(target_angular_velocity);
         target_torque_pub.publish(target_torque);
 

@@ -77,6 +77,17 @@ namespace ec_calculator
         return _mid_point;
     }
 
+    Eigen::Matrix<double, -1, 1> Interpolation::getDLinearInterpolation()
+    {
+        getMidTime();
+        if(_mid_time >= 1.0)
+        {
+            return 0.0*_mid_point;
+        }
+
+        return (_end_point - _start_point)/_during_time;
+    }
+
     Eigen::Matrix<double, -1, 1> Interpolation::getSinInterpolation()
     {
         getMidTime();

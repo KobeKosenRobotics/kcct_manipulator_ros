@@ -36,8 +36,8 @@ int main(int argc, char **argv)
     int cup = 1000;         // ON = 0, OFF = 1000
     int orientation = 0;    // ON = 0, OFF = 1000
 
-    double angle_control_time_scale = 1.2;
-    double pose_control_time_scale = 1.2;
+    double angle_control_time_scale = 2.0;
+    double pose_control_time_scale = 4.0;
 
     while(nh.ok())
     {
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
         case 5:
             pm.setEmergencyStop(true);
             pm.setPolygonEnable(true);
-            // pm.setMotorEnable(true);
+            pm.setMotorEnable(true);
 
             if(!wait.isWaiting(5.0)) orientation++;
             break;
@@ -363,30 +363,30 @@ int main(int argc, char **argv)
 
         // Angle Control
         case 130:
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,0.0,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
-
-            if(!wait.isWaiting(10.0)) orientation++;
-            break;
-
-        case 135:
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
-
-            if(!wait.isWaiting(7.0)) orientation++;
-            break;
-
-        case 140:
-            pm.setEmergencyStop(false);
-            pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
-
-            if(!wait.isWaiting(10.0)) orientation++;
-            break;
-
-        case 145:
-            pm.setEmergencyStop(false);
             pm.setTargetAngle(0.0,0.0,0.0,0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
 
-            if(!wait.isWaiting(10.0)) orientation++;
+            if(!wait.isWaiting(20.0)) orientation++;
             break;
+
+        // case 135:
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    -1.5,0.1,0.2,    -1.5,0.1,0.2,    -1.5,0.1,0.2);
+
+        //     if(!wait.isWaiting(7.0)) orientation++;
+        //     break;
+
+        // case 140:
+        //     pm.setEmergencyStop(false);
+        //     pm.setTargetAngle(0.0,-1.5,1.5,0.0,1.5,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
+
+        //     if(!wait.isWaiting(10.0)) orientation++;
+        //     break;
+
+        // case 145:
+        //     pm.setEmergencyStop(false);
+        //     pm.setTargetAngle(0.0,0.0,0.0,0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0,    0.0,0.0,0.0);
+
+        //     if(!wait.isWaiting(10.0)) orientation++;
+        //     break;
 
         case 150:
             pm.setEmergencyStop(true);

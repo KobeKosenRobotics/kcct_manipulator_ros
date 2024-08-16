@@ -75,17 +75,34 @@ namespace ec_calculator
                   0  ,  0  ,    0  ;    // gl5 = g05 = 0
             _center_of_gravity_link *= 0.001;
 
-            _angle_torque_control_p_gain = 0.2;
-            _angle_torque_control_d_gain = 0.2;
+            _gains_angle2torque.resize(3);
+            _gains_angle2torque[0].resize(_joint_num, _joint_num);
+            _gains_angle2torque[0].setIdentity();
+            _gains_angle2torque[0] *= 0.2;
+            _gains_angle2torque[1].resize(_joint_num, _joint_num);
+            _gains_angle2torque[1].setIdentity();
+            _gains_angle2torque[1] *= 0.2;
+            _gains_angle2torque[2].resize(_joint_num, _joint_num);
+            _gains_angle2torque[2].setIdentity();
+            _gains_angle2torque[2] *= 0.0;
 
             _gravitational_acceleration = 9.8;
         }
 
-        _angle_velocity_control_p_gain.resize(_joint_num, _joint_num);
-        _angle_velocity_control_p_gain.setIdentity(_joint_num, _joint_num);
-        _angle_velocity_control_p_gain *= 0.1;
+        _gains_angle2angular_velocity.resize(3);
+        _gains_angle2angular_velocity[0].resize(_joint_num, _joint_num);
+        _gains_angle2angular_velocity[0].setIdentity();
+        _gains_angle2angular_velocity[0] *= 0.025;
+        _gains_angle2angular_velocity[1].resize(_joint_num, _joint_num);
+        _gains_angle2angular_velocity[1].setZero();
+        _gains_angle2angular_velocity[2].resize(_joint_num, _joint_num);
+        _gains_angle2angular_velocity[2].setIdentity();
+        _gains_angle2angular_velocity[2] *= 0.05;
 
-        _pose_velocity_control_p_gain = 0.5;
+        _gains_pose2angular_velocity.resize(3);
+        _gains_pose2angular_velocity[0] = 0.2;
+        _gains_pose2angular_velocity[1] = 0.0;
+        _gains_pose2angular_velocity[2] = 0.1;
 
         _angle_limit.resize(2, _joint_num);
         _angle_limit <<
@@ -101,7 +118,7 @@ namespace ec_calculator
         _jacobian_determinant_limit = 0.0;
         */
 
-        /* open manipulator down */
+        /* open manipulator down *//*
         _torque_control_enable = true;
 
         _chain_num = 1;
@@ -235,8 +252,9 @@ namespace ec_calculator
         _angular_acceleration_limit.setZero();
 
         _jacobian_determinant_limit = 0.0;
+        */
 
-        /* 1 Arm 3 fingers *//*
+        /* 1 Arm 3 fingers */
         _torque_control_enable = false;
 
         _chain_num = 3;
@@ -268,16 +286,17 @@ namespace ec_calculator
         _gains_angle2angular_velocity.resize(3);
         _gains_angle2angular_velocity[0].resize(_joint_num, _joint_num);
         _gains_angle2angular_velocity[0].setIdentity();
-        _gains_angle2angular_velocity[0] *= 0.2;
+        _gains_angle2angular_velocity[0] *= 0.025;
         _gains_angle2angular_velocity[1].resize(_joint_num, _joint_num);
         _gains_angle2angular_velocity[1].setZero();
         _gains_angle2angular_velocity[2].resize(_joint_num, _joint_num);
-        _gains_angle2angular_velocity[2].setZero();
+        _gains_angle2angular_velocity[2].setIdentity();
+        _gains_angle2angular_velocity[2] *= 0.05;
 
         _gains_pose2angular_velocity.resize(3);
-        _gains_pose2angular_velocity[0] = 0.1;
+        _gains_pose2angular_velocity[0] = 0.2;
         _gains_pose2angular_velocity[1] = 0.0;
-        _gains_pose2angular_velocity[2] = 0.0;
+        _gains_pose2angular_velocity[2] = 0.1;
 
         _angle_limit.resize(2, _joint_num);
         _angle_limit <<
@@ -291,7 +310,7 @@ namespace ec_calculator
         _angular_acceleration_limit.setZero();
 
         _jacobian_determinant_limit = 0.0;
-        */
+        // */
 
         /* 1 Arm 1 fingers *//*
         _torque_control_enable = false;

@@ -345,8 +345,8 @@ namespace ec_calculator
 
         for(int ik_index = 0; ik_index < _ik_index; ik_index++)
         {
-            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = _ik_interpolation[ik_index].getSinInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]));
-            _target_velocity_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = _ik_interpolation[ik_index].getDSinInterpolation();
+            _error_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = _ik_interpolation[ik_index].getLinearInterpolation() - (_binding_conditions_matrix*getPose(_end_joint_index[ik_index]));
+            _target_velocity_all.block(_BINDING_CONDITIONS*ik_index, 0, _BINDING_CONDITIONS, 1) = _ik_interpolation[ik_index].getDLinearInterpolation();
         }
 
         getJacobian();
@@ -685,9 +685,10 @@ namespace ec_calculator
     // Torque Current Converter
     Eigen::Matrix<double, -1, 1> Manipulator::getCurrent()
     {
-        getTorque();
+        // getTorque();
 
-        return torque2Current();
+        // return torque2Current();
+        return getTorque();
     }
 
     Eigen::Matrix<double, -1, 1> Manipulator::torque2Current()
@@ -939,13 +940,64 @@ namespace ec_calculator
         // std::cout << "Mf\n" << _Mf << std::endl << std::endl;
         // std::cout << "Cf\n" << _Cf << std::endl << std::endl;
         // std::cout << "Nf\n" << _Nf << std::endl << std::endl;
+        // std::cout << "GstZero:" << std::endl;
+        // for(int joint_ = 0; joint_ < _JOINT_NUM; joint_++)
+        // {
+        //     std::cout << "joint" << joint_ << std::endl;
+        //     std::cout << _joints[joint_].getGstTheta() << std::endl;
+        // }
+        // std::cout << "GsrZero:" << std::endl;
+        // for(int joint_ = 0; joint_ < _JOINT_NUM; joint_++)
+        // {
+        //     std::cout << "joint" << joint_ << std::endl;
+        //     std::cout << _joints[joint_].getGsrTheta() << std::endl;
+        // }
+
+        /* Writing to a File */
+        if(!_emergency_stop)
+        {
+            std::ofstream mf_file("/home/data/mf.csv", std::ios::app);
+            std::ofstream cf_file("/home/data/cf.csv", std::ios::app);
+            std::ofstream nf_file("/home/data/nf.csv", std::ios::app);
+            std::ofstream a_file("/home/data/angle.csv", std::ios::app);
+            std::ofstream v_file("/home/data/angular_velocity.csv", std::ios::app);
+            std::ofstream t_file("/home/data/torque.csv", std::ios::app);
+
+            updateCumulativeTime();
+            mf_file << _cumulative_time << ",";
+            cf_file << _cumulative_time << ",";
+            nf_file << _cumulative_time << ",";
+            a_file << _cumulative_time << ",";
+            v_file << _cumulative_time << ",";
+            t_file << _cumulative_time << ",";
+
+            for(int i = 0; i < _JOINT_NUM; i++)
+            {
+                for(int j = 0; j < _JOINT_NUM; j++)
+                {
+                    mf_file << _Mf(i, j) << ",";
+                    cf_file << _Cf(i, j) << ",";
+                }
+                nf_file << _Nf(i, 0) << ",";
+                a_file << _angle(i, 0) << ",";
+                v_file << _angular_velocity(i, 0) << ",";
+                t_file << _target_torque(i, 0) << ",";
+            }
+
+            mf_file << std::endl;
+            cf_file << std::endl;
+            nf_file << std::endl;
+            a_file << std::endl;
+            v_file << std::endl;
+            t_file << std::endl;
+        }
 
         // std::cout << "gain : " << _angle_torque_control_p_gain << std::endl;
         std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
         // std::cout << "pose15 :" << std::endl << getPose(15) << std::endl << std::endl;
         // std::cout << "pose16 :" << std::endl << getPose(16) << std::endl << std::endl;
         // std::cout << "pose17 :" << std::endl << getPose(17) << std::endl << std::endl;
-        // std::cout << "pose5 :" << std::endl << getPose(5) << std::endl << std::endl;
+        std::cout << "pose5 :" << std::endl << getPose(5) << std::endl << std::endl;
         // std::cout << "angular velocity :" << std::endl << _angular_velocity << std::endl << std::endl;
         // std::cout << "angular acceleration :" << std::endl << _angular_acceleration << std::endl << std::endl;
 
@@ -992,21 +1044,40 @@ namespace ec_calculator
         //     output_file << std::endl;
         // }
 
-        if(_ik_enable)
-        {
-            /* Writing to a File */
-            std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
+        // if(_ik_enable)
+        // {
+        //     /* Writing to a File */
+        //     std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
 
-            output_file << updateCumulativeTime() << ",";
+        //     output_file << updateCumulativeTime() << ",";
 
-            for(int axis = 0; axis < 3; axis++)
-            {
-                output_file << _ik_interpolation[0].getSinInterpolation()(axis, 0) << ",";
-                output_file << getPose(5)(axis, 0) << ",";
-            }
+        //     for(int tool = 0; tool < 3; tool++)
+        //     {
+        //         for(int axis = 0; axis < 3; axis++)
+        //         {
+        //             output_file << _ik_interpolation[tool].getLinearInterpolation()(axis, 0) << ",";
+        //             output_file << getPose(15+tool)(axis, 0) << ",";
+        //         }
+        //     }
 
-            output_file << std::endl;
-        }
+        //     output_file << std::endl;
+        // }
+
+        // if(_motor_enable)
+        // {
+        //     /* Writing to a File */
+        //     std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
+
+        //     output_file << updateCumulativeTime() << ",";
+
+        //     for(int joint =  0; joint < _JOINT_NUM; joint++)
+        //     {
+        //         output_file << _target_angular_velocity(joint, 0) << ",";
+        //         output_file << _angular_velocity(joint, 0) << ",";
+        //     }
+
+        //     output_file << std::endl;
+        // }
 
         // get_SCARA();
     }
@@ -1018,7 +1089,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 6, 1> Manipulator::getMidPose(const int &ik_index_)
     {
-        if(_ik_enable) return _binding_conditions_matrix.transpose()*_ik_interpolation[ik_index_].getSinInterpolation();
+        if(_ik_enable) return _binding_conditions_matrix.transpose()*_ik_interpolation[ik_index_].getLinearInterpolation();
 
         return Eigen::Matrix<double, 6, 1>::Zero();
     }

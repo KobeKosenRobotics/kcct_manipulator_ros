@@ -39,6 +39,7 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> getStartPoint();
             Eigen::Matrix<double, -1, 1> getEndPoint();
             Eigen::Matrix<double, -1, 1> getLinearInterpolation();
+            Eigen::Matrix<double, -1, 1> getDLinearInterpolation();
             Eigen::Matrix<double, -1, 1> getSinInterpolation();
             Eigen::Matrix<double, -1, 1> getDSinInterpolation();
             Eigen::Matrix<double, -1, 1> getDDSinInterpolation();

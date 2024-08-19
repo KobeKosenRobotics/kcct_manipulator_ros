@@ -1,0 +1,5 @@
+<launch>
+
+    <node name="ec_calculator" pkg="ec_calculator" type="ec_calculator_node" output="screen"/>
+
+</launch>

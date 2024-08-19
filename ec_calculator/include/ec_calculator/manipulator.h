@@ -2,6 +2,7 @@
 
 #include "model.h"
 #include "joint.h"
+#include "interpolation.h"
 
 #include <chrono>
 
@@ -23,11 +24,20 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _target_angle;
             Eigen::Matrix<double, -1, 1> _angular_velocity;
             Eigen::Matrix<double, -1, 1> _target_angular_velocity;
-            int _start_joint = 0, _end_joint = 0;
-            Eigen::Matrix<double, 6, 1> _target_pose;
+
             bool _ec_enable = false;
             bool _emergency_stop = false;
             bool _motor_enable = false;
+
+            // Inverse Kinematics
+            int _ik_index = 0;
+            std::vector<Interpolation> _interpolation;
+            std::vector<int> _start_joint_index;
+            std::vector<int> _end_joint_index;
+            Eigen::Matrix<double, -1, 1> _error_all;
+            std::vector<Eigen::Matrix<double, 6, 1>> _target_pose;
+            Eigen::Matrix<double, -1, -1> _jacobian;
+                std::vector<Eigen::Matrix<double, 6, -1>> _jacobian_block;
 
             // Time
             std::chrono::system_clock::time_point _start_time, _end_time;
@@ -50,6 +60,7 @@ namespace ec_calculator
             int getJointNum();
             std::string getJointName(const int &joint_index_);
             std::string getJointParentName(const int &joint_index_);
+            int getInverseKinematicsNum();
 
             // Visualize
             double getVisualData(const int &joint_index_, const int &data_index_);
@@ -59,14 +70,19 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> getAngle();
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);
 
+            // AC or IK
+            Eigen::Matrix<double, -1, 1> getAngularVelocity();
+
             // Angle Command
             Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
             Eigen::Matrix<double, -1, 1> getAngularVelocityByAngle();
 
-            // Inverse Kinematics
-            void setJointPosition(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> target_velocity_);
-            void setJointVelocity(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> target_velocity_);
+            // // Inverse Kinematics
+            void setJointPose(const int &start_joint_index_, const int &end_joint_index_, const Eigen::Matrix<double, 6, 1> &target_pose_);
+                void clearJointPose();
             Eigen::Matrix<double, -1, 1> getAngularVelocityByEC();
+                Eigen::Matrix<double, -1, -1> getJacobian();
+                    Eigen::Matrix<double, 6, -1> getJacobianBlock(const int &ik_index_);
 
             // Angular Velocity to Angle (for Visualization)
             Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
@@ -77,10 +93,13 @@ namespace ec_calculator
             void setMotorEnable(const bool &motor_enable_);
             void setTargetAngle(const Eigen::Matrix<double, -1, 1> &target_angle_);
             void setTargetPose(const Eigen::Matrix<double, -1, 1> &target_pose_);    // 2: start_joint, end_joint, 6: 3position, 3orientation
+            void setTargetVelocity(const Eigen::Matrix<double, -1, 1> &target_velocity_);
 
             // Debug
             void printTree();
             void print();
+            Eigen::Matrix<double, 6, 1> getTargetPose(const int &ik_index_);
+            Eigen::Matrix<double, 6, 1> getMidPose(const int &ik_index_);
     };
 }
 

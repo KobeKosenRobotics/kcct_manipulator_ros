@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "ec_calculator");
     ros::NodeHandle nh;
-    double rate = 10.0;
+    double rate = 100.0;
     ros::Rate loop_rate(rate);
 
     // Publisher
@@ -71,33 +71,106 @@ int main(int argc, char **argv)
     angular_velocity.data.resize(manip.getJointNum());
     target_angle.data.resize(manip.getJointNum());
 
-    int cha = 4, joi = 7;
-    Eigen::Matrix<bool, 4, 7> cha_ma;
+    // /* New naviT(oo)n */
+    // int cha = 1, joi = 8;
+    // Eigen::Matrix<bool, 1, 8> cha_ma;
+    // for(int i = 0; i < joi; i++)
+    // {
+    //     cha_ma(0, i) = 1;
+    // }
+    // Eigen::Matrix<double, 3, 9> joi_po;
+    // joi_po <<
+    //     0, 0, 0, 0.01, 0.030,  0.030, 0,  0    , 0,
+    //     0, 0, 0, 0   , 0.264, -0.258, 0,  0    , 0,
+    //     0, 0, 0, 0   , 0    ,  0,     0, -0.123, 0;
+    // Eigen::Matrix<double, 3, 8> tra;
+    // tra.setZero();
+    // tra(0, 0) = 1;
+    // tra(1, 1) = 1;
+    // tra(2, 2) = 1;
+    // Eigen::Matrix<double, 3, 8> rot;
+    // rot <<
+    //     0, 0, 0,  0,  0,  0, 1,  0,
+    //     0, 0, 0,  0,  0, -1, 0,  0,
+    //     0, 0, 0, -1, -1,  0, 0, -1;
+    // Eigen::Matrix<double, 8, 8> a2a_ga;
+    // a2a_ga.setIdentity();
+    // double ec_ga = 1;
+
+    // model.changeModel(cha, joi, cha_ma, joi_po, tra, rot, a2a_ga, ec_ga);
+
+    // manip.init(&model);
+    // manip.printTree();
+    // manip.print();
+    // angular_velocity.data.resize(manip.getJointNum());
+    // target_angle.data.resize(manip.getJointNum());
+
+    // /* Serial 30-DOF */
+    // int cha = 1, joi = 30;
+    // Eigen::Matrix<bool, 1, 30> cha_ma;
+    // for(int i = 0; i < joi; i++)
+    // {
+    //     cha_ma(0, i) = 1;
+    // }
+    // Eigen::Matrix<double, 3, 31> joi_po;
+    // joi_po.setZero();
+    // for(int i = 4; i < (cha+joi); i++)
+    // {
+    //     joi_po(2,i) = 0.2;
+    // }
+    // Eigen::Matrix<double, 3, 30> tra;
+    // tra.setZero();
+    // tra(0, 0) = 1;
+    // tra(1, 1) = 1;
+    // tra(2, 2) = 1;
+    // Eigen::Matrix<double, 3, 30> rot;
+    // rot.setZero();
+    // for(int i = 3; i < joi; i++)
+    // {
+    //     rot(i%3, i) = 1;
+    // }
+    // Eigen::Matrix<double, 30, 30> a2a_ga;
+    // a2a_ga.setIdentity();
+    // double ec_ga = 2;
+
+    // model.changeModel(cha, joi, cha_ma, joi_po, tra, rot, a2a_ga, ec_ga);
+
+    // manip.init(&model);
+    // manip.printTree();
+    // manip.print();
+    // angular_velocity.data.resize(manip.getJointNum());
+    // target_angle.data.resize(manip.getJointNum());
+
+    /* Chain 30-DOF */
+    int cha = 3, joi = 30;
+    Eigen::Matrix<bool, 3, 30> cha_ma;
     cha_ma <<
-    // 1  2  3  4  5  6  7  8  9 10
-    1, 1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 1, 0, 0,
-    1, 0, 0, 0, 0, 1, 0,
-    1, 0, 0, 0, 0, 0, 1;
-    Eigen::Matrix<double, 3, 11> joi_po;
-    joi_po <<
-    1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
-    0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
-    Eigen::Matrix<double, 3, 7> tra;
-    tra <<
-    0, 1, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0;
-    Eigen::Matrix<double, 3, 7> rot;
-    rot <<
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 1, 0, 1, 0,
-    1, 0, 1, 0, 1, 0, 1;
-    Eigen::Matrix<double, 7, 7> a2a_ga;
+        //             5                         14             19          23                29
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1;
+    Eigen::Matrix<double, 3, 33> joi_po;
+    joi_po.setZero();
+    for(int i = 4; i < (cha+joi); i++)
+    {
+        joi_po(2,i) = 0.2;
+    }
+    joi_po(0, 15) = 0.2;
+    joi_po(0, 24) = 0.2;
+    Eigen::Matrix<double, 3, 30> tra;
+    tra.setZero();
+    tra(0, 0) = 1;
+    tra(1, 1) = 1;
+    tra(2, 2) = 1;
+    Eigen::Matrix<double, 3, 30> rot;
+    rot.setZero();
+    for(int i = 3; i < joi; i++)
+    {
+        rot(i%3, i) = 1;
+    }
+    Eigen::Matrix<double, 30, 30> a2a_ga;
     a2a_ga.setIdentity();
-    a2a_ga *= 2.0;
-    double ec_ga = 2.0;
+    double ec_ga = 2;
 
     model.changeModel(cha, joi, cha_ma, joi_po, tra, rot, a2a_ga, ec_ga);
 
@@ -110,10 +183,15 @@ int main(int argc, char **argv)
     while(nh.ok())
     {
         tfPublisher.publish();
+        for(int i = 0; i < manip.getInverseKinematicsNum(); i++)
+        {
+            tfPublisher.publish("manipulator_base_link", "TargetPose"+std::to_string(i), manip.getTargetPose(i));
+            tfPublisher.publish("manipulator_base_link", "MidTargetPose"+std::to_string(i), manip.getMidPose(i));
+        }
 
-        manip.angularVelocity2Angle(manip.getAngularVelocityByAngle());    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
+        manip.angularVelocity2Angle(manip.getAngularVelocity());    // callBack(){manip.setAngle(msg);} while(){pub.publish(manip.getAngularVelocity());}
 
-        angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocityByAngle());
+        angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocity());
         angular_velocity_pub.publish(angular_velocity);
 
         manip.print();

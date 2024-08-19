@@ -119,7 +119,7 @@ namespace ec_calculator
 
     void Joint::setXi()
     {
-        _xi << -_w.cross(_q), _w;
+        _xi << _v, _w;
     }
 
     void Joint::setGstZero()
@@ -212,6 +212,7 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getGstTheta()
     {
+        if(_parent == nullptr) return _gst_zero;
         return _parent->getGstThetaRecursion()*_gst_zero;
     }
 
@@ -248,10 +249,12 @@ namespace ec_calculator
 
     Eigen::Matrix<double, 4, 4> Joint::getParentGstTheta(const int &minimum_index_)
     {
+        if(_parent == nullptr) return _gst_zero;
+
         _minimum_index = minimum_index_;
         _parent->_minimum_index = _minimum_index;
 
-        return getParentGstThetaRecursion()*_gst_zero;
+        return _parent->getParentGstThetaRecursion()*_gst_zero;
     }
 
     Eigen::Matrix<double, 4, 4> Joint::getParentGstThetaRecursion()

@@ -29,6 +29,7 @@ namespace ec_calculator
             std::vector<double> _gains_pose2angular_velocity;
             std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2torque;
             std::vector<double> _gains_pose2torque;
+            std::vector<Eigen::Matrix<double, -1, -1>> _gains_torque2current; // TODO: make model class too
             double _gravitational_acceleration;
             Eigen::Matrix<double, 2, -1> _angle_limit;
             Eigen::Matrix<double, 2, -1> _angular_velocity_limit;
@@ -60,6 +61,7 @@ namespace ec_calculator
             PidController _pid_angle2torque;
             PidController _pid_pose2torque;
             Interpolation _target_angle_interpolation;
+            PidController _pid_torque2current;
 
             // Inverse Kinematics
             int _ik_index = 0;
@@ -166,7 +168,6 @@ namespace ec_calculator
             // Torque Current Converter
             Eigen::Matrix<double, -1, 1> getCurrent();
                 Eigen::Matrix<double, -1, 1> torque2Current();
-                Eigen::Matrix<double, -1, 1> current2Torque();
 
             // Angular Velocity to Angle (for Visualization)
             Eigen::Matrix<double, -1, 1> angularVelocity2Angle(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
@@ -195,6 +196,7 @@ namespace ec_calculator
                 DifferentialIntegral _angular_acc_diff;
                 Eigen::Matrix<double, 6, 1> _ideal_torque;
             double updateCumulativeTime();
+            void setGains(const Eigen::Matrix<double, -1, 1> &gains_);
     };
 }
 

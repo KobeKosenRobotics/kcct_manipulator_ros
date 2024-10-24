@@ -173,7 +173,7 @@ add_executable(publish_manager_node src/wait src/publish_manager src/nodes/publi
 target_link_libraries(publish_manager_node ${catkin_LIBRARIES})
 
 add_executable(torque2current_node src/nodes/torque2current_node)
-target_link_libraries(torque2current_node ${catkin_LIBRARIES})
+target_link_libraries(torque2current_node ${catkin_LIBRARIES} "/usr/include/eigen3")
 
 #############
 ## Install ##

@@ -23,7 +23,7 @@ namespace ec_calculator
         _d_during = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(_d_end - _d_start).count();
         _d_start = _d_end;
 
-        _d_value = (now_value_ - _d_value_old)/_d_during;
+        if(_d_during != 0.0) _d_value = (now_value_ - _d_value_old)/_d_during;
         _d_value_old = now_value_;
 
         return _d_value;
@@ -45,7 +45,7 @@ namespace ec_calculator
         _d_during = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(_d_end - _d_start).count();
         _d_start = _d_end;
 
-        _d_value = (now_value_ - _d_value_old)/(pow(_d_during, differential_number_));
+        if(_d_during != 0.0) _d_value = (now_value_ - _d_value_old)/(pow(_d_during, differential_number_));
         _d_value_old = now_value_;
 
         return _d_value;

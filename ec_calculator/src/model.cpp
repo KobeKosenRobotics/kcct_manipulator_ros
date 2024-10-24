@@ -118,7 +118,7 @@ namespace ec_calculator
         _jacobian_determinant_limit = 0.0;
         */
 
-        /* open manipulator down *//*
+        /* open manipulator down */
         _torque_control_enable = true;
 
         _chain_num = 1;
@@ -201,20 +201,32 @@ namespace ec_calculator
             _gains_angle2torque.resize(3);
             _gains_angle2torque[0].resize(_joint_num, _joint_num);
             _gains_angle2torque[0] <<
-                70.0,  0.0,  0.0,   0.0,  0.0,  0.0,
-                 0.0, 20.0,  0.0,   0.0,  0.0,  0.0,
-                 0.0,  0.0, 60.0,   0.0,  0.0,  0.0,
-                 0.0,  0.0,  0.0, 100.0,  0.0,  0.0,
-                 0.0,  0.0,  0.0,   0.0, 20.0,  0.0,
-                 0.0,  0.0,  0.0,   0.0,  0.0, 20.0;
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+                // 70.0,  0.0,  0.0,   0.0,  0.0,  0.0,
+                //  0.0, 20.0,  0.0,   0.0,  0.0,  0.0,
+                //  0.0,  0.0, 60.0,   0.0,  0.0,  0.0,
+                //  0.0,  0.0,  0.0, 100.0,  0.0,  0.0,
+                //  0.0,  0.0,  0.0,   0.0, 20.0,  0.0,
+                //  0.0,  0.0,  0.0,   0.0,  0.0, 20.0;
             _gains_angle2torque[1].resize(_joint_num, _joint_num);
             _gains_angle2torque[1] <<
-                70.0,  0.0, 0.0,  0.0,  0.0,  0.0,
-                 0.0, 10.0, 0.0,  0.0,  0.0,  0.0,
-                 0.0,  0.0, 5.0,  0.0,  0.0,  0.0,
-                 0.0,  0.0, 0.0, 70.0,  0.0,  0.0,
-                 0.0,  0.0, 0.0,  0.0, 20.0,  0.0,
-                 0.0,  0.0, 0.0,  0.0,  0.0, 10.0;
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+                // 70.0,  0.0, 0.0,  0.0,  0.0,  0.0,
+                //  0.0, 10.0, 0.0,  0.0,  0.0,  0.0,
+                //  0.0,  0.0, 5.0,  0.0,  0.0,  0.0,
+                //  0.0,  0.0, 0.0, 70.0,  0.0,  0.0,
+                //  0.0,  0.0, 0.0,  0.0, 20.0,  0.0,
+                //  0.0,  0.0, 0.0,  0.0,  0.0, 10.0;
             _gains_angle2torque[2].resize(_joint_num, _joint_num);
             _gains_angle2torque[2].setZero();
 
@@ -252,9 +264,9 @@ namespace ec_calculator
         _angular_acceleration_limit.setZero();
 
         _jacobian_determinant_limit = 0.0;
-        */
+        // */
 
-        /* 1 Arm 3 fingers */
+        /* 1 Arm 3 fingers *//*
         _torque_control_enable = false;
 
         _chain_num = 3;
@@ -310,7 +322,7 @@ namespace ec_calculator
         _angular_acceleration_limit.setZero();
 
         _jacobian_determinant_limit = 0.0;
-        // */
+        */
 
         /* 1 Arm 1 fingers *//*
         _torque_control_enable = false;

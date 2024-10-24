@@ -27,8 +27,6 @@ std_msgs::Bool polygon_enable;
 std_msgs::Bool simulation_enable;
 std_msgs::Bool torque_enable;
 
-std_msgs::Int16 gain;
-
 std_msgs::Float32MultiArray angle;
 std_msgs::Float32MultiArray angular_velocity;
 std_msgs::Float32MultiArray angular_acceleration;
@@ -111,6 +109,11 @@ void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
     manip.setTargetPose(EigenUtility.array2Matrix(msg->data));
 }
 
+void gains_cb(std_msgs::Float32MultiArray::ConstPtr msg)
+{
+    manip.setGains(EigenUtility.array2Matrix(msg->data));
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "ec_calculator_node");
@@ -136,6 +139,7 @@ int main(int argc, char **argv)
     ros::Subscriber target_angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_angle", 10, target_angle_cb);
     ros::Subscriber target_pose_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_pose", 10, target_pose_cb);
     target_pose.data.resize(2+6);   // 2: start_joint, end_joint, 6: 3position, 3orientation
+    ros::Subscriber gains_sub = nh.subscribe<std_msgs::Float32MultiArray>("gains", 10, gains_cb);
 
     manip.init(&model);
     manip.printTree();

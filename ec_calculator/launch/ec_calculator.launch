@@ -6,6 +6,12 @@
         <node name="publish_manager_node" pkg="ec_calculator" type="publish_manager_node" output="screen"/>
     </group>
 
+    <arg name="motor" default="false"/>
+    <group if="$(arg motor)">
+        <node name="torque2current_node" pkg="ec_calculator" type="torque2current_node" output="screen"/>
+        <node name="dynamixel_wrapper_node" pkg="dynamixel_wrapper" type="dynamixel_wrapper_node" output="screen"/>
+    </group>
+
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ec_calculator)/rviz/default.rviz"/>
     <node name="rqt_publisher" pkg="rqt_publisher" type="rqt_publisher"/>
 </launch>

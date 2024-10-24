@@ -3,58 +3,89 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <Eigen/Core>
 
 #include <std_msgs/Float32MultiArray.h>
 
 #include <ros/ros.h>
 
 const double deg2rad = M_PI/180.0, rad2deg = 180.0/M_PI, rpm2radps = 2*M_PI/60.0, radps2rpm = 60.0/(2*M_PI);
-const int JOINT_NUM = 1;
-
-class Torque2Current
+const int JOINT_NUM = 6;
+class TorqueCurrentConverter
 {
     private:
-        // double _target_torque;
-        // double _angular_velocity;
-        // double _current;
-        // double _target_current;
-        double _a = 1.5294117647058838e-06;
-        double _b = 0.00015931372549019438;
-        double _c = -0.06803921568627373;
-        double _d = -1.5294117647058828e-06;
-        double _e = 0.00015931372549019598;
-        double _f = -1.0419607843137264;
-        double _g = -1.11;
+        double _a = 0.0;
+        double _b = 0.0;
+        double _c = 0.0;
+        double _d = 0.0;
     public:
+        void setMotorId(const int &motor_id_)
+        {
+            switch(motor_id_)
+            {
+                case 1:
+                    _a = 4.350;
+                    _b = -1.024;
+                    _c = 0.2354;
+                    _d = 0.277;
+                    break;
+                case 2:
+                    _a = 4.666;
+                    _b = -1.237;
+                    _c = 0.2651;
+                    _d = 0.277;
+                    break;
+                case 3:
+                    _a = 3.971;
+                    _b = -1.174;
+                    _c = 0.2518;
+                    _d = _c;
+                    break;
+                case 4:
+                    _a = 2.934;
+                    _b = -0.8130;
+                    _c = 0.2772;
+                    _d = _c;
+                    break;
+                case 5:
+                    _a = 2.565;
+                    _b = -0.01116;
+                    _c = 0.004351;
+                    _d = _c;
+                    break;
+                case 6:
+                    _a = 3.314;
+                    _b = -0.05875;
+                    _c = 0.01772;
+                    _d = _c;
+                    break;
+                default:
+                    break;
+            }
+        }
         double current2torque(const double &current_)
         {
-            double torque_;
-
-            if(current_ >= 0.0)
+            if(current_ > _c)
             {
-                torque_ = _a*current_*current_ + _b*current_ + _c;
+                return _a*current_+_b;
             }
-            else
+            if(current_ < _c)
             {
-                torque_ = _d*current_*current_ + _e*current_ + _f;
+                return _a*current_-_b;
             }
-
-            return torque_;
-        };
+            return 0.0;
+        }
         double torque2current(const double &torque_)
         {
-            double current_;
-
-            if(torque_ >= 0.0)
+            if(torque_ > 0.0)
             {
-                current_ = (-_b+sqrt(_b*_b-4*_a*(_c-torque_)))/(2.0*_a);
+                return (1/_a)*torque_+(_b/_a);
             }
-            else
+            if(torque_ < 0.0)
             {
-                current_ = (-_e+sqrt(_e*_e-4*_d*(_f-torque_)))/(2.0*_d);
+                return (1/_a)*torque_-(_b/_a);
             }
-
-            return current_;
+            return 0.0;
         }
 };
 
@@ -89,7 +120,11 @@ int main(int argc, char **argv)
     double rate = 100.0;
     ros::Rate loop_rate(rate);
 
-    Torque2Current torque2current;
+    TorqueCurrentConverter tcc[6];
+    for(int i=0; i<6; i++)
+    {
+        tcc[i].setMotorId(i+1);
+    }
 
     // Publisher
     ros::Publisher torque_pub = nh.advertise<std_msgs::Float32MultiArray>("torque", 100);
@@ -107,8 +142,11 @@ int main(int argc, char **argv)
 
     while(nh.ok())
     {
-        torque.data[0] = torque2current.current2torque(current.data[0]);
-        target_current.data[0] = torque2current.torque2current(target_torque.data[0]);
+        for(int i=0; i<6; i++)
+        {
+            torque.data[i] = tcc[i].current2torque(current.data[i]);
+            target_current.data[i] = tcc[i].torque2current(target_torque.data[i]);
+        }
 
         torque_pub.publish(torque);
         target_current_pub.publish(target_current);

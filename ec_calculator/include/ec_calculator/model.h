@@ -1,6 +1,7 @@
 #ifndef EC_CALCULATOR_MODEL_H
 
 #include <iostream>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/LU>
@@ -12,53 +13,119 @@ namespace ec_calculator
     class Model
     {
         private:
+            bool _torque_control_enable;
+
             int _chain_num;
             int _joint_num;
+            int _binding_conditions;    // 1: Frictionless point contact    3: Point contact with friction    4: Soft finger
 
             // Matrix
             Eigen::Matrix<bool, -1, -1> _chain_mat;
+            Eigen::Matrix<double, -1, 6> _binding_conditions_matrix;
             Eigen::Matrix<double, 3, -1> _joint_position_link;
-            Eigen::Matrix<double, 3, -1> _center_of_gravity_link;
             Eigen::Matrix<double, 3, -1> _translation_axis;
             Eigen::Matrix<double, 3, -1> _rotation_axis;
 
+            Eigen::Matrix<double, 10, -1> _inertia; // mass [kg], moment of inertia [kg*m^2]:Ixx,Ixy,Ixz,Iyx,Iyy,Iyz,Izx,Izy,Izz
+            Eigen::Matrix<double, 3, -1> _center_of_gravity_link;
+
+            Eigen::Matrix<double, 6, -1> _torque_current_converter;  // This is parameters for torque2Current() and current2Torque().
+
             // Gain
-            Eigen::Matrix<double, -1, -1> _angle_2_angular_velocity_gain;
-            double _ec_gain;
+            std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2angular_velocity;
+            std::vector<double> _gains_pose2angular_velocity;
+            std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2torque;
+            std::vector<double> _gains_pose2torque;
+
+            // Gravitational Acceleration
+            double _gravitational_acceleration; // [m/s^2]
+
+            // Safety Limit
+            Eigen::Matrix<double, 2, -1> _angle_limit;
+            Eigen::Matrix<double, 2, -1> _angular_velocity_limit;
+            Eigen::Matrix<double, 2, -1> _angular_acceleration_limit;
+            double _jacobian_determinant_limit;
 
         public:
             // Constructor
             Model();
 
             // Change Model
+            // Velocity Control
             void changeModel(const int &chain_num_,
                             const int &joint_num_,
                             const Eigen::Matrix<bool, -1, -1> &chain_mat_,
                             const Eigen::Matrix<double, 3, -1> &joint_position_link_,
                             const Eigen::Matrix<double, 3, -1> &translation_axis_,
                             const Eigen::Matrix<double, 3, -1> &rotation_axis_,
-                            const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_,
-                            const double &ec_gain_);
+                            const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2angular_velocity_,
+                            const std::vector<double> &gains_pose2angular_velocity_);
+            // Torque Control
+            void changeModel(const int &chain_num_,
+                            const int &joint_num_,
+                            const Eigen::Matrix<bool, -1, -1> &chain_mat_,
+                            const Eigen::Matrix<double, 3, -1> &joint_position_link_,
+                            const Eigen::Matrix<double, 3, -1> &translation_axis_,
+                            const Eigen::Matrix<double, 3, -1> &rotation_axis_,
+                            const Eigen::Matrix<double, 10, -1> &inertia_,
+                            const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_,
+                            const Eigen::Matrix<double, 6, -1> &torque_current_converter_,
+                            const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2torque_,
+                            const std::vector<double> &gains_pose2torque_);
+
+                void changeTorqueControlEnable(const bool &torque_control_enable_);
                 void changeChainNum(const int &chain_num_);
                 void changeJointNum(const int &joint_num_);
+                void changeBindingConditions(const int &binding_conditions_);
                 void changeChainMatrix(const Eigen::Matrix<bool, -1, -1> &chain_mat_);
                 void changeJointPositionLink(const Eigen::Matrix<double, 3, -1> &joint_position_link_);
-                void changeCenterOfGravityLink(const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_);
                 void changeTranslationAxis(const Eigen::Matrix<double, 3, -1> &translation_axis_);
                 void changeRotationAxis(const Eigen::Matrix<double, 3, -1> &rotation_axis_);
-                void changeAngle2AngularVelocityGain(const Eigen::Matrix<double, -1, -1> &angle_2_angular_velocity_gain_);
-                void changeECGain(const double &ec_gain_);
+
+                void changeInertia(const Eigen::Matrix<double, 10, -1> &inertia_);
+                void changeCenterOfGravityLink(const Eigen::Matrix<double, 3, -1> &center_of_gravity_link_);
+
+                void changeTorqueCurrentConverter(const Eigen::Matrix<double, 6, -1> &torque_current_converter_);
+
+                void changeGainsAngle2AngularVelocity(const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2angular_velocity_);
+                void changeGainsPose2AngularVelocity(const std::vector<double> &gains_pose2angular_velocity_);
+                void changeGainsAngle2Torque(const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2torque_);
+                void changeGainsPose2Torque(const std::vector<double> &gains_pose2torque_);
+
+                void changeGravitationalAcceleration(const double &gravitational_acceleration_);
+
+                void changeAngleLimit(const Eigen::Matrix<double, 2, -1> &angle_limit_);
+                void changeAngularVelocityLimit(const Eigen::Matrix<double, 2, -1> &angular_velocity_limit_);
+                void changeAngularAccelerationLimit(const Eigen::Matrix<double, 2, -1> &angular_acceleration_limit_);
+                void changeJacobianDeterminantLimit(const double &jacobian_determinant_limit_);
 
             // Parameter Getters
+            bool getTorqueControlEnable();
             int getJointNum();
             int getChainNum();
+            int getBindingConditions();
             Eigen::Matrix<bool, -1, -1> getChainMat();
+            Eigen::Matrix<double, -1, 6> getBindingConditionsMatrix();
             Eigen::Matrix<double, 3, 1> getJointPositionLink(const int &joint_);
-            Eigen::Matrix<double, 3, 1> getCenterOfGravityLink(const int &joint_);
             Eigen::Matrix<double, 3, 1> getTranslationAxis(const int &joint_);
             Eigen::Matrix<double, 3, 1> getRotationAxis(const int &joint_);
-            Eigen::Matrix<double, -1, -1> getAngle2AngularVelocityGain();
-            double getECGain();
+
+            Eigen::Matrix<double, 6, 6> getInertia(const int &joint_);
+            Eigen::Matrix<double, 3, 1> getCenterOfGravityLink(const int &joint_);
+
+            Eigen::Matrix<double, 6, -1> getTorqueCurrentConverter();
+
+            std::vector<Eigen::Matrix<double, -1, -1>> getGainsAngle2AngularVelocity();
+            std::vector<double> getGainsPose2AngularVelocity();
+            std::vector<Eigen::Matrix<double, -1, -1>> getGainsAngle2Torque();
+            std::vector<double> getGainsPose2Torque();
+
+            double getGravitationalAcceleration();
+
+            Eigen::Matrix<double, 2, -1> getAngleLimit();
+            Eigen::Matrix<double, 2, -1> getAngularVelocityLimit();
+            Eigen::Matrix<double, 2, -1> getAngularAccelerationLimit();
+            double getJacobianDeterminantLimit();
     };
 }
 

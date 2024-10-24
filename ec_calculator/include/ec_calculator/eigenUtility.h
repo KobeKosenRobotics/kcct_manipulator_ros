@@ -51,6 +51,14 @@ namespace ec_calculator
                 return identity_;
             }
 
+            Eigen::Matrix<double, -1, -1> getZeros(const int &rows, const int &columns)
+            {
+                Eigen::Matrix<double, -1, -1> zeros_;
+                zeros_.resize(rows, columns);
+                zeros_.setZero();
+                return zeros_;
+            }
+
             Eigen::Matrix<double, 3, 3> hat(const Eigen::Matrix<double, 3, 1> &vec)
             {
                 Eigen::Matrix<double, 3, 3> hat_vec_;
@@ -74,6 +82,15 @@ namespace ec_calculator
                 pseudo_inv_mat_ = V*S.inverse()*U.transpose();
 
                 return pseudo_inv_mat_;
+            }
+
+            Eigen::MatrixXd getKernel(const Eigen::MatrixXd &mat_)
+            {
+                Eigen::MatrixXd kernel_;
+
+                kernel_ = mat_.fullPivLu().kernel();
+
+                return kernel_;
             }
 
             int getRank(const Eigen::MatrixXd &mat)
@@ -120,20 +137,29 @@ namespace ec_calculator
 
                 pose_.block(0,0,3,1) = homogeneous_trans_mat.block(0,3,3,1);
 
-                pose_(4,0) = -asin(homogeneous_trans_mat(2,0));
-
-                pose_(3,0) = +acos(homogeneous_trans_mat(0,0)/cos(pose_(4,0)));
-                if(homogeneous_trans_mat(1,0)/cos(pose_(4,0)) < 0) pose_(3,0) *= (-1);
-
-                pose_(5,0) = acos(homogeneous_trans_mat(2,2)/cos(pose_(4,0)));
-                if(homogeneous_trans_mat(2,1)/cos(pose_(4,0)) < 0) pose_(5,0) *=(-1);
-
-                for(int i = 3; i < 6; i++)
-                {
-                    if(std::isnan(pose_(i,0))) pose_(i,0) = 0.0;
-                }
+                pose_.block(3,0,3,1) = getEulerAngle(homogeneous_trans_mat.block(0,0,3,3));
 
                 return pose_;
+            }
+
+            Eigen::Matrix<double, 3, 1> getEulerAngle(const Eigen::Matrix<double, 3, 3> &rotation_mat_)
+            {
+                Eigen::Matrix<double, 3, 1> euler_angle_;
+
+                euler_angle_(1,0) = -asin(rotation_mat_(2,0));
+
+                euler_angle_(0,0) = +acos(rotation_mat_(0,0)/cos(euler_angle_(1,0)));
+                if(rotation_mat_(1,0)/cos(euler_angle_(1,0)) < 0) euler_angle_(0,0) *= (-1);
+
+                euler_angle_(2,0) = acos(rotation_mat_(2,2)/cos(euler_angle_(1,0)));
+                if(rotation_mat_(2,1)/cos(euler_angle_(1,0)) < 0) euler_angle_(2,0) *=(-1);
+
+                for(int i = 0; i < 3; i++)
+                {
+                    if(std::isnan(euler_angle_(i,0))) euler_angle_(i,0) = 0.0;
+                }
+
+                return euler_angle_;
             }
 
             Eigen::Matrix<double, 6, 6> adjoint(const Eigen::Matrix<double, 4, 4> &mat)

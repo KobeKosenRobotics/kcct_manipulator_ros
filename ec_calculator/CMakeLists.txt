@@ -162,8 +162,18 @@ set(HEADERS include/ec_calculator/model.h)
 set(HEADERS include/ec_calculator/joint.h)
 set(HEADERS include/ec_calculator/manipulator.h)
 set(HEADERS include/ec_calculator/manipulator_tf_publisher.h)
-add_executable(ec_calculator_node src/interpolation src/model src/joint src/manipulator src/manipulator_tf_publisher src/nodes/ec_calculator_node)
+set(HEADERS include/ec_calculator/different_integral.h)
+set(HEADERS include/ec_calculator/pid_controller.h)
+add_executable(ec_calculator_node src/interpolation src/model src/joint src/manipulator src/manipulator_tf_publisher src/differential_integral src/pid_controller src/nodes/ec_calculator_node)
 target_link_libraries(ec_calculator_node ${catkin_LIBRARIES} "/usr/include/eigen3")
+
+set(HEADERS include/ec_calculator/wait.h)
+set(HEADERS include/ec_calculator/publish_manager.h)
+add_executable(publish_manager_node src/wait src/publish_manager src/nodes/publish_manager_node)
+target_link_libraries(publish_manager_node ${catkin_LIBRARIES})
+
+add_executable(torque2current_node src/nodes/torque2current_node)
+target_link_libraries(torque2current_node ${catkin_LIBRARIES} "/usr/include/eigen3")
 
 #############
 ## Install ##

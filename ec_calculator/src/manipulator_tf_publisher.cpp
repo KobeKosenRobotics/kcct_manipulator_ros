@@ -9,6 +9,8 @@ namespace ec_calculator
 
     void ManipulatorTFPublisher::publish()
     {
+        if(!_manipulator->getSimulationEnable()) return;
+
         static tf::TransformBroadcaster br;
         geometry_msgs::TransformStamped transform_stamped;
         static tf2::Quaternion q;
@@ -24,7 +26,7 @@ namespace ec_calculator
             transform_stamped.transform.translation.y = _manipulator->getVisualData(joint, 1);
             transform_stamped.transform.translation.z = _manipulator->getVisualData(joint, 2);
 
-            q.setRPY(_manipulator->getVisualData(joint, 3), _manipulator->getVisualData(joint, 4), _manipulator->getVisualData(joint, 5));
+            q.setRPY(_manipulator->getVisualData(joint, 5), _manipulator->getVisualData(joint, 4), _manipulator->getVisualData(joint, 3));
             transform_stamped.transform.rotation.x = q.x();
             transform_stamped.transform.rotation.y = q.y();
             transform_stamped.transform.rotation.z = q.z();
@@ -41,6 +43,8 @@ namespace ec_calculator
 
     void ManipulatorTFPublisher::publish(const std::string &base_name_, const std::string &point_name_, const Eigen::Matrix<double, 6, 1> &pose_)
     {
+        if(!_manipulator->getSimulationEnable()) return;
+
         static tf::TransformBroadcaster br;
         geometry_msgs::TransformStamped transform_stamped;
         static tf2::Quaternion q;

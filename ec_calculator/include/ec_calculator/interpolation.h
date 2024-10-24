@@ -22,17 +22,27 @@ namespace ec_calculator
 
             double _distance;
             double _during_time;
-            double _linear_velocity = 1;  // [m/s]
+            bool _during_time_enable = false;
+            double _linear_velocity = 0.005;  // [m/s]
             double _sigmoid_gain = 2;
+
+            Eigen::Matrix<double, -1, 1> _sin_gain;
 
         public:
             void setLinearVelocity(const double &linear_velocity_);
             void setSigmoidGain(const double &sigmoid_gain_);
+            void setDuringTime(const double &during_time_);
             void setPoint(const Eigen::Matrix<double, -1, 1> &start_point_, const Eigen::Matrix<double, -1, 1> &end_point_);
             double getDistance();
             double getDuringTime();
+            double getMidTime();
+            Eigen::Matrix<double, -1, 1> getStartPoint();
+            Eigen::Matrix<double, -1, 1> getEndPoint();
             Eigen::Matrix<double, -1, 1> getLinearInterpolation();
-            Eigen::Matrix<double, -1, 1> getCosInterpolation();
+            Eigen::Matrix<double, -1, 1> getDLinearInterpolation();
+            Eigen::Matrix<double, -1, 1> getSinInterpolation();
+            Eigen::Matrix<double, -1, 1> getDSinInterpolation();
+            Eigen::Matrix<double, -1, 1> getDDSinInterpolation();
             Eigen::Matrix<double, -1, 1> getSigmoidInterpolation();
     };
 }

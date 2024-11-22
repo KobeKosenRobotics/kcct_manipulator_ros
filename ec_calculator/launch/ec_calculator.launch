@@ -8,7 +8,6 @@
 
     <arg name="motor" default="false"/>
     <group if="$(arg motor)">
-        <node name="torque2current_node" pkg="ec_calculator" type="torque2current_node" output="screen"/>
         <node name="dynamixel_wrapper_node" pkg="dynamixel_wrapper" type="dynamixel_wrapper_node" output="screen"/>
     </group>
 

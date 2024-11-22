@@ -17,7 +17,7 @@ Model model;
 
 // Publisher
 std_msgs::Float32MultiArray target_angular_velocity;
-std_msgs::Float32MultiArray target_torque;
+std_msgs::Float32MultiArray target_current;
 
 // Subscriber
 std_msgs::Bool emergency_stop;
@@ -30,7 +30,6 @@ std_msgs::Bool torque_enable;
 std_msgs::Float32MultiArray angle;
 std_msgs::Float32MultiArray angular_velocity;
 std_msgs::Float32MultiArray angular_acceleration;
-std_msgs::Float32MultiArray torque;
 std_msgs::Float32MultiArray current;
 
 std_msgs::Float32MultiArray target_angle;
@@ -83,14 +82,12 @@ void angular_velocity_cb(std_msgs::Float32MultiArray::ConstPtr msg)
     }
 }
 
-void torque_cb(std_msgs::Float32MultiArray::ConstPtr msg)
-{
-    manip.updateTorque(EigenUtility.array2Matrix(msg->data));
-}
-
 void current_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
-    manip.updateCurrent(EigenUtility.array2Matrix(msg->data));
+    if(manip.getMotorEnable())
+    {
+        manip.updateCurrent(EigenUtility.array2Matrix(msg->data));
+    }
 }
 
 void target_angle_cb(std_msgs::Float32MultiArray::ConstPtr msg)
@@ -112,6 +109,7 @@ void target_pose_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 void gains_cb(std_msgs::Float32MultiArray::ConstPtr msg)
 {
     manip.setGains(EigenUtility.array2Matrix(msg->data));
+    std::cout << "gain updated" << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -122,143 +120,29 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(rate);
 
     // Publisher
-    ros::Publisher target_angular_velocity_pub = nh.advertise<std_msgs::Float32MultiArray>("target_angular_velocity", 100);
-    ros::Publisher target_torque_pub = nh.advertise<std_msgs::Float32MultiArray>("target_torque", 100);
+    ros::Publisher target_angular_velocity_pub = nh.advertise<std_msgs::Float32MultiArray>("calculator/target_angular_velocity", 100);
+    ros::Publisher target_current_pub = nh.advertise<std_msgs::Float32MultiArray>("calculator/target_current", 100);
 
     // Subscriber
-    ros::Subscriber emergency_stop_sub = nh.subscribe<std_msgs::Bool>("emergency_stop", 100, emergency_stop_cb);
-    ros::Subscriber ik_enable_sub = nh.subscribe<std_msgs::Bool>("ik_enable", 10, ik_enable_cb);
-    ros::Subscriber motor_enable_sub = nh.subscribe<std_msgs::Bool>("motor_enable", 10, motor_enable_cb);
-    ros::Subscriber polygon_enable_sub = nh.subscribe<std_msgs::Bool>("polygon_enable", 10, polygon_enable_cb);
-    ros::Subscriber simulation_enable_sub = nh.subscribe<std_msgs::Bool>("simulation_enable", 10, simulation_enable_cb);
-    ros::Subscriber torque_enable_sub = nh.subscribe<std_msgs::Bool>("torque_enable", 10, torque_enable_cb);
-    ros::Subscriber angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("angle", 10, angle_cb);
-    ros::Subscriber angular_velocity_sub = nh.subscribe<std_msgs::Float32MultiArray>("angular_velocity", 10, angular_velocity_cb);
-    ros::Subscriber torque_sub = nh.subscribe<std_msgs::Float32MultiArray>("torque", 10, torque_cb);
-    ros::Subscriber current_sub = nh.subscribe<std_msgs::Float32MultiArray>("current", 10, current_cb);
-    ros::Subscriber target_angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_angle", 10, target_angle_cb);
-    ros::Subscriber target_pose_sub = nh.subscribe<std_msgs::Float32MultiArray>("target_pose", 10, target_pose_cb);
+    ros::Subscriber emergency_stop_sub = nh.subscribe<std_msgs::Bool>("user/emergency_stop", 100, emergency_stop_cb);
+    ros::Subscriber ik_enable_sub = nh.subscribe<std_msgs::Bool>("user/ik_enable", 10, ik_enable_cb);
+    ros::Subscriber motor_enable_sub = nh.subscribe<std_msgs::Bool>("user/motor_enable", 10, motor_enable_cb);
+    ros::Subscriber polygon_enable_sub = nh.subscribe<std_msgs::Bool>("user/polygon_enable", 10, polygon_enable_cb);
+    ros::Subscriber simulation_enable_sub = nh.subscribe<std_msgs::Bool>("user/simulation_enable", 10, simulation_enable_cb);
+    ros::Subscriber torque_enable_sub = nh.subscribe<std_msgs::Bool>("user/torque_enable", 10, torque_enable_cb);
+    ros::Subscriber angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("motor/angle", 10, angle_cb);
+    ros::Subscriber angular_velocity_sub = nh.subscribe<std_msgs::Float32MultiArray>("motor/angular_velocity", 10, angular_velocity_cb);
+    ros::Subscriber current_sub = nh.subscribe<std_msgs::Float32MultiArray>("motor/current", 10, current_cb);
+    ros::Subscriber target_angle_sub = nh.subscribe<std_msgs::Float32MultiArray>("user/target_angle", 10, target_angle_cb);
+    ros::Subscriber target_pose_sub = nh.subscribe<std_msgs::Float32MultiArray>("user/target_pose", 10, target_pose_cb);
     target_pose.data.resize(2+6);   // 2: start_joint, end_joint, 6: 3position, 3orientation
-    ros::Subscriber gains_sub = nh.subscribe<std_msgs::Float32MultiArray>("gains", 10, gains_cb);
+    ros::Subscriber gains_sub = nh.subscribe<std_msgs::Float32MultiArray>("user/gains", 10, gains_cb);
 
     manip.init(&model);
     manip.printTree();
     target_angular_velocity.data.resize(manip.getJointNum());
-    target_torque.data.resize(manip.getJointNum());
+    target_current.data.resize(manip.getJointNum());
     target_angle.data.resize(manip.getJointNum());
-
-    // /* New naviT(oo)n */
-    // int cha = 1, joi = 8;
-    // Eigen::Matrix<bool, 1, 8> cha_ma;
-    // for(int i = 0; i < joi; i++)
-    // {
-    //     cha_ma(0, i) = 1;
-    // }
-    // Eigen::Matrix<double, 3, 9> joi_po;
-    // joi_po <<
-    //     0, 0, 0, 0.01, 0.030,  0.030, 0,  0    , 0,
-    //     0, 0, 0, 0   , 0.264, -0.258, 0,  0    , 0,
-    //     0, 0, 0, 0   , 0    ,  0,     0, -0.123, 0;
-    // Eigen::Matrix<double, 3, 8> tra;
-    // tra.setZero();
-    // tra(0, 0) = 1;
-    // tra(1, 1) = 1;
-    // tra(2, 2) = 1;
-    // Eigen::Matrix<double, 3, 8> rot;
-    // rot <<
-    //     0, 0, 0,  0,  0,  0, 1,  0,
-    //     0, 0, 0,  0,  0, -1, 0,  0,
-    //     0, 0, 0, -1, -1,  0, 0, -1;
-    // Eigen::Matrix<double, 8, 8> a2a_ga;
-    // a2a_ga.setIdentity();
-    // double ec_ga = 1;
-
-    // model.changeModel(cha, joi, cha_ma, joi_po, tra, rot, a2a_ga, ec_ga);
-
-    // manip.init(&model);
-    // manip.printTree();
-    // manip.print();
-    // target_angular_velocity.data.resize(manip.getJointNum());
-    // target_torque.data.resize(manip.getJointNum());
-    // target_angle.data.resize(manip.getJointNum());
-
-    // /* Serial 30-DOF */
-    // int cha = 1, joi = 30;
-    // Eigen::Matrix<bool, 1, 30> cha_ma;
-    // for(int i = 0; i < joi; i++)
-    // {
-    //     cha_ma(0, i) = 1;
-    // }
-    // Eigen::Matrix<double, 3, 31> joi_po;
-    // joi_po.setZero();
-    // for(int i = 4; i < (cha+joi); i++)
-    // {
-    //     joi_po(2,i) = 0.2;
-    // }
-    // Eigen::Matrix<double, 3, 30> tra;
-    // tra.setZero();
-    // tra(0, 0) = 1;
-    // tra(1, 1) = 1;
-    // tra(2, 2) = 1;
-    // Eigen::Matrix<double, 3, 30> rot;
-    // rot.setZero();
-    // for(int i = 3; i < joi; i++)
-    // {
-    //     rot(i%3, i) = 1;
-    // }
-    // Eigen::Matrix<double, 30, 30> a2a_ga;
-    // a2a_ga.setIdentity();
-    // double ec_ga = 2;
-
-    // model.changeModel(cha, joi, cha_ma, joi_po, tra, rot, a2a_ga, ec_ga);
-
-    // manip.init(&model);
-    // manip.printTree();
-    // manip.print();
-    // target_angular_velocity.data.resize(manip.getJointNum());
-    // target_torque.data.resize(manip.getJointNum());
-    // target_angle.data.resize(manip.getJointNum());
-
-    // /* Chain 30-DOF */
-    // int cha = 3, joi = 30;
-    // Eigen::Matrix<bool, 3, 30> cha_ma;
-    // cha_ma <<
-    //     //             5                         14             19          23                29
-    //     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-    //     1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1;
-    // Eigen::Matrix<double, 3, 33> joi_po;
-    // joi_po.setZero();
-    // for(int i = 4; i < (cha+joi); i++)
-    // {
-    //     joi_po(2,i) = 0.2;
-    // }
-    // joi_po(0, 15) = 0.2;
-    // joi_po(0, 24) = 0.2;
-    // Eigen::Matrix<double, 3, 30> tra;
-    // tra.setZero();
-    // tra(0, 0) = 1;
-    // tra(1, 1) = 1;
-    // tra(2, 2) = 1;
-    // Eigen::Matrix<double, 3, 30> rot;
-    // rot.setZero();
-    // for(int i = 3; i < joi; i++)
-    // {
-    //     rot(i%3, i) = 1;
-    // }
-    // Eigen::Matrix<double, 30, 30> a2a_ga;
-    // a2a_ga.setIdentity();
-    // double ec_ga = 2;
-
-    // model.changeTorqueControlEnable(false);
-    // model.changeModel(cha, joi, cha_ma, joi_po, tra, rot, a2a_ga, ec_ga);
-
-    // manip.init(&model);
-    // manip.printTree();
-    // manip.print();
-    // target_angular_velocity.data.resize(manip.getJointNum());
-    // target_torque.data.resize(manip.getJointNum());
-    // target_angle.data.resize(manip.getJointNum());
 
     while(nh.ok())
     {
@@ -271,9 +155,9 @@ int main(int argc, char **argv)
         }
 
         target_angular_velocity.data = EigenUtility.matrix2Array(manip.getAngularVelocity());
-        target_torque.data = EigenUtility.matrix2Array(manip.getCurrent());
+        target_current.data = EigenUtility.matrix2Array(manip.getCurrent());
         target_angular_velocity_pub.publish(target_angular_velocity);
-        target_torque_pub.publish(target_torque);
+        target_current_pub.publish(target_current);
 
         manip.print();
 

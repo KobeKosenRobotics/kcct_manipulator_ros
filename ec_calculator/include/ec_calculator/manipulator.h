@@ -5,6 +5,7 @@
 #include "interpolation.h"
 #include "differential_integral.h"
 #include "pid_controller.h"
+#include "torque_current_converter.h"
 
 #include <iostream>
 #include <chrono>
@@ -24,7 +25,8 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 6> _binding_conditions_matrix;
             std::vector<Joint> _joints;
             std::vector<int> _tip_index;   // joints[_tip_index[]] have no children.
-            Eigen::Matrix<double, 6, -1> _torque_current_converter;
+            // Eigen::Matrix<double, 6, -1> _torque_current_converter;
+            std::vector<TorqueCurrentConverter> _torque_current_converter;
             std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2angular_velocity;
             std::vector<double> _gains_pose2angular_velocity;
             std::vector<Eigen::Matrix<double, -1, -1>> _gains_angle2torque;

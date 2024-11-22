@@ -159,8 +159,13 @@ namespace ec_calculator
 
     void Manipulator::setTorqueCurrentConverter(const Eigen::Matrix<double, 6, -1> &torque_current_converter_)
     {
-        _torque_current_converter.resize(6, _JOINT_NUM);
-        _torque_current_converter = torque_current_converter_;
+        // _torque_current_converter.resize(6, _JOINT_NUM);
+        // _torque_current_converter = torque_current_converter_;
+        _torque_current_converter.resize(_JOINT_NUM);
+        for(int i=0; i<_JOINT_NUM; i++)
+        {
+            _torque_current_converter[i].setMotorId(i);
+        }
     }
 
     void Manipulator::setGainsAngle2AngularVelocity(const std::vector<Eigen::Matrix<double, -1, -1>> &gains_angle2angular_velocity_)
@@ -652,7 +657,6 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getAngularVelocityByAngle()
     {
-        // _target_angular_velocity = _target_angle_interpolation.getEndPoint();
         _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation() + _pid_angle2angular_velocity.getPid(_target_angle_interpolation.getSinInterpolation() - _angle);
 
         return _target_angular_velocity;
@@ -713,60 +717,23 @@ namespace ec_calculator
     // Torque Current Converter
     Eigen::Matrix<double, -1, 1> Manipulator::getCurrent()
     {
+        getTorque();
+
         if(_emergency_stop) return _target_current.setZero();
         if(!_torque_enable) return _target_current.setZero();
         if(!_motor_enable) return _target_current.setZero();
 
-        return getTorque();
-
-        // return torque2Current();
+        return torque2Current();
     }
 
     Eigen::Matrix<double, -1, 1> Manipulator::torque2Current()
     {
-        // if(!_torque_enable) return _target_current.setZero();
-
-        // double v_zero_ = 0.1;
-
-        // for(int joint = 0; joint < 6; joint++)
-        // {
-        //     if(v_zero_ >= fabs(_target_angular_velocity(joint, 0)))
-        //     {
-        //         _target_current(joint, 0) = _torque_current_converter(2, joint)*_target_torque(joint, 0) + (_torque_current_converter(0, joint)/v_zero_)*_target_angular_velocity(joint, 0);
-        //     }
-        //     else if(_target_angular_velocity(joint, 0) >= 0.0)
-        //     {
-        //         if(_target_torque(joint, 0) >= 0.0)
-        //         {
-        //             _target_current(joint, 0) = _torque_current_converter(1, joint)*_target_torque(joint, 0) + _torque_current_converter(0, joint);
-        //         }
-        //         else
-        //         {
-        //             _target_current(joint, 0) = _torque_current_converter(2, joint)*_target_torque(joint, 0) + _torque_current_converter(0, joint);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         if(0.0 >= _target_torque(joint, 0))
-        //         {
-        //             _target_current(joint, 0) = _torque_current_converter(1, joint)*_target_torque(joint, 0) - _torque_current_converter(0, joint);
-        //         }
-        //         else
-        //         {
-        //             _target_current(joint, 0) = _torque_current_converter(2, joint)*_target_torque(joint, 0) - _torque_current_converter(0, joint);
-        //         }
-        //     }
-        // }
-        Eigen::Matrix<double, 6, 6> torque2current_constant_;
-        torque2current_constant_.setZero();
-        torque2current_constant_(0,0) = ((41.0-5.0)*1.7)/((43.0-1.0)*8.5);
-        torque2current_constant_(1,1) = ((41.0-5.0)*1.7)/((43.0-1.0)*8.5);
-        torque2current_constant_(2,2) = ((42.0-4.0)*1.7)/((39.0-1.0)*8.5);
-        torque2current_constant_(3,3) = ((42.0-4.0)*1.7)/((39.0-1.0)*8.5);
-        torque2current_constant_(4,4) = ((27.0-3.0)*1.0)/((31.0-1.0)*3.0);
-        torque2current_constant_(5,5) = ((27.0-3.0)*1.0)/((31.0-1.0)*3.0);
+        for(int i=0; i<_JOINT_NUM; i++)
+        {
+            _target_current(i,0) = _torque_current_converter[i].current2torque(_target_torque(i,0));
+        }
         getIdealTorque();
-        _target_current = torque2current_constant_*(_target_torque + _pid_torque2current.getPid(_target_torque - _ideal_torque));
+        _target_current += _pid_torque2current.getPid(_target_torque - _ideal_torque);
 
         return _target_current;
     }
@@ -973,17 +940,18 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
-        std::cout << "pose5 :" << std::endl << getPose(5) << std::endl << std::endl;
+        // std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
+        // std::cout << "pose5 :" << std::endl << getPose(5) << std::endl << std::endl;
 
         if(_motor_enable && !_emergency_stop)
         {
             std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
             output_file << updateCumulativeTime() << ",";
-            output_file << _target_torque(0, 0) << ",";
-            output_file << _ideal_torque(0, 0) << ",";
-            output_file << _target_angle_interpolation.getSinInterpolation()(0,0) << ",";
-            output_file << _angle(0, 0) << ",";
+            for(int i=0; i<_JOINT_NUM; i++)
+            {
+                output_file << _target_angle_interpolation.getSinInterpolation()(i,0) << ",";
+                output_file << _angle(i, 0) << ",";
+            }
             output_file << std::endl;
         }
     }
@@ -998,38 +966,6 @@ namespace ec_calculator
         if(_ik_enable) return _binding_conditions_matrix.transpose()*_ik_interpolation[ik_index_].getLinearInterpolation();
 
         return Eigen::Matrix<double, 6, 1>::Zero();
-    }
-
-    void Manipulator::get_SCARA()
-    {
-        double a_, b_, c_, d_;
-        a_ = 1.0 + 0.5*0.5*1.0 + 1.0*1.0*1.0 + 1.0*1.0*1.0 + 1.0*1.0*1.0;
-        b_ = 1.0 + 1.0 + 1.0 + 1.0*1.0*1.0 + 1.0*1.0*1.0 + 1.0*0.5*0.5;
-        c_ = 1.0*1.0*1.0 + 1.0*1.0*1.0 + 1.0*1.0*0.5;
-        d_ = 1.0 + 1.0;
-
-        Eigen::Matrix<double, 4, 4> Mf_SCARA_;
-        Eigen::Matrix<double, 4, 4> Cf_SCARA_;
-        Eigen::Matrix<double, 4, 1> Nf_SCARA_;
-
-        Mf_SCARA_ <<
-        a_+b_+2*c_*cos(_angle(1, 0)), b_+c_*cos(_angle(1, 0)), d_, 0.0,
-        b_+c_*cos(_angle(1, 0)), b_, d_, 0.0,
-        d_, d_, d_, 0.0,
-        0.0, 0.0, 0.0, 1.0;
-
-        Cf_SCARA_ <<
-        -c_*sin(_angle(1, 0))*_angular_velocity(1, 0), -c_*sin(_angle(1, 0))*(_angular_velocity(0, 0)+_angular_velocity(1, 0)), 0.0, 0.0,
-        c_*sin(_angle(1, 0))*_angular_velocity(0, 0), 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0;
-
-        Nf_SCARA_ <<
-        0.0, 0.0, 0.0, 1.0*9.8;
-
-        std::cout << "Mf_SCARA\n" << Mf_SCARA_ << std::endl << std::endl;
-        std::cout << "Cf_SCARA\n" << Cf_SCARA_ << std::endl << std::endl;
-        std::cout << "Nf_SCARA\n" << Nf_SCARA_ << std::endl << std::endl;
     }
 
     Eigen::Matrix<double, 6, 1> Manipulator::getIdealTorque()
@@ -1062,6 +998,7 @@ namespace ec_calculator
             _gains_angle2torque[0](i,i) = gains_(i,0);
         }
         setGainsAngle2Torque(_gains_angle2torque);
+        std::cout << _gains_angle2torque[0] << std::endl;
         return;
     }
 }

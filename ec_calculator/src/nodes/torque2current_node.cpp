@@ -24,40 +24,44 @@ class TorqueCurrentConverter
             switch(motor_id_)
             {
                 case 1:
-                    _a = 4.350;
-                    _b = -1.024;
-                    _c = 0.2354;
-                    _d = 0.277;
+                    _a = 4.006;
+                    _b = 0.2176;
+                    // _b = 0.30-0.02;
+                    _c = 4.296;
+                    _d = 0.1809;
+                    // _d = 0.27-0.02;
                     break;
                 case 2:
-                    _a = 4.666;
-                    _b = -1.237;
-                    _c = 0.2651;
-                    _d = 0.277;
+                    _a = 4.037;
+                    _b = 0.1907;
+                    _c = 4.880;
+                    _d = 0.2619;
                     break;
                 case 3:
-                    _a = 3.971;
-                    _b = -1.174;
-                    _c = 0.2518;
-                    _d = _c;
+                    _a = 3.362;
+                    _b = 0.2199;
+                    _c = 4.394;
+                    _d = 0.3066;
                     break;
                 case 4:
-                    _a = 2.934;
-                    _b = -0.8130;
-                    _c = 0.2772;
-                    _d = _c;
+                    _a = 2.345;
+                    // _b = 0.2591;
+                    _b = 0.25;
+                    _c = 3.441;
+                    // _d = 0.2558;
+                    _d = 0.23;
                     break;
                 case 5:
-                    _a = 2.565;
-                    _b = -0.01116;
-                    _c = 0.004351;
-                    _d = _c;
+                    _a = 2.356;
+                    _b = 0.02650;
+                    _c = 2.804;
+                    _d = 0.0;
                     break;
                 case 6:
-                    _a = 3.314;
-                    _b = -0.05875;
-                    _c = 0.01772;
-                    _d = _c;
+                    _a = 2.943;
+                    _b = 0.0+0.11;
+                    _c = 3.728;
+                    _d = 0.01448+0.11;
                     break;
                 default:
                     break;
@@ -65,25 +69,25 @@ class TorqueCurrentConverter
         }
         double current2torque(const double &current_)
         {
-            if(current_ > _c)
+            if(current_ < _b)
             {
-                return _a*current_+_b;
+                return _a*(current_+_b);
             }
-            if(current_ < _c)
+            if(current_ > _d)
             {
-                return _a*current_-_b;
+                return _c*(current_-_d);
             }
             return 0.0;
         }
         double torque2current(const double &torque_)
         {
-            if(torque_ > 0.0)
-            {
-                return (1/_a)*torque_+(_b/_a);
-            }
             if(torque_ < 0.0)
             {
-                return (1/_a)*torque_-(_b/_a);
+                return (1/_a)*torque_-_b;
+            }
+            if(torque_ > 0.0)
+            {
+                return (1/_c)*torque_+_d;
             }
             return 0.0;
         }

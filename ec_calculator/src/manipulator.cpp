@@ -708,7 +708,14 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getTorqueByAngle()
     {
-        _target_torque = _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+        // _target_torque = _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+
+        // Disturbance
+        Eigen::Matrix<double, 6, 1> disturbance_;
+        disturbance_ = _torque - _target_torque;
+
+        // DOB
+        _target_torque = - disturbance_ + _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
         _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation();
 
         return _target_torque;
@@ -765,7 +772,11 @@ namespace ec_calculator
     {
         _torque = torque_;
 
-        _angular_acceleration = EigenUtility.getPseudoInverseMatrix(_Mf) * (_torque - (_Cf * _angular_velocity) - _Nf);
+        // _angular_acceleration = EigenUtility.getPseudoInverseMatrix(_Mf) * (_torque - (_Cf * _angular_velocity) - _Nf);
+
+        // Disturbance
+        _angular_acceleration = EigenUtility.getPseudoInverseMatrix(_Mf) * (_torque - (_Cf * _angular_velocity) - 1.2*_Nf);
+        _torque = _Mf*_angular_acceleration + _Cf*_angular_velocity + _Nf;
 
         if(_is_first_during_time_measurement)
         {
@@ -782,6 +793,19 @@ namespace ec_calculator
         _angle += (_during_time * _angular_velocity);
 
         updateAngle(_angle);
+
+        std::ofstream output_file("/home/catkin_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
+        output_file << updateCumulativeTime() << ",";
+        for(int i=0; i<_JOINT_NUM; i++)
+        {
+            output_file << _angle(i, 0) << ",";
+            output_file << _angular_velocity(i, 0) << ",";
+            output_file << _angular_acceleration(i, 0) << ",";
+            output_file << _target_angle_interpolation.getSinInterpolation()(i, 0) << ",";
+            output_file << _target_angle_interpolation.getDSinInterpolation()(i, 0) << ",";
+            output_file << _target_angle_interpolation.getDDSinInterpolation()(i, 0) << ",";
+        }
+        output_file << std::endl;
 
         return _angle;
     }

@@ -29,7 +29,6 @@ std_msgs::Bool torque_enable;
 
 std_msgs::Float32MultiArray angle;
 std_msgs::Float32MultiArray angular_velocity;
-std_msgs::Float32MultiArray angular_acceleration;
 std_msgs::Float32MultiArray current;
 
 std_msgs::Float32MultiArray target_angle;

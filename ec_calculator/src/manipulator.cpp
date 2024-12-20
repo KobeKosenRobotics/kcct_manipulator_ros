@@ -25,6 +25,7 @@ namespace ec_calculator
         _target_angular_acceleration.resize(_JOINT_NUM, 1);
         _torque.resize(_JOINT_NUM, 1);
         _target_torque.resize(_JOINT_NUM, 1);
+        _torque_disturbance.resize(_JOINT_NUM, 1);
         _current.resize(_JOINT_NUM, 1);
         _target_current.resize(_JOINT_NUM, 1);
         _error_all.resize(_JOINT_NUM, 1);
@@ -73,6 +74,8 @@ namespace ec_calculator
         setAngularAccelerationLimit(_model->getAngularAccelerationLimit());
         setJacobianDeterminantLimit(_model->getJacobianDeterminantLimit());
 
+        _low_pass_filter.setLowPassFilter(_JOINT_NUM, 10);
+
         _is_first_during_time_measurement = true;
     }
 
@@ -88,6 +91,7 @@ namespace ec_calculator
         _target_angular_acceleration.setZero();
         _torque.setZero();
         _target_torque.setZero();
+        _torque_disturbance.setZero();
         _current.setZero();
         _target_current.setZero();
     }
@@ -329,11 +333,6 @@ namespace ec_calculator
     void Manipulator::updateAngularAcceleration(const Eigen::Matrix<double, -1, 1> &angular_velocity_)
     {
         _angular_acceleration = _angular_acc_diff.differential(angular_velocity_);
-    }
-
-    void Manipulator::updateTorque(const Eigen::Matrix<double, -1, 1> &torque_)
-    {
-        _torque = torque_;
     }
 
     void Manipulator::updateCurrent(const Eigen::Matrix<double, -1, 1> &current_)
@@ -708,15 +707,14 @@ namespace ec_calculator
 
     Eigen::Matrix<double, -1, 1> Manipulator::getTorqueByAngle()
     {
+        // DOB
         // _target_torque = _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+        _target_torque = - _torque_disturbance + _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+        _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation();
 
         // Disturbance
-        Eigen::Matrix<double, 6, 1> disturbance_;
-        disturbance_ = _torque - _target_torque;
-
-        // DOB
-        _target_torque = - disturbance_ + _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
-        _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation();
+        _torque = _Mf*_angular_acceleration + _Cf*_angular_velocity + _Nf;
+        _torque_disturbance = _low_pass_filter.averageMovingMethod(_torque - _target_torque);
 
         return _target_torque;
     }
@@ -737,10 +735,8 @@ namespace ec_calculator
     {
         for(int i=0; i<_JOINT_NUM; i++)
         {
-            _target_current(i,0) = _torque_current_converter[i].current2torque(_target_torque(i,0));
+            _target_current(i,0) = _torque_current_converter[i].torque2current(_target_torque(i,0));
         }
-        getIdealTorque();
-        _target_current += _pid_torque2current.getPid(_target_torque - _ideal_torque);
 
         return _target_current;
     }
@@ -771,12 +767,7 @@ namespace ec_calculator
     Eigen::Matrix<double, -1, 1> Manipulator::torque2Angle(const Eigen::Matrix<double, -1, 1> &torque_)
     {
         _torque = torque_;
-
-        // _angular_acceleration = EigenUtility.getPseudoInverseMatrix(_Mf) * (_torque - (_Cf * _angular_velocity) - _Nf);
-
-        // Disturbance
         _angular_acceleration = EigenUtility.getPseudoInverseMatrix(_Mf) * (_torque - (_Cf * _angular_velocity) - _Nf);
-        _torque = _Mf*_angular_acceleration + _Cf*_angular_velocity + _Nf;
 
         if(_is_first_during_time_measurement)
         {
@@ -793,19 +784,6 @@ namespace ec_calculator
         _angle += (_during_time * _angular_velocity);
 
         updateAngle(_angle);
-
-        std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
-        output_file << updateCumulativeTime() << ",";
-        for(int i=0; i<_JOINT_NUM; i++)
-        {
-            output_file << _angle(i, 0) << ",";
-            output_file << _angular_velocity(i, 0) << ",";
-            output_file << _angular_acceleration(i, 0) << ",";
-            output_file << _target_angle_interpolation.getSinInterpolation()(i, 0) << ",";
-            output_file << _target_angle_interpolation.getDSinInterpolation()(i, 0) << ",";
-            output_file << _target_angle_interpolation.getDDSinInterpolation()(i, 0) << ",";
-        }
-        output_file << std::endl;
 
         return _angle;
     }
@@ -964,10 +942,9 @@ namespace ec_calculator
 
     void Manipulator::print()
     {
-        // std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
-        // std::cout << "pose5 :" << std::endl << getPose(5) << std::endl << std::endl;
+        std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
 
-        if(_motor_enable && !_emergency_stop)
+        if(!_emergency_stop)
         {
             std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
             output_file << updateCumulativeTime() << ",";
@@ -975,6 +952,13 @@ namespace ec_calculator
             {
                 output_file << _target_angle_interpolation.getSinInterpolation()(i,0) << ",";
                 output_file << _angle(i, 0) << ",";
+                output_file << _target_angle_interpolation.getDSinInterpolation()(i,0) << ",";
+                output_file << _angular_velocity(i, 0) << ",";
+                output_file << _target_angle_interpolation.getDDSinInterpolation()(i,0) << ",";
+                output_file << _angular_acceleration(i, 0) << ",";
+                output_file << _target_torque(i,0) << ",";
+                output_file << _torque(i,0) << ",";
+                output_file << _torque_disturbance(i,0) << ",";
             }
             output_file << std::endl;
         }

@@ -6,6 +6,7 @@
 #include "differential_integral.h"
 #include "pid_controller.h"
 #include "torque_current_converter.h"
+#include "low_pass_filter.h"
 
 #include <iostream>
 #include <chrono>
@@ -47,6 +48,7 @@ namespace ec_calculator
             Eigen::Matrix<double, -1, 1> _target_angular_acceleration;
             Eigen::Matrix<double, -1, 1> _torque;
             Eigen::Matrix<double, -1, 1> _target_torque;
+            Eigen::Matrix<double, -1, 1> _torque_disturbance;
             Eigen::Matrix<double, -1, 1> _current;
             Eigen::Matrix<double, -1, 1> _target_current;
 
@@ -64,6 +66,9 @@ namespace ec_calculator
             PidController _pid_pose2torque;
             Interpolation _target_angle_interpolation;
             PidController _pid_torque2current;
+
+            // Low Pass Filter
+            LowPassFilter _low_pass_filter;
 
             // Inverse Kinematics
             int _ik_index = 0;
@@ -135,7 +140,6 @@ namespace ec_calculator
             void updateAngle(const Eigen::Matrix<double, -1, 1> &angle_);
             void updateAngularVelocity(const Eigen::Matrix<double, -1, 1> &angular_velocity_);
             void updateAngularAcceleration(const Eigen::Matrix<double, -1, 1> &angular_acceleration_);
-            void updateTorque(const Eigen::Matrix<double, -1, 1> &torque_);
             void updateCurrent(const Eigen::Matrix<double, -1, 1> &current_);
             Eigen::Matrix<double, -1, 1> getAngle();
             Eigen::Matrix<double, 6, 1> getPose(const int &joint_index_);
@@ -193,7 +197,6 @@ namespace ec_calculator
             void print();
             Eigen::Matrix<double, 6, 1> getTargetPose(const int &ik_index_);
             Eigen::Matrix<double, 6, 1> getMidPose(const int &ik_index_);
-            void get_SCARA();
             Eigen::Matrix<double, 6, 1> getIdealTorque();
                 DifferentialIntegral _angular_acc_diff;
                 Eigen::Matrix<double, 6, 1> _ideal_torque;

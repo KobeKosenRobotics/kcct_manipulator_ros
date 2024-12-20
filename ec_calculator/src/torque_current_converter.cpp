@@ -36,9 +36,9 @@ namespace ec_calculator
                 break;
             case 5:
                 _a = 2.356;
-                _b = 0.02650;
+                _b = 0.02650+0.2;
                 _c = 2.804;
-                _d = 0.0;
+                _d = 0.0+0.2;
                 break;
             case 6:
                 _a = 2.943;
@@ -66,13 +66,15 @@ namespace ec_calculator
 
     double TorqueCurrentConverter::torque2current(const double &torque_)
     {
-        if(torque_ < 0.0)
+        if(torque_ < 0.01)
         {
-            return (1/_a)*torque_-_b;
+            // return (1/_a)*torque_-_b;
+            return (1/_a)*torque_;
         }
-        if(torque_ > 0.0)
+        if(torque_ > 0.01)
         {
-            return (1/_c)*torque_+_d;
+            // return (1/_c)*torque_+_d;
+            return (1/_c)*torque_;
         }
         return 0.0;
     }

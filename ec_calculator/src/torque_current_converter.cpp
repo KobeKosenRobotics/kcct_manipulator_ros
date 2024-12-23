@@ -4,47 +4,82 @@ namespace ec_calculator
 {
     void TorqueCurrentConverter::setMotorId(const int &motor_id_)
     {
+        // switch(motor_id_)
+        // {
+        //     case 1:
+        //         _a = 4.006;
+        //         // _b = 0.2176;
+        //         // _b = 0.30-0.02;
+        //         _c = 4.296;
+        //         // _d = 0.1809;
+        //         // _d = 0.27-0.02;
+        //         break;
+        //     case 2:
+        //         _a = 4.037;
+        //         _b = 0.1907;
+        //         _c = 4.880;
+        //         _d = 0.2619;
+        //         break;
+        //     case 3:
+        //         _a = 3.362;
+        //         _b = 0.2199;
+        //         _c = 4.394;
+        //         _d = 0.3066;
+        //         break;
+        //     case 4:
+        //         _a = 2.345;
+        //         // _b = 0.2591;
+        //         // _b = 0.25;
+        //         _c = 3.441;
+        //         // _d = 0.2558;
+        //         // _d = 0.23;
+        //         break;
+        //     case 5:
+        //         _a = 2.356;
+        //         // _b = 0.02650+0.2;
+        //         _c = 2.804;
+        //         // _d = 0.0+0.2;
+        //         break;
+        //     case 6:
+        //         _a = 2.943;
+        //         // _b = 0.0+0.11;
+        //         _c = 3.728;
+        //         // _d = 0.01448+0.11;
+        //         break;
+        //     default:
+        //         break;
+        // }
         switch(motor_id_)
         {
             case 1:
-                _a = 4.006;
-                _b = 0.2176;
-                // _b = 0.30-0.02;
-                _c = 4.296;
-                _d = 0.1809;
-                // _d = 0.27-0.02;
+                _a = 0.280;
+                _b = 0.244;
+                _c = 0.089;
                 break;
             case 2:
-                _a = 4.037;
-                _b = 0.1907;
-                _c = 4.880;
-                _d = 0.2619;
+                _a = 0.265;
+                _b = 0.244;
+                _c = 0.089;
                 break;
             case 3:
-                _a = 3.362;
-                _b = 0.2199;
-                _c = 4.394;
-                _d = 0.3066;
+                _a = 0.271;
+                _b = 0.300;
+                _c = 0.148;
                 break;
             case 4:
-                _a = 2.345;
-                // _b = 0.2591;
-                _b = 0.25;
-                _c = 3.441;
-                // _d = 0.2558;
-                _d = 0.23;
+                _a = 0.230;
+                _b = 0.300;
+                _c = 0.148;
                 break;
             case 5:
-                _a = 2.356;
-                _b = 0.02650+0.2;
-                _c = 2.804;
-                _d = 0.0+0.2;
+                _a = 0.0975;
+                _b = 0.377;
+                _c = 0.345;
                 break;
             case 6:
-                _a = 2.943;
-                _b = 0.0+0.11;
-                _c = 3.728;
-                _d = 0.01448+0.11;
+                _a = 0.110;
+                _b = 0.377;
+                _c = 0.345;
                 break;
             default:
                 break;
@@ -77,5 +112,10 @@ namespace ec_calculator
             return (1/_c)*torque_;
         }
         return 0.0;
+    }
+
+    double TorqueCurrentConverter::torque2current(const double &torque_, const double &angular_velocity_)
+    {
+        
     }
 }

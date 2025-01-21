@@ -201,7 +201,7 @@ namespace ec_calculator
             _gains_angle2torque.resize(3);
             _gains_angle2torque[0].resize(_joint_num, _joint_num);
             _gains_angle2torque[0].setIdentity();
-            _gains_angle2torque[0] *= 0.5;
+            _gains_angle2torque[0] *= 1.0;
                 // 70.0,  0.0,  0.0,   0.0,  0.0,  0.0,
                 //  0.0, 20.0,  0.0,   0.0,  0.0,  0.0,
                 //  0.0,  0.0, 60.0,   0.0,  0.0,  0.0,
@@ -210,7 +210,7 @@ namespace ec_calculator
                 //  0.0,  0.0,  0.0,   0.0,  0.0, 20.0;
             _gains_angle2torque[1].resize(_joint_num, _joint_num);
             _gains_angle2torque[1].setIdentity();
-            _gains_angle2torque[1] *= 0.0;
+            _gains_angle2torque[1] *= 1.0;
                 // 70.0,  0.0, 0.0,  0.0,  0.0,  0.0,
                 //  0.0, 10.0, 0.0,  0.0,  0.0,  0.0,
                 //  0.0,  0.0, 5.0,  0.0,  0.0,  0.0,

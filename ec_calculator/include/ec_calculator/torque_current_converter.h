@@ -17,7 +17,6 @@ namespace ec_calculator
             void setMotorId(const int &motor_id_);
             double current2torque(const double &current_);
             double torque2current(const double &torque_);
-            double torque2current(const double &torque_, const double &angular_velocity_);
     };
 }
 

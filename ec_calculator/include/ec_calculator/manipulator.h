@@ -103,6 +103,9 @@ namespace ec_calculator
             double _cumulative_time = 0.0;
             bool _is_first_cumulative_time_measurement = true;
 
+            // Debug
+            Eigen::Matrix<double, 6, 1> _o_torque;
+
         public:
             // Initialize
             void init(Model* model_);

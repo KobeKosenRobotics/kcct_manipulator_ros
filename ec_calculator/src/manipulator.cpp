@@ -708,8 +708,9 @@ namespace ec_calculator
     Eigen::Matrix<double, -1, 1> Manipulator::getTorqueByAngle()
     {
         // DOB
-        // _target_torque = _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
-        _target_torque = - _torque_disturbance + _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+        _o_torque = _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
+        _target_torque = - _torque_disturbance + _o_torque;
+        // _target_torque = - _torque_disturbance + _Mf*(_target_angle_interpolation.getDDSinInterpolation() + _pid_angle2torque.getPid(_target_angle_interpolation.getSinInterpolation() - _angle)) + _Cf*_angular_velocity + _Nf;
         _target_angular_velocity = _target_angle_interpolation.getDSinInterpolation();
 
         // Disturbance
@@ -735,7 +736,7 @@ namespace ec_calculator
     {
         for(int i=0; i<_JOINT_NUM; i++)
         {
-            _target_current(i,0) = _torque_current_converter[i].torque2current(_target_torque(i,0));
+            _target_current(i,0) = _torque_current_converter[i].torque2Current(_target_torque(i,0));
         }
 
         return _target_current;
@@ -944,7 +945,7 @@ namespace ec_calculator
     {
         std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
 
-        if(!_emergency_stop)
+        if(!_emergency_stop && _torque_enable)
         {
             std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
             output_file << updateCumulativeTime() << ",";
@@ -959,6 +960,7 @@ namespace ec_calculator
                 output_file << _target_torque(i,0) << ",";
                 output_file << _torque(i,0) << ",";
                 output_file << _torque_disturbance(i,0) << ",";
+                output_file << _o_torque(i,0) << ",";
             }
             output_file << std::endl;
         }

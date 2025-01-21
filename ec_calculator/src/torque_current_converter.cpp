@@ -51,7 +51,7 @@ namespace ec_calculator
         }
     }
 
-    double TorqueCurrentConverter::current2torque(const double &current_)
+    double TorqueCurrentConverter::current2Torque(const double &current_)
     {
         if(current_ < _b)
         {
@@ -64,7 +64,7 @@ namespace ec_calculator
         return 0.0;
     }
 
-    double TorqueCurrentConverter::torque2current(const double &torque_)
+    double TorqueCurrentConverter::torque2Current(const double &torque_)
     {
         if(torque_ < 0.01)
         {

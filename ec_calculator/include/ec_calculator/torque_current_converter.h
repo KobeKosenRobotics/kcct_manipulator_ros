@@ -15,8 +15,8 @@ namespace ec_calculator
             double _d = 0.0;    // positive current intercept
         public:
             void setMotorId(const int &motor_id_);
-            double current2torque(const double &current_);
-            double torque2current(const double &torque_);
+            double current2Torque(const double &current_);
+            double torque2Current(const double &torque_);
     };
 }
 

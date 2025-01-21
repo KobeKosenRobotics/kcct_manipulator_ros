@@ -197,34 +197,6 @@ namespace ec_calculator
         _gains_angle2torque[2].resize(_JOINT_NUM, _JOINT_NUM);
         _gains_angle2torque = gains_angle2torque_;
         _pid_angle2torque.setMatrixGains(_gains_angle2torque);
-
-        // TODO: make setGainsTorque2Curent()
-        _gains_torque2current.resize(3);
-        _gains_torque2current[0].resize(_JOINT_NUM, _JOINT_NUM);
-        _gains_torque2current[0] <<
-            0.1, 0.0, 0.0, 0.0, 0.0, 0.0,//0.2
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-        _gains_torque2current[1].resize(_JOINT_NUM, _JOINT_NUM);
-        _gains_torque2current[1] <<
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-        _gains_torque2current[2].resize(_JOINT_NUM, _JOINT_NUM);
-        _gains_torque2current[2] <<
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-        _pid_torque2current.setMatrixGains(_gains_torque2current);
     }
 
     void Manipulator::setGainsPose2Torque(const std::vector<double> &gains_pose2torque_)

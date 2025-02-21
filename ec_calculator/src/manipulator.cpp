@@ -916,26 +916,27 @@ namespace ec_calculator
     void Manipulator::print()
     {
         std::cout << "angle :" << std::endl << _angle << std::endl << std::endl;
+        std::cout << "pose :" << std::endl << getPose(3) << std::endl << std::endl;
 
-        if(!_emergency_stop && _torque_enable)
-        {
-            std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
-            output_file << updateCumulativeTime() << ",";
-            for(int i=0; i<_JOINT_NUM; i++)
-            {
-                output_file << _target_angle_interpolation.getSinInterpolation()(i,0) << ",";
-                output_file << _angle(i, 0) << ",";
-                output_file << _target_angle_interpolation.getDSinInterpolation()(i,0) << ",";
-                output_file << _angular_velocity(i, 0) << ",";
-                output_file << _target_angle_interpolation.getDDSinInterpolation()(i,0) << ",";
-                output_file << _angular_acceleration(i, 0) << ",";
-                output_file << _target_torque(i,0) << ",";
-                output_file << _torque(i,0) << ",";
-                output_file << _torque_disturbance(i,0) << ",";
-                output_file << _o_torque(i,0) << ",";
-            }
-            output_file << std::endl;
-        }
+        // if(!_emergency_stop && _torque_enable)
+        // {
+        //     std::ofstream output_file("/home/ros1_ws/src/kcct_manipulator_ros/ec_calculator/src/nodes/experimental_data.csv", std::ios::app);
+        //     output_file << updateCumulativeTime() << ",";
+        //     for(int i=0; i<_JOINT_NUM; i++)
+        //     {
+        //         output_file << _target_angle_interpolation.getSinInterpolation()(i,0) << ",";
+        //         output_file << _angle(i, 0) << ",";
+        //         output_file << _target_angle_interpolation.getDSinInterpolation()(i,0) << ",";
+        //         output_file << _angular_velocity(i, 0) << ",";
+        //         output_file << _target_angle_interpolation.getDDSinInterpolation()(i,0) << ",";
+        //         output_file << _angular_acceleration(i, 0) << ",";
+        //         output_file << _target_torque(i,0) << ",";
+        //         output_file << _torque(i,0) << ",";
+        //         output_file << _torque_disturbance(i,0) << ",";
+        //         output_file << _o_torque(i,0) << ",";
+        //     }
+        //     output_file << std::endl;
+        // }
     }
 
     Eigen::Matrix<double, 6, 1> Manipulator::getTargetPose(const int &ik_index_)

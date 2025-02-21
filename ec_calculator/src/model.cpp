@@ -271,9 +271,12 @@ namespace ec_calculator
 
         _joint_position_link.resize(3, (_joint_num + _chain_num));
         _joint_position_link <<
-             0.0,  0.0,  0.0,  0.0,
-             0.0,  0.0,  0.0,  0.0,
-            90.0, 90.0, 90.0, 90.0;
+            // 0.0,  0.0,  0.0,  0.0,
+            // 0.0,  0.0,  0.0,  0.0,
+            // 0.0, 95.0, 95.0, 68.5;
+            0.0,  0.0,  0.0,  0.0,
+            0.0,  0.0,  0.0,  0.0,
+            0.0, 50.0, 50.0, 62.5;
         _joint_position_link *= 0.001;
 
         _translation_axis.resize(3, _joint_num);
